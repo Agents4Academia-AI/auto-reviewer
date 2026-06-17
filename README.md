@@ -1,92 +1,92 @@
 # Auto-Reviewer Agent (Deep Learning Papers)
 
-一个基于 Claude API 的深度学习论文自动审稿 agent，按照 `todo.txt` 中定义的 10 阶段流程对一篇 PDF 论文生成结构化的审稿意见。
+An automated review agent for deep learning papers powered by the Claude API. It follows the 10-stage workflow defined in `todo.txt` to generate structured review feedback for a given PDF paper.
 
 ## Pipeline
 
-| Stage | 目标 |
-|-------|------|
-| 0 | 解析 PDF → 结构化论文表示（title, claims, contributions, ...） |
-| 1 | 整体理解（一段摘要 + claim-evidence map） |
-| 2 | 分章节分析（issues / missing info / ambiguous claims） |
-| 3 | Claim 抽取与证据映射（按 novelty / correctness / empirical 等分类） |
-| 4 | Novelty check（启用 Claude 内置 web_search 工具查找近似工作） |
-| 5 | 显著性 / 影响多视角分析（5 个 persona） |
-| 6 | Rigor check（internal correctness, claim support, experimental rigor） |
-| 7 | Review planning（strengths/weaknesses/recommendation） |
-| 8 | Draft review（author-facing） |
-| 9 | Self-critique（找 hallucinations / 过强 claim / inconsistency） |
-| 10 | Finalize（应用 critique，输出 final review + 改进 checklist） |
+| Stage | Objective                                                                                             |
+| ----- | ----------------------------------------------------------------------------------------------------- |
+| 0     | Parse PDF → structured paper representation (`title`, `claims`, `contributions`, etc.)                |
+| 1     | Overall understanding: one-paragraph summary + claim-evidence map                                     |
+| 2     | Section-by-section analysis: issues / missing information / ambiguous claims                          |
+| 3     | Claim extraction and evidence mapping, categorized by novelty / correctness / empirical support, etc. |
+| 4     | Novelty check: use Claude’s built-in `web_search` tool to find similar prior work                     |
+| 5     | Multi-perspective significance / impact analysis using 5 personas                                     |
+| 6     | Rigor check: internal correctness, claim support, and experimental rigor                              |
+| 7     | Review planning: strengths / weaknesses / recommendation                                              |
+| 8     | Draft review: author-facing review text                                                               |
+| 9     | Self-critique: identify hallucinations, overly strong claims, and inconsistencies                     |
+| 10    | Finalize: apply critique and output the final review + improvement checklist                          |
 
-每个 stage 的 paper 全文都通过 **prompt caching** 复用，整段 paper 只在第一阶段写入缓存，之后 9 个阶段都是廉价的 cache read。
+The full paper text is reused across stages via **prompt caching**. The full paper is written to the cache only in the first stage, while the remaining 9 stages use low-cost cache reads.
 
-## 安装
+## Installation
 
 ```bash
 cd /home/weiliu1/mypaper/2026/ai-scientist/githubcode
 pip install -r requirements.txt
 cp .env.example .env
-# 编辑 .env 填入 ANTHROPIC_API_KEY
+# Edit .env and add your ANTHROPIC_API_KEY
 ```
 
-## 使用
+## Usage
 
 ```bash
 python reviewer_agent.py /path/to/paper.pdf
 ```
 
-可选参数：
+Optional arguments:
 
 ```bash
-# 自定义输出目录
+# Specify a custom output directory
 python reviewer_agent.py paper.pdf --out ./my_reviews
 
-# 关闭 Stage 4 的 web 搜索（节省 tokens）
+# Disable web search in Stage 4 to save tokens
 python reviewer_agent.py paper.pdf --no-web-search
 
-# 调整 effort（low/medium/high/xhigh/max）
+# Adjust effort level: low/medium/high/xhigh/max
 python reviewer_agent.py paper.pdf --effort medium
 ```
 
-## 输出
+## Output
 
-在 `--out` 目录（默认 `./reviews`）下生成：
+The following files will be generated under the `--out` directory, which defaults to `./reviews`:
 
-- `{paper}.review.json` — 所有 10 个 stage 的完整结构化输出 + token 使用
-- `{paper}.review.md` — 给作者看的最终审稿意见（markdown）
+* `{paper}.review.json` — complete structured outputs from all 10 stages, including token usage
+* `{paper}.review.md` — final author-facing review in Markdown format
 
-## 配置
+## Configuration
 
-环境变量 / `.env`：
+Environment variables / `.env`:
 
-| 变量 | 默认 | 说明 |
-|------|------|------|
-| `ANTHROPIC_API_KEY` | （必填） | Anthropic API key |
-| `REVIEWER_MODEL` | `claude-opus-4-7` | 主推理模型 |
-| `REVIEWER_FAST_MODEL` | `claude-sonnet-4-6` | 预留给可能的轻量子任务 |
+| Variable              | Default             | Description                                 |
+| --------------------- | ------------------- | ------------------------------------------- |
+| `ANTHROPIC_API_KEY`   | Required            | Anthropic API key                           |
+| `REVIEWER_MODEL`      | `claude-opus-4-7`   | Main reasoning model                        |
+| `REVIEWER_FAST_MODEL` | `claude-sonnet-4-6` | Reserved for potential lightweight subtasks |
 
-## 文件结构
+## File Structure
 
+```text
+config.py           - Configuration loading via dotenv
+pdf_parser.py       - PDF → plain text using pypdf
+prompts.py          - Prompt templates for the 10 stages
+llm_client.py       - Anthropic SDK wrapper with caching, adaptive thinking, and web_search
+pipeline.py         - Runs the 10-stage pipeline and passes JSON context across stages
+reviewer_agent.py   - CLI entry point, including Markdown report rendering
 ```
-config.py           - 配置加载（dotenv）
-pdf_parser.py       - PDF → 纯文本（pypdf）
-prompts.py          - 10 个 stage 的 prompt 模板
-llm_client.py       - Anthropic SDK 封装（caching + adaptive thinking + web_search）
-pipeline.py         - 串联 10 个 stage，传递 JSON 上下文
-reviewer_agent.py   - CLI 入口（含 markdown 报告渲染）
-```
 
-## 已知限制（基础版）
+## Known Limitations: Basic Version
 
-- PDF 文本提取：使用 `pypdf`，对扫描版 / 复杂排版论文效果有限；后续可换成 `pymupdf` 或调用 Claude 的 PDF 输入能力（直接传 base64 PDF）。
-- 图表 / 公式：目前只抽出短描述，不做视觉理解。要做的话可以改用 Claude 多模态接口直接传 PDF 页面图像。
-- Novelty check 依赖 web_search 工具的检索质量；可以叠加 Semantic Scholar / arXiv 的专用 API 做更可靠的检索。
-- 没有并行化；10 个 stage 严格串行（因为存在依赖关系）。
-- 缺少持久化的中间结果——一旦中途失败需要从头重跑。
+* PDF text extraction uses `pypdf`, which may perform poorly on scanned papers or papers with complex layouts. This can later be replaced with `pymupdf` or Claude’s native PDF input capability by passing the PDF directly as base64.
+* Figures and equations are currently only extracted as short descriptions; no visual understanding is performed. To support this, the pipeline can be modified to pass PDF page images directly to Claude’s multimodal interface.
+* The novelty check depends on the retrieval quality of the `web_search` tool. Dedicated APIs such as Semantic Scholar or arXiv can be added for more reliable literature search.
+* The pipeline is not parallelized. All 10 stages run strictly sequentially because later stages depend on earlier outputs.
+* Intermediate results are not persisted. If the process fails midway, it currently needs to be restarted from the beginning.
 
-## 下一步建议
+## Suggested Next Steps
 
-1. PDF 直接传给 Claude 处理（替代 pypdf 提取的纯文本），保留版面 / 图表理解能力。
-2. Stage 4 接入 Semantic Scholar API 做更精准的论文检索。
-3. 每个 stage 写中间 cache 文件，支持断点续跑。
-4. 多论文 batch 模式 → 使用 Anthropic Batches API，价格减半。
+1. Pass PDFs directly to Claude instead of relying on plain text extracted by `pypdf`, preserving layout and enabling better figure/table understanding.
+2. Integrate the Semantic Scholar API into Stage 4 for more precise paper retrieval.
+3. Write intermediate cache files for each stage to support checkpointing and resume-on-failure.
+4. Add multi-paper batch mode using the Anthropic Batches API to reduce costs by half.
