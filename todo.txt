@@ -1,0 +1,346 @@
+# Auto-Reviewer Agent Pipeline
+
+## 0. Input Processing and Paper Parsing
+
+**Goal:** Convert the paper into structured information.
+
+**Inputs:**
+
+* Paper PDF 
+**Actions:**
+
+* Extract title, abstract, introduction, related work, method, experiments, results, limitations, conclusion.
+* Extract figures, tables, equations, algorithms, claims, and citations.
+* Build a structured paper representation.
+
+**Outputs:**
+
+* Section-level summary
+* List of main claims
+* List of key technical contributions
+* List of experimental results
+* List of assumptions and limitations
+
+---
+
+## 1. Overall Understanding
+
+**Goal:** Understand the paper at a high level before judging it.
+
+**Questions:**
+
+* What field or subfield is this paper in?
+* What problem does it address?
+* What is the research question?
+* What are the main claims?
+* What are the proposed contributions?
+* What evidence does the paper provide?
+
+**Outputs:**
+
+* One-paragraph paper summary
+* Problem statement
+* Main contribution list
+* Claim-evidence map
+
+---
+
+## 2. Section-Level Analysis
+
+**Goal:** Analyze each section independently and identify potential issues.
+
+**For each section:**
+
+* Summarize the section.
+* Identify key claims.
+* Identify supporting evidence.
+* Check whether the section is clear, complete, and internally consistent.
+* Flag unclear definitions, missing assumptions, weak arguments, or unsupported statements.
+
+**Sections to analyze:**
+
+* Abstract
+* Introduction
+* Related Work
+* Method
+* Theory / Analysis
+* Experiments
+* Results
+* Limitations
+* Conclusion
+* Supplementary Material, if available
+
+**Outputs:**
+
+* Section-by-section notes
+* Local issues
+* Missing information
+* Ambiguous or unsupported claims
+
+---
+
+## 3. Claim Extraction and Evidence Mapping
+
+**Goal:** Make the review grounded in explicit claims rather than vague impressions.
+
+**Actions:**
+
+* Extract all major claims made by the authors.
+* Categorize claims into:
+
+  * Novelty claims
+  * Technical correctness claims
+  * Empirical performance claims
+  * Theoretical claims
+  * Practical impact claims
+  * Generalization claims
+* For each claim, identify the evidence provided in the paper.
+* Mark whether the evidence is strong, weak, missing, or irrelevant.
+
+**Outputs:**
+
+* Claim-evidence table
+* Unsupported claims
+* Overstated claims
+* Claims requiring external verification
+
+---
+
+## 4. Novelty Check
+
+**Goal:** Judge whether the work is genuinely new compared with prior work.
+
+### 4.1 External Similarity Search
+
+**Actions:**
+
+* Search the web, Google Scholar, Semantic Scholar, arXiv, OpenReview, Papers With Code, and venue proceedings.
+* Retrieve similar papers by:
+
+  * Method
+  * Problem setting
+  * Dataset
+  * Architecture
+  * Theoretical framework
+  * Evaluation protocol
+* Compare the current paper against the most relevant prior work.
+
+**Outputs:**
+
+* List of similar papers
+* Similarity/difference analysis
+* Potential missing citations
+* Novelty risk level: low / medium / high
+
+### 4.2 Contribution Differentiation
+
+**Questions:**
+
+* What exactly is new?
+* Is the novelty conceptual, technical, empirical, theoretical, or application-driven?
+* Is the difference from prior work substantial or incremental?
+* Does the paper clearly position itself against the closest prior work?
+
+**Outputs:**
+
+* Novelty assessment
+* Missing related work
+* Incrementality judgment
+
+---
+
+## 5. Significance and Impact Analysis
+
+**Goal:** Evaluate whether the contribution matters to the field.
+
+**Actions:**
+
+* Use multiple specialized agents to discuss significance:
+
+  * Domain expert agent
+  * Methodology expert agent
+  * Empirical evaluation agent
+  * Skeptical reviewer agent
+  * Practical impact agent
+* Each agent independently answers:
+
+  * What does this work add to the field?
+  * Who would benefit from it?
+  * Does it solve an important problem?
+  * Is the improvement meaningful?
+  * Could the idea influence future work?
+
+**Outputs:**
+
+* Multi-agent significance discussion
+* Consensus and disagreement points
+* Significance score
+* Impact assessment
+
+---
+
+## 6. Rigor Check
+
+**Goal:** Evaluate whether the paper is technically and scientifically sound.
+
+### 6.1 Internal Correctness
+
+**Actions:**
+
+* Check definitions, assumptions, derivations, algorithms, and experimental procedures.
+* Verify whether theoretical arguments follow logically.
+* Check whether the method description is complete enough to reproduce.
+* Identify hidden assumptions or possible failure cases.
+
+**Outputs:**
+
+* Technical correctness notes
+* Ambiguous or invalid reasoning
+* Reproducibility concerns
+
+### 6.2 Claim Support Check
+
+**Actions:**
+
+* Revisit the claim-evidence map.
+* Check whether each major claim is supported by sufficient evidence.
+* Distinguish between demonstrated results and speculative conclusions.
+* Flag cases where experiments do not support the stated claims.
+
+**Outputs:**
+
+* Supported claims
+* Partially supported claims
+* Unsupported or overstated claims
+
+### 6.3 Experimental Rigor
+
+**Questions:**
+
+* Are the baselines appropriate and strong?
+* Are datasets suitable and sufficiently diverse?
+* Are metrics appropriate?
+* Are ablations sufficient?
+* Are statistical significance or uncertainty estimates provided?
+* Are hyperparameters and implementation details clear?
+* Are negative results or limitations discussed?
+
+**Outputs:**
+
+* Experiment quality assessment
+* Missing baselines
+* Missing ablations
+* Possible confounders
+* Reproducibility score
+
+---
+
+## 7. Review Planning
+
+**Goal:** Convert analysis into a coherent reviewer perspective.
+
+**Actions:**
+
+* Summarize the main strengths.
+* Summarize the main weaknesses.
+* Identify fatal flaws versus minor issues.
+* Decide recommendation tendency:
+
+  * Strong accept
+  * Accept
+  * Weak accept
+  * Borderline
+  * Weak reject
+  * Reject
+  * Strong reject
+* Decide confidence level.
+
+**Outputs:**
+
+* Strengths list
+* Weaknesses list
+* Questions for authors
+* Recommendation rationale
+* Confidence estimate
+
+---
+
+## 8. Draft Review
+
+**Goal:** Generate a structured review for the authors.
+
+**Recommended structure:**
+
+1. Summary of the paper
+2. Main strengths
+3. Main weaknesses
+4. Detailed comments
+5. Questions for authors
+6. Suggestions for improvement
+7. Overall recommendation
+8. Reviewer confidence
+
+**Style requirements:**
+
+* Be specific and evidence-based.
+* Avoid vague criticism.
+* Separate factual issues from subjective judgments.
+* Be constructive and respectful.
+* Mention both positive and negative aspects.
+
+**Outputs:**
+
+* Full draft review
+* Optional short meta-review
+* Optional score card
+
+---
+
+## 9. Self-Critique and Review Verification
+
+**Goal:** Check whether the generated review is accurate, fair, and grounded.
+
+**Actions:**
+
+* Verify every criticism against the paper.
+* Check whether the review misrepresents the authors' claims.
+* Check whether the review missed important strengths or weaknesses.
+* Check whether the recommendation is consistent with the evidence.
+* Check whether the tone is professional.
+* Check whether external novelty claims are supported by reliable sources.
+
+**Questions:**
+
+* Are any comments hallucinated?
+* Are any claims too strong?
+* Are all major criticisms actionable?
+* Is the review balanced?
+* Would another reviewer find the reasoning convincing?
+
+**Outputs:**
+
+* Self-critique report
+* List of corrections
+* Revised review draft
+
+---
+
+## 10. Finalization
+
+**Goal:** Produce the final review after correction.
+
+**Actions:**
+
+* Incorporate self-critique feedback.
+* Remove unsupported criticism.
+* Clarify vague comments.
+* Strengthen evidence-based reasoning.
+* Ensure consistency between summary, weaknesses, score, and recommendation.
+
+**Final outputs:**
+
+* Final review
+* Recommendation
+* Confidence score
+* Optional structured JSON report
+* Optional author-facing improvement checklist
