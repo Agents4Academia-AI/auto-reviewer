@@ -1,7 +1,7 @@
 """Thin wrapper around the Anthropic SDK for the reviewer pipeline.
 
 Key design choices:
-- Paper content is sent as a cached system block so it stays warm across all 10 stages.
+- The paper PDF is sent as a cached document block so it stays warm across all 10 stages.
 - We use adaptive thinking + `effort` to balance quality and cost.
 - JSON-typed stages go through `messages.create` with `output_config.format`.
 - Stage 4 (novelty) may use the server-side `web_search_20260209` tool.
@@ -18,21 +18,15 @@ from config import Config
 from prompts import REVIEWER_SYSTEM
 
 
-def build_system(paper_text: str) -> list[dict]:
-    """System blocks with the paper content cached.
+def build_user_content(paper_document: dict[str, Any], user_prompt: str) -> list[dict[str, Any]]:
+    """User content with the cached PDF document before the stage prompt.
 
-    The paper text is large and identical across stages — perfect prefix for
-    prompt caching. Adding cache_control on the last block caches everything
-    up to and including the paper.
+    Claude's PDF support analyzes extracted text plus page images, preserving
+    visual information such as tables, charts, diagrams, equations, and layout.
     """
     return [
-        {"type": "text", "text": REVIEWER_SYSTEM},
-        {
-            "type": "text",
-            "text": "Below is the paper under review (raw text extracted from PDF):\n\n"
-            + paper_text,
-            "cache_control": {"type": "ephemeral"},
-        },
+        paper_document,
+        {"type": "text", "text": user_prompt},
     ]
 
 
@@ -43,7 +37,7 @@ class ReviewerLLM:
 
     def run_stage(
         self,
-        paper_text: str,
+        paper_document: dict[str, Any],
         user_prompt: str,
         stage_name: str,
         use_web_search: bool = False,
@@ -57,8 +51,13 @@ class ReviewerLLM:
         kwargs: dict[str, Any] = {
             "model": model or self.cfg.model,
             "max_tokens": max_tokens or self.cfg.max_tokens_default,
-            "system": build_system(paper_text),
-            "messages": [{"role": "user", "content": user_prompt}],
+            "system": REVIEWER_SYSTEM,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": build_user_content(paper_document, user_prompt),
+                }
+            ],
             "thinking": {"type": "adaptive"},
             "output_config": {"effort": self.cfg.effort},
         }
