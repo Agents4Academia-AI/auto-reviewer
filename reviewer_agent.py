@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -104,14 +103,12 @@ def main():
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Loading PDF: {args.pdf}", flush=True)
+    print(f"Loading PDF document: {args.pdf}", flush=True)
     paper = load_paper(args.pdf)
-    print(f"  extracted {paper['num_chars']} chars", flush=True)
-    if paper["num_chars"] < 1000:
-        print("WARN: very little text extracted — is this a scanned PDF?", file=sys.stderr)
+    print(f"  loaded {paper['num_bytes']} bytes", flush=True)
 
     llm = ReviewerLLM(cfg)
-    pipeline = ReviewerPipeline(llm=llm, paper_text=paper["text"])
+    pipeline = ReviewerPipeline(llm=llm, paper_document=paper["document"])
 
     print(f"Running 10-stage pipeline with model={cfg.model}, effort={cfg.effort}", flush=True)
     results = pipeline.run_all()
@@ -122,7 +119,12 @@ def main():
 
     # Persist all stage outputs
     serializable = {
-        "paper": {"filename": paper["filename"], "num_chars": paper["num_chars"]},
+        "paper": {
+            "filename": paper["filename"],
+            "path": paper["path"],
+            "num_bytes": paper["num_bytes"],
+            "input_mode": "pdf_document",
+        },
         "config": {"model": cfg.model, "effort": cfg.effort, "web_search": cfg.enable_web_search},
         "stages": {k: {"parsed": v["parsed"], "usage": v["usage"], "stop_reason": v["stop_reason"]} for k, v in results.items()},
         "total_usage": pipeline.total_usage(),

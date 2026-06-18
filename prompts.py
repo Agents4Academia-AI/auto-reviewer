@@ -1,7 +1,7 @@
 """Prompt templates for each stage of the reviewer pipeline.
 
-Each STAGE_*_PROMPT is the user-turn instruction. The paper text is
-attached separately as a cached system block (see llm_client.build_system).
+Each STAGE_*_PROMPT is the user-turn instruction. The paper PDF is attached
+separately as a cached document block (see llm_client.build_user_content).
 Stages take the prior stages' structured outputs as context.
 """
 

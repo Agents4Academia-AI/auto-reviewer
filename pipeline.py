@@ -1,8 +1,8 @@
 """Orchestrate the 10-stage reviewer pipeline.
 
 Each stage receives the structured outputs of relevant prior stages, formatted
-as JSON strings interpolated into the prompt. The paper text is sent as a
-cached system block, so we don't pay for it on every stage.
+as JSON strings interpolated into the prompt. The paper PDF is sent as a cached
+document block on every stage.
 """
 
 from __future__ import annotations
@@ -44,11 +44,11 @@ class ReviewerPipeline:
     def __init__(
         self,
         llm: ReviewerLLM,
-        paper_text: str,
+        paper_document: dict[str, Any],
         logger: Callable[[str], None] | None = None,
     ):
         self.llm = llm
-        self.paper_text = paper_text
+        self.paper_document = paper_document
         self.log = logger or (lambda msg: print(msg, flush=True))
         self.results: dict[str, dict] = {}
 
@@ -62,7 +62,7 @@ class ReviewerPipeline:
         self.log(f"[{key}] running...")
         t0 = time.time()
         result = self.llm.run_stage(
-            paper_text=self.paper_text,
+            paper_document=self.paper_document,
             user_prompt=prompt,
             stage_name=key,
             use_web_search=use_web_search,
