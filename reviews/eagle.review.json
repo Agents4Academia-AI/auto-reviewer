@@ -1,0 +1,906 @@
+{
+  "paper": {
+    "filename": "eagle.pdf",
+    "path": "eagle.pdf",
+    "num_bytes": 1817444,
+    "input_mode": "pdf_document"
+  },
+  "config": {
+    "model": "claude-opus-4-7",
+    "effort": "medium",
+    "web_search": true
+  },
+  "stages": {
+    "stage_0": {
+      "parsed": {
+        "title": "EAGLE: Early Approximated Gradient-based Learning-rate Estimator",
+        "authors": [],
+        "venue_hint": "NeurIPS 2025 submission (under review)",
+        "field": "Deep learning optimization",
+        "abstract": "The paper proposes EAGLE, an optimizer that uses gradient and parameter differences between consecutive steps to approximate curvature (a secant-like inverse-Hessian estimate) and accelerate convergence. It includes an adaptive switching mechanism that falls back to Adam under two conditions: (1) the gradient difference is too small (risking divergence) and (2) the local loss landscape appears non-convex. Experiments fine-tuning GPT-2 on SST-2 and ViT-B/16 on CIFAR-10 show EAGLE reaches baselines' final loss 3.4-6.8x faster in steps and achieves better final accuracy.",
+        "sections": {
+          "introduction": "Second-order methods promise faster convergence via curvature but are impractical at scale (O(N^2) Hessian; L-BFGS limited in DL). First-order methods (SGD, Adam) dominate but ignore curvature. EAGLE aims to combine first-order practicality with second-order-like curvature awareness.",
+          "related_work": "Brief discussion of Adam combining AdaDelta, Momentum, and RMSprop. Limited related work beyond Adam.",
+          "method": "EAGLE update rule: θ_{n+1} = θ_n - η · (θ_n - θ_{n-1})/(g_n - g_{n-1}) · g_n, justified as a secant approximation of Newton's method (one-step optimum on quadratics). An Adaptive Switching Mechanism switches to Adam when either (1) |Δg| < adaptive threshold τ_n (computed from coefficient of variation of recent gradient norms, clipped to [1e-5,1e-2]), or (2) sign conditions indicate locally non-convex region (∇L_{n-1}·∇L_n ≥ 0 AND L_n·Δ∇L ≥ 0).",
+          "theory": "Informal: EAGLE update equals Newton's step for 1D quadratic; case analysis over sign patterns of gradients to identify when EAGLE is effective vs. fails (Table 1).",
+          "experiments": "Fine-tuning GPT-2 Small (117M) on SST-2 and ViT-B/16 (86M) on CIFAR-10. Baselines: SGD+Momentum, Adam. Single A100 GPU. Metrics: convergence steps to reach baseline final loss, final train/test loss/accuracy, EAGLE usage ratio, wall-clock time.",
+          "results": "SST-2: EAGLE reaches SGD-M final loss 6.83x faster, Adam final loss 6.77x faster; train loss 0.0057 vs 0.20/0.19; test acc 91.74% vs 89.45%/80.62%. CIFAR-10: 3.41x/6.60x speedups; test acc 96.84% vs 95.67%/94.22%. EAGLE usage ratio decreases over training (avg 20.5% on SST-2, 9.54% on CIFAR-10).",
+          "limitations": "Choice of Adam as fallback not fully justified (variant with SGD-M worse). Pure-Python implementation is 1.29-5.59x slower per epoch than PyTorch-optimized baselines, negating step-based speedups in wall-clock terms.",
+          "conclusion": "EAGLE combines lightweight curvature estimation with Adam fallback, accelerating convergence and improving generalization on two tasks. Future work: optimized PyTorch/CUDA implementation, broader applications (GANs, RL), formal convergence analysis."
+        },
+        "main_claims": [
+          "EAGLE accelerates loss convergence (in steps) by ~3.4-6.8x vs SGD-M and Adam on SST-2 and CIFAR-10 fine-tuning",
+          "EAGLE achieves better final train and test accuracy than baselines on both tasks",
+          "The EAGLE update rule approximates Newton's method using gradient/parameter differences",
+          "The adaptive switching mechanism ensures stability by reverting to Adam in problematic regions"
+        ],
+        "key_contributions": [
+          "Novel secant-based update rule approximating inverse-Hessian-gradient product",
+          "Adaptive switching mechanism with adaptive threshold based on gradient norm coefficient of variation",
+          "Sign-based criterion for detecting locally non-convex regions",
+          "Empirical demonstration on GPT-2/SST-2 and ViT-B/16/CIFAR-10"
+        ],
+        "experimental_results": [
+          "SST-2 (GPT-2): EAGLE train loss 0.0057, train acc 99.81%, test acc 91.74%; reaches SGD-M loss in 4313/29469 steps (6.83x), Adam loss in 4355 steps (6.77x)",
+          "CIFAR-10 (ViT-B/16): EAGLE train loss 0.0396, test acc 96.84%; reaches SGD-M loss in 1607/5473 steps (3.41x), Adam loss in 829 steps (6.60x)",
+          "EAGLE update rule usage decreases monotonically during training (32%→13% SST-2; 15%→8% CIFAR-10)",
+          "Wall-clock per epoch: EAGLE (Python) 897s GPT vs Adam PyTorch 110s; 447s ViT vs Adam PyTorch 22s — significantly slower",
+          "Ablation (Appendix A): without learning rate η, EAGLE diverges catastrophically on SST-2",
+          "Ablation (Appendix D): Adam-based fallback outperforms SGD-M-based fallback"
+        ],
+        "assumptions_and_limitations": [
+          "Single run per configuration; no error bars or seed variation",
+          "Only two tasks (SST-2, CIFAR-10), both fine-tuning from pretrained models",
+          "No comparison with AdamW, learning rate schedulers, or other recent optimizers",
+          "Wall-clock time substantially worse than baselines",
+          "No formal convergence proof",
+          "Hyperparameters (threshold, α, τ_min, τ_max) introduced without principled tuning analysis",
+          "Theoretical justification limited to 1D quadratic; element-wise application to high-dim networks not analyzed"
+        ],
+        "figures_tables": [
+          "Fig 1: Training loss vs steps showing EAGLE converging faster on both tasks",
+          "Fig 2: 1D quadratic illustration of EAGLE update reaching minimum in one step",
+          "Fig 3: Two failure-mode loss landscapes with vanishing gradient differences",
+          "Fig 4: Loss landscapes for sign-based switching analysis",
+          "Fig 5/6: Train/test loss/accuracy curves on SST-2 and CIFAR-10",
+          "Tables 2,4: Final train/test loss and accuracy comparisons",
+          "Tables 3,5: EAGLE update usage statistics",
+          "Table 6: Wall-clock per epoch comparison (EAGLE slower)",
+          "Table 7 (Appendix B): Hyperparameter settings"
+        ],
+        "equations_algorithms": [
+          "Eq.1: EAGLE update θ_{n+1} = θ_n - η · (Δθ/Δg) · g_n",
+          "Eq.2: Condition 1 — switch to Adam if |Δ(∂L/∂θ)| < threshold",
+          "Eq.3: Adaptive threshold τ_n = clip(α · σ_g/(μ_g+ε), τ_min, τ_max)",
+          "Eq.6: Condition 2 — switch to Adam if (∇L_{n-1}·∇L_n ≥ 0) ∧ (L_n·Δ∇L ≥ 0)",
+          "Eq.7: Combined OR rule for switching"
+        ]
+      },
+      "usage": {
+        "input_tokens": 354,
+        "output_tokens": 2576,
+        "cache_creation_input_tokens": 53380,
+        "cache_read_input_tokens": 0
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_1": {
+      "parsed": {
+        "field_and_subfield": "Deep learning — optimization algorithms for neural network training",
+        "problem_addressed": "First-order optimizers (SGD, Adam) ignore curvature information and require many iterations; second-order methods are computationally prohibitive for large models. The paper seeks a practical curvature-aware optimizer.",
+        "research_question": "Can a lightweight secant-style approximation of the inverse Hessian, combined with an adaptive safety fallback to Adam, accelerate convergence over standard first-order optimizers while remaining practical at scale?",
+        "one_paragraph_summary": "EAGLE proposes a per-parameter update rule that uses the ratio of parameter differences to gradient differences between consecutive steps as a finite-difference (secant) approximation to the inverse-Hessian-gradient product, motivated by Newton's method on a 1D quadratic. Because this rule can diverge when gradient differences vanish or when the loss is locally concave, EAGLE incorporates an adaptive switching mechanism that falls back to Adam when (1) the absolute gradient difference is below an adaptive threshold computed from the coefficient of variation of recent gradient norms, or (2) sign-pattern conditions indicate locally upward-curving regions. Experiments fine-tuning GPT-2 Small on SST-2 and ViT-B/16 on CIFAR-10 show EAGLE reaches the baselines' final training loss 3.4–6.8× faster in steps and yields better final train and test accuracy than SGD-Momentum and Adam, though pure-Python wall-clock time is substantially worse.",
+        "problem_statement": "Design a scalable optimizer that approximates curvature information using only first-order quantities already computed during training, while maintaining stability in the regions where the curvature approximation breaks down.",
+        "main_contributions": [
+          "A secant-based EAGLE update rule that approximates Newton's step from consecutive parameter and gradient pairs without computing or storing the Hessian",
+          "An adaptive switching mechanism with an adaptive gradient-difference threshold (based on coefficient of variation of recent gradient norms) and a sign-based test for locally non-convex regions, falling back to Adam",
+          "Empirical demonstration on GPT-2/SST-2 and ViT-B/16/CIFAR-10 showing step-wise convergence speedups of 3.4–6.8× and improved final accuracy vs SGD-M and Adam"
+        ],
+        "claim_evidence_map": [
+          {
+            "claim": "EAGLE converges in fewer steps than SGD-M and Adam",
+            "evidence_in_paper": "Section 4.1/4.2 and Tables 2,4: EAGLE reaches SGD-M final loss in 4313/29469 (SST-2) and 1607/5473 (CIFAR-10) steps; speedups 3.41–6.83×; Fig 1 loss curves"
+          },
+          {
+            "claim": "EAGLE achieves higher final accuracy than baselines",
+            "evidence_in_paper": "Tables 2,4: test acc 91.74% vs 89.45%/80.62% on SST-2; 96.84% vs 95.67%/94.22% on CIFAR-10"
+          },
+          {
+            "claim": "The EAGLE rule approximates Newton's method",
+            "evidence_in_paper": "Section 2.1 and Fig 2: one-step exact minimization on quadratic L=(θ−2)^2+2; informal derivation as a secant approximation of H^{-1}g"
+          },
+          {
+            "claim": "The adaptive switching mechanism maintains stability",
+            "evidence_in_paper": "Section 2.2 motivation (Fig 3,4) plus monotonically decreasing EAGLE usage ratio across training (Tables 3,5; Fig 9); ablation in Appendix A shows divergence without learning rate"
+          },
+          {
+            "claim": "Adam is the better fallback than SGD-M",
+            "evidence_in_paper": "Appendix D, Figs 10–11: EAGLE-A consistently outperforms EAGLE-S on both tasks"
+          },
+          {
+            "claim": "EAGLE is practical/scalable",
+            "evidence_in_paper": "Partially supported: per-step costs are first-order, but Table 6 shows pure-Python wall-clock per epoch is 1.29–5.59× slower than baselines; PyTorch implementation not provided"
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 2944,
+        "output_tokens": 1491,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 53380
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_2": {
+      "parsed": {
+        "sections": [
+          {
+            "name": "Abstract",
+            "summary": "Introduces EAGLE as a curvature-aware optimizer combining a secant-like update with Adam fallback, claiming 3.4-6.8x step-wise speedups on SST-2 (GPT-2) and CIFAR-10 (ViT-B/16).",
+            "key_claims": [
+              "EAGLE accelerates convergence by 6.83x/6.77x vs SGD-M/Adam on SST-2 and 3.41x/6.60x on CIFAR-10"
+            ],
+            "supporting_evidence": [
+              "Figure 1 training loss curves; numbers reported in tables 2 and 4"
+            ],
+            "issues": [
+              "Speedup is measured in steps, not wall-clock time; abstract does not disclose that per-step cost is much higher",
+              "Single-run results without statistical variance not acknowledged"
+            ],
+            "missing_information": [
+              "No mention of computational overhead",
+              "No mention of fallback to Adam in the headline characterization"
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim of 'novel parameter update rule' — the secant approximation is a classical idea (e.g., Barzilai-Borwein), not contextualized"
+            ]
+          },
+          {
+            "name": "Introduction",
+            "summary": "Motivates EAGLE by gap between second-order theoretical convergence and first-order practical scalability.",
+            "key_claims": [
+              "Curvature-aware optimization is desirable but impractical at scale",
+              "EAGLE bridges first-order practicality with second-order convergence speed"
+            ],
+            "supporting_evidence": [
+              "Citations to Newton's method, L-BFGS, Adam"
+            ],
+            "issues": [
+              "Related work coverage is shallow; omits Barzilai-Borwein method, K-FAC, Shampoo, Sophia, AdaHessian, which directly relate to curvature approximation",
+              "Citations [7,8] (Krizhevsky AlexNet, Sutskever seq2seq) are inappropriate as evidence that quasi-Newton extensions to CNNs/RNNs are 'underexplored'"
+            ],
+            "missing_information": [
+              "No positioning vs. closely related curvature-approximating methods"
+            ],
+            "ambiguous_or_unsupported": [
+              "Contribution 1 ('clarifying the gap') is a discussion, not a technical contribution"
+            ]
+          },
+          {
+            "name": "Method",
+            "summary": "Defines EAGLE update as element-wise secant step plus Adam fallback triggered by two conditions (small gradient difference; sign pattern indicating non-convexity).",
+            "key_claims": [
+              "Eq. 1 approximates Newton's method via secant estimate",
+              "Adaptive threshold based on CV of gradient norms governs switching",
+              "Sign-based condition 2 detects locally non-convex regions"
+            ],
+            "supporting_evidence": [
+              "1D quadratic example reaches minimum in one step (Fig. 2)",
+              "Case analysis in Table 1"
+            ],
+            "issues": [
+              "The update is applied element-wise but justified via 1D scalar analysis; multi-dimensional curvature interactions ignored",
+              "Eq. 1 with η omitted recovers exact Newton only for 1D quadratics; in stochastic mini-batch settings, g_n and g_{n-1} come from different batches, invalidating the secant interpretation — not discussed",
+              "Threshold mechanism uses gradient norm scalar to gate per-coordinate decisions — unclear how this maps to elementwise updates",
+              "Condition 2 uses L_n (scalar loss) multiplied by Δ∇L (vector); semantics ambiguous and dimensionally inconsistent",
+              "Hyperparameters α=5e-3, τ_min=1e-5, τ_max=1e-2 introduced without justification or sensitivity analysis"
+            ],
+            "missing_information": [
+              "No pseudocode/algorithm box",
+              "No discussion of how Adam state (m, v) is maintained during EAGLE steps",
+              "No analysis of stochastic gradient noise impact on the finite-difference curvature estimate",
+              "No comparison or relation to Barzilai-Borwein, which uses the same secant ratio"
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that EAGLE is a Newton approximation: only holds in 1D deterministic quadratic; informal 'directional estimate' assertion not formalized",
+              "Statement that loss is 'locally well-approximated by a downward-opening quadratic' in NN training is unsupported"
+            ]
+          },
+          {
+            "name": "Theory",
+            "summary": "Informal case analysis over gradient sign transitions; no formal convergence statements.",
+            "key_claims": [
+              "EAGLE converges in one step on quadratics for monotonic gradient transitions",
+              "Sign-changing second derivative causes failure, motivating condition 2"
+            ],
+            "supporting_evidence": [
+              "Numerical examples on (θ-2)^2+2",
+              "Table 1"
+            ],
+            "issues": [
+              "No formal convergence theorem; analysis is illustrative",
+              "Authors explicitly omit η in the analysis but η is essential in practice (Appendix A shows divergence without it), creating inconsistency between theoretical justification and practical algorithm"
+            ],
+            "missing_information": [
+              "No discussion of stochastic setting, non-quadratic loss, or high-dimensional behavior"
+            ],
+            "ambiguous_or_unsupported": [
+              "Generalization from 1D quadratic to neural network training is asserted without justification"
+            ]
+          },
+          {
+            "name": "Related Work",
+            "summary": "Single paragraph describing Adam.",
+            "key_claims": [],
+            "supporting_evidence": [],
+            "issues": [
+              "Extremely sparse; omits curvature-aware optimizers (K-FAC, Shampoo, AdaHessian, Sophia), Barzilai-Borwein, line-search methods, and other adaptive methods (AdamW, LAMB, Lion)"
+            ],
+            "missing_information": [
+              "Comparison with prior curvature-approximation methods that the paper claims to improve upon"
+            ],
+            "ambiguous_or_unsupported": [
+              "Positioning of novelty cannot be assessed without proper related work"
+            ]
+          },
+          {
+            "name": "Experiments",
+            "summary": "Fine-tunes GPT-2 Small on SST-2 and ViT-B/16 on CIFAR-10, comparing against SGD-M and Adam on convergence steps, final loss/accuracy, EAGLE usage, and wall-clock time.",
+            "key_claims": [
+              "EAGLE reaches baseline final loss values in far fewer steps",
+              "Better final train/test accuracy than baselines"
+            ],
+            "supporting_evidence": [
+              "Tables 2-5; Figures 5-6"
+            ],
+            "issues": [
+              "Only two tasks, both fine-tuning — does not test from-scratch training where optimizer behavior differs most",
+              "No comparison with AdamW (standard for Transformers/ViT), LAMB, Sophia, AdaHessian, or LR-scheduled baselines",
+              "Single seed; no error bars or variance reporting",
+              "Hyperparameter tuning protocol not described; baselines may not be well tuned (lr=5e-5 for SGD-M on GPT-2 is unusual)",
+              "Identical learning rates for Adam and EAGLE may disadvantage Adam",
+              "'Final loss' speedup metric is sensitive to baseline being undertrained or having higher noise floor",
+              "Training loss curves (Fig 5) show large spikes for Adam/SGD-M, suggesting LR schedule issues in baselines"
+            ],
+            "missing_information": [
+              "Validation/dev set used for hyperparameter selection",
+              "Number of seeds; variance",
+              "Schedule details (warmup, decay) for baselines",
+              "Memory overhead of EAGLE (stores previous parameters and gradients plus Adam state)"
+            ],
+            "ambiguous_or_unsupported": [
+              "Generalization claims based on only fine-tuning on two small tasks"
+            ]
+          },
+          {
+            "name": "Results",
+            "summary": "Reports speedups and final performance gains; EAGLE usage decreases over training.",
+            "key_claims": [
+              "EAGLE outperforms baselines in both speed and final accuracy"
+            ],
+            "supporting_evidence": [
+              "Tables 2, 4; Figures 5, 6, 9"
+            ],
+            "issues": [
+              "EAGLE usage ratio is only 9-20% on average — much of the credit may go to Adam rather than the EAGLE rule; this is acknowledged only obliquely",
+              "Large train/test accuracy gap on SST-2 (99.81% train vs 91.74% test) suggests overfitting; not discussed",
+              "No statistical tests"
+            ],
+            "missing_information": [
+              "Ablation isolating contribution of the EAGLE rule vs the adaptive threshold vs just Adam with adaptive switching"
+            ],
+            "ambiguous_or_unsupported": [
+              "Attribution of gains to the EAGLE update rule given low usage ratio"
+            ]
+          },
+          {
+            "name": "Limitations",
+            "summary": "Acknowledges Adam-fallback choice and wall-clock overhead.",
+            "key_claims": [
+              "Wall-clock time is currently 1.29-5.59x worse"
+            ],
+            "supporting_evidence": [
+              "Table 6"
+            ],
+            "issues": [
+              "Does not acknowledge single-seed, limited tasks, lack of theory, missing comparisons, or stochastic-gradient validity of secant approximation"
+            ],
+            "missing_information": [
+              "Memory overhead",
+              "Sensitivity to hyperparameters",
+              "Behavior on training from scratch"
+            ],
+            "ambiguous_or_unsupported": []
+          },
+          {
+            "name": "Conclusion",
+            "summary": "Summarizes claims and outlines future work (CUDA implementation, broader applications, theory).",
+            "key_claims": [
+              "EAGLE combines fast exploration with stable convergence"
+            ],
+            "supporting_evidence": [
+              "Refers back to experiments"
+            ],
+            "issues": [
+              "Reiterates speedup claims without the caveat that wall-clock is worse"
+            ],
+            "missing_information": [],
+            "ambiguous_or_unsupported": []
+          },
+          {
+            "name": "Supplementary",
+            "summary": "Appendices show: (A) divergence without η, (B) hyperparameter table, (C) EAGLE usage over time, (D) Adam vs SGD-M fallback comparison.",
+            "key_claims": [
+              "Learning rate η is critical for stability",
+              "Adam fallback outperforms SGD-M fallback"
+            ],
+            "supporting_evidence": [
+              "Figures 7, 8, 10, 11"
+            ],
+            "issues": [
+              "Appendix A's catastrophic divergence without η contradicts the main text's framing that η is omitted for 'theoretical clarity' — the algorithm fundamentally depends on η",
+              "No ablation removing the EAGLE rule entirely (i.e., Adam alone with same threshold mechanism)",
+              "Hyperparameter table reveals threshold differs between tasks (1e-4 vs 5e-4), suggesting tuning was needed"
+            ],
+            "missing_information": [
+              "Sensitivity sweeps over α, τ_min, τ_max",
+              "Memory cost analysis"
+            ],
+            "ambiguous_or_unsupported": [
+              "How threshold was selected per task is not described"
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 3003,
+        "output_tokens": 4078,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 53380
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_3": {
+      "parsed": {
+        "claims": [
+          {
+            "claim": "EAGLE reaches SGD-M's final training loss 6.83× faster (steps) on SST-2 and 3.41× faster on CIFAR-10, and Adam's final loss 6.77× and 6.60× faster, respectively",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Section 4.1, 4.2; Fig 1; Tables 2 and 4 report training losses and step counts (4313/29469, 4355/29469, 1607/5473, 829/5473)",
+            "evidence_strength": "weak",
+            "notes": "Single-run results, no error bars, only two tasks, no learning-rate schedule comparison. Speedup measured in steps, not wall-clock; Section 5 admits wall-clock is worse."
+          },
+          {
+            "claim": "EAGLE achieves better final train/test accuracy than SGD-M and Adam",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Tables 2, 4: e.g., 91.74% vs 89.45/80.62 on SST-2 test; 96.84% vs 95.67/94.22 on CIFAR-10",
+            "evidence_strength": "weak",
+            "notes": "Adam's 80.62% on SST-2 with GPT-2 suggests baseline may be poorly tuned (default hyperparameters used per Table 7). No multi-seed runs or significance tests."
+          },
+          {
+            "claim": "The EAGLE update rule is a principled approximation of Newton's method (inverse-Hessian-gradient product)",
+            "category": "theoretical",
+            "evidence_in_paper": "Section 2.1 informal derivation; one-step exact solution on 1D quadratic L=(θ−2)^2+2",
+            "evidence_strength": "weak",
+            "notes": "The rule applies coordinate-wise secant ratio (Δθ_i/Δg_i)*g_i, which is a diagonal secant approximation, not a full Newton step. No formal convergence proof; only a 1D quadratic example. The 'directional estimate' claim is hand-wavy."
+          },
+          {
+            "claim": "The adaptive switching mechanism prevents instability from vanishing gradient differences and locally concave regions",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Section 2.2, conditions (2),(6),(7); Appendix A shows divergence without learning rate; Fig 9 shows decreasing EAGLE usage over time",
+            "evidence_strength": "weak",
+            "notes": "Sign-based condition 2 derived from 1D illustration may not generalize to high-dim parameter-wise updates. Threshold hyperparameters (α, τ_min, τ_max) chosen without ablation. No isolated ablation showing each condition's contribution."
+          },
+          {
+            "claim": "Adam is a better fallback than SGD-M for EAGLE",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Appendix D, Figs 10-11",
+            "evidence_strength": "weak",
+            "notes": "Single comparison per task; no quantitative table."
+          },
+          {
+            "claim": "EAGLE merges practicality of first-order methods with second-order convergence speed",
+            "category": "practical_impact",
+            "evidence_in_paper": "Introduction and conclusion; Table 6 acknowledges wall-clock overhead",
+            "evidence_strength": "weak",
+            "notes": "Overstated: pure-Python implementation is 1.29-5.59× slower per epoch; no GPU/PyTorch implementation; per-step speedup negated by per-step overhead (acknowledged in Section 5)."
+          },
+          {
+            "claim": "Results generalize across NLP and vision domains",
+            "category": "generalization",
+            "evidence_in_paper": "Two fine-tuning experiments: GPT-2/SST-2, ViT-B/16/CIFAR-10",
+            "evidence_strength": "weak",
+            "notes": "Only fine-tuning of pretrained models on small classification tasks; no from-scratch training, no large models, no other GLUE tasks, ImageNet, or language modeling. Single seed."
+          },
+          {
+            "claim": "Novel optimization algorithm leveraging curvature information",
+            "category": "novelty",
+            "evidence_in_paper": "Section 2.1 update rule",
+            "evidence_strength": "weak",
+            "notes": "Related work section is extremely thin (only discusses Adam). The secant/Barzilai-Borwein method (1988) uses essentially the same Δθ/Δg ratio for step size; not cited or contrasted. Quasi-Newton (BFGS) literature relevance not discussed."
+          }
+        ],
+        "unsupported_claims": [
+          "EAGLE 'implicitly captures curvature information' in high-dimensional non-quadratic loss landscapes (only 1D quadratic shown)",
+          "The switching framework is 'agnostic to the choice of backup optimizer' (only Adam and SGD-M tested)",
+          "Speedup of 3.4-6.8× represents genuine acceleration (measured only in steps; wall-clock is worse)"
+        ],
+        "overstated_claims": [
+          "'Successfully balancing optimization speed and practical usability' — contradicted by Table 6 wall-clock results",
+          "'Theoretically justified as an approximation of Newton's method' — only an informal 1D argument",
+          "'Superior characteristics in both convergence speed and final performance compared to conventional methods' — based on 2 single-seed runs with potentially under-tuned baselines"
+        ],
+        "claims_requiring_external_verification": [
+          "Relationship to Barzilai-Borwein method and quasi-Newton secant approximations",
+          "Whether reported Adam baseline (80.62% SST-2 test acc with GPT-2) is reasonable for standard fine-tuning protocols",
+          "Whether default hyperparameters used for baselines reflect typical best practice"
+        ]
+      },
+      "usage": {
+        "input_tokens": 1759,
+        "output_tokens": 2049,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 53380
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_4": {
+      "parsed": {
+        "similar_prior_work": [
+          {
+            "title": "Two-Point Step Size Gradient Methods",
+            "venue_or_source": "IMA Journal of Numerical Analysis (Barzilai & Borwein)",
+            "year": "1988",
+            "similarity_summary": "Introduces the step size α = (Δθ·Δθ)/(Δθ·Δg) (BB1) and α = (Δθ·Δg)/(Δg·Δg) (BB2), derived as a secant approximation to the inverse Hessian. EAGLE's update rule θ_{n+1} = θ_n − η · (Δθ/Δg) · g_n is the element-wise/coordinate version of the BB1 step size.",
+            "key_difference": "EAGLE applies the ratio elementwise (per parameter) rather than as a scalar; otherwise the core formula is identical. Paper does not cite or discuss Barzilai-Borwein at all."
+          },
+          {
+            "title": "Barzilai-Borwein Step Size for Stochastic Gradient Descent (SGD-BB)",
+            "venue_or_source": "NeurIPS (Tan, Ma, Dai, Qian)",
+            "year": "2016",
+            "similarity_summary": "Adapts BB step size to stochastic gradient descent, the closest deep-learning predecessor of EAGLE's curvature-from-gradient-differences idea.",
+            "key_difference": "SGD-BB uses a scalar BB step over an epoch; EAGLE uses per-step elementwise ratios plus a switching mechanism with Adam. Not cited."
+          },
+          {
+            "title": "Barzilai–Borwein-based adaptive learning rate for deep learning",
+            "venue_or_source": "Pattern Recognition Letters (Liang et al.)",
+            "year": "2019",
+            "similarity_summary": "Directly applies BB step size in deep learning training, with similar motivation (secant/quasi-Newton estimate of curvature without Hessian).",
+            "key_difference": "EAGLE adds Adam fallback and adaptive thresholding; the core BB idea is identical and uncited."
+          },
+          {
+            "title": "Incorporating the Barzilai-Borwein Adaptive Step Size into Subgradient Methods for Deep Network Training",
+            "venue_or_source": "arXiv:2205.13711",
+            "year": "2022",
+            "similarity_summary": "Another recent deep-learning instantiation of BB step sizes.",
+            "key_difference": "Same underlying secant step-size idea; EAGLE's contribution beyond this is the Adam-switching heuristic."
+          },
+          {
+            "title": "Deep learning via Hessian-free optimization",
+            "venue_or_source": "ICML (Martens)",
+            "year": "2010",
+            "similarity_summary": "Cited as [3]. Also pursues curvature-aware training without forming the Hessian.",
+            "key_difference": "Uses conjugate-gradient on Hessian-vector products; orthogonal mechanism to BB-style secant ratio."
+          },
+          {
+            "title": "Practical Quasi-Newton Methods for Training Deep Neural Networks",
+            "venue_or_source": "NeurIPS (Goldfarb, Ren, Bahamou)",
+            "year": "2020",
+            "similarity_summary": "Cited as [6]. Same family of methods (secant/quasi-Newton) addressing the same gap.",
+            "key_difference": "Block-diagonal K-FAC-style structure; EAGLE is a degenerate diagonal version equivalent to BB."
+          }
+        ],
+        "potential_missing_citations": [
+          "Barzilai & Borwein (1988), Two-Point Step Size Gradient Methods, IMA J. Numer. Anal.",
+          "Tan, Ma, Dai, Qian (NeurIPS 2016), Barzilai-Borwein Step Size for Stochastic Gradient Descent",
+          "Liang et al. (2019), Barzilai–Borwein-based adaptive learning rate for deep learning, Pattern Recognition Letters",
+          "Castera et al. / subsequent BB-SGD variants and stochastic quasi-Newton works (e.g., oBFGS, SQN by Byrd et al. 2016)",
+          "Schraudolph et al. (2007), A Stochastic Quasi-Newton Method for Online Convex Optimization",
+          "Liu et al., AdaHessian / Sophia / Shampoo — modern curvature-aware deep-learning optimizers (e.g., Anil et al. cited but Shampoo, AdaHessian missing)",
+          "Hypergradient-descent / learning-rate adaptation methods (Baydin et al. 2018) for context on adaptive step sizes"
+        ],
+        "novelty_type": "technical",
+        "novelty_assessment": "derivative",
+        "novelty_risk_level": "high",
+        "incrementality_judgment": "The core EAGLE update rule, θ_{n+1} = θ_n − η · (Δθ/Δg) · g_n, is mathematically identical (up to coordinate-wise vs scalar application) to the Barzilai-Borwein (1988) step size, which has a 35-year history and an established stochastic/deep-learning literature (SGD-BB 2016 at NeurIPS, multiple 2019–2022 follow-ups). The paper's framing as a 'novel approximation of Newton's method' is exactly the standard BB derivation. The only arguably new components are (i) the gradient-difference-magnitude threshold to fall back to Adam, and (ii) the sign-pattern rule on (∇L_{n−1}, ∇L_n, ΔL·Δ∇L) for non-convex regions. Both are heuristic switching rules without theoretical analysis or ablation. The Related Work section discusses only Adam and ignores the entire BB/quasi-Newton-in-deep-learning literature, which is the most direct prior art.",
+        "rationale": "The update equation is BB1 applied elementwise; this is not acknowledged or cited. A reasonable peer reviewer would consider this a major novelty failure: the central technical contribution is a rediscovery of a well-known method, and even the analytical example (one-step convergence on a 1D quadratic) is the textbook BB demonstration. The genuinely new pieces — the Adam-switching heuristics and adaptive CV-based threshold — are incremental engineering additions whose value is not isolated by ablation. Empirical results on two fine-tuning tasks with single seeds and known-weak baselines (Adam at 80.6% on SST-2/GPT-2 is far below typical) do not compensate for the missing comparison to BB-family optimizers.",
+        "source_of_judgment": "web_search"
+      },
+      "usage": {
+        "input_tokens": 2436,
+        "output_tokens": 2821,
+        "cache_creation_input_tokens": 63241,
+        "cache_read_input_tokens": 122336
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_5": {
+      "parsed": {
+        "perspectives": {
+          "domain_expert": {
+            "add_to_field": "Adds a simple secant-style per-parameter curvature approximation combined with an adaptive Adam fallback; conceptually similar to Barzilai-Borwein step sizes applied per-parameter in DL.",
+            "beneficiaries": "Researchers exploring lightweight curvature-aware optimizers and fine-tuning practitioners.",
+            "importance": "The general problem (practical curvature-aware optimization) is important, but the specific contribution is incremental and overlaps with well-known BB methods not cited.",
+            "improvement_meaningful": "Step-wise speedups look meaningful, but the lack of comparison to BB, AdaHessian, Shampoo, K-FAC, Sophia weakens the claim.",
+            "future_influence": "Limited unless connected to existing curvature literature and validated on larger/pretraining-scale tasks."
+          },
+          "methodology_expert": {
+            "add_to_field": "A heuristic switching rule combining adaptive thresholding on gradient differences and sign-based curvature checks.",
+            "beneficiaries": "Optimizer designers interested in hybrid/switching schemes.",
+            "importance": "Addresses real numerical stability issues of secant methods, but lacks theoretical convergence analysis.",
+            "improvement_meaningful": "Mechanism is sensible but ad hoc; multiple hyperparameters (α, τ_min, τ_max, threshold) introduced without sensitivity analysis.",
+            "future_influence": "Modest; the switching idea could inspire follow-ups, but the design choices need formal justification."
+          },
+          "empirical_evaluation_expert": {
+            "add_to_field": "Two fine-tuning experiments showing step-wise convergence gains.",
+            "beneficiaries": "Practitioners fine-tuning GPT-2-scale or ViT-scale models on small classification datasets.",
+            "importance": "Evaluation is too narrow: two tasks, single seed, no error bars, no comparison to AdamW/LR schedules tuned, no curvature-aware baselines.",
+            "improvement_meaningful": "Reported gains are large but potentially confounded by hyperparameter choices; wall-clock time is worse, undermining the speedup claim.",
+            "future_influence": "Low without broader and more rigorous evaluation."
+          },
+          "skeptical_reviewer": {
+            "add_to_field": "Essentially a per-parameter Barzilai-Borwein-like step with Adam fallback, rebranded; unclear novelty.",
+            "beneficiaries": "Few until claims are validated more rigorously.",
+            "importance": "Problem is important; this paper's contribution to solving it is questionable.",
+            "improvement_meaningful": "Step-based speedups are misleading since wall-clock is slower; final accuracy gains on two small fine-tuning tasks could reflect tuning artifacts.",
+            "future_influence": "Unlikely to influence the field as currently presented."
+          },
+          "practical_impact_expert": {
+            "add_to_field": "A drop-in optimizer prototype, code released.",
+            "beneficiaries": "Almost none in current form because wall-clock time is 1.3–5.6× worse and no GPU/PyTorch implementation exists.",
+            "importance": "Practical optimization is critical, but this work does not yet deliver practical gains.",
+            "improvement_meaningful": "Not meaningful in deployment terms until efficient implementation exists.",
+            "future_influence": "Could matter if an efficient implementation shows wall-clock wins on pretraining tasks; otherwise limited."
+          }
+        },
+        "consensus": [
+          "Addresses an important and well-motivated problem",
+          "Empirical evaluation is too limited (two tasks, single run, no curvature-aware baselines)",
+          "Wall-clock overhead undermines the practical claims",
+          "Missing connection to closely related work (Barzilai-Borwein, AdaHessian, Sophia, K-FAC)",
+          "Switching mechanism is heuristic and lacks theoretical grounding or sensitivity analysis"
+        ],
+        "disagreement": [
+          "Whether the step-wise convergence gains are meaningful given the lack of statistical rigor",
+          "Whether the secant-based update constitutes sufficient novelty over BB-type methods"
+        ],
+        "significance_score_1_to_10": 3,
+        "impact_assessment": "low"
+      },
+      "usage": {
+        "input_tokens": 1947,
+        "output_tokens": 1518,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 53380
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_6": {
+      "parsed": {
+        "internal_correctness": {
+          "notes": [
+            "EAGLE update rule (Eq. 1) is an element-wise secant approximation (Δθ_i/Δg_i)·g_i, mathematically equivalent to a diagonal/per-coordinate Barzilai-Borwein-like step, not a true Newton approximation.",
+            "Stochastic mini-batch setting invalidates the secant interpretation since g_n and g_{n-1} use different batches; this is never addressed.",
+            "Condition 2 in Eq. 6 multiplies scalar loss L_n by vector Δ∇L — dimensionally inconsistent or at least ambiguous as to per-coordinate vs scalar application.",
+            "Threshold mechanism (Eq. 3) uses scalar gradient-norm statistics to gate per-coordinate updates; the mapping from scalar threshold to elementwise decision is not specified.",
+            "Appendix A shows that without η the method diverges catastrophically, contradicting the Section 2.1 framing that η is only omitted 'for theoretical clarity' — the algorithm depends critically on η, so the Newton-step justification is undermined.",
+            "Claim that 'one EAGLE update suffices' on quadratics holds only in 1D deterministic case; generalization to NN losses is asserted but not analyzed."
+          ],
+          "ambiguous_or_invalid_reasoning": [
+            "Newton-approximation justification is informal and only demonstrated in 1D.",
+            "Local quadratic / downward-convex assumption for NN loss landscapes is asserted without support.",
+            "Case analysis (Table 1) is performed in 1D and extrapolated to high-dimensional parameter spaces without justification.",
+            "No discussion of how Adam state (m_t, v_t) is maintained during EAGLE steps (warm-start vs cold-start at switching boundary), which affects fallback behavior."
+          ],
+          "reproducibility_concerns": [
+            "Single seed; no variance reported.",
+            "Threshold differs across tasks (1e-4 vs 5e-4) with no selection protocol described.",
+            "Baseline hyperparameter tuning protocol not documented; SGD-M lr=5e-5 on GPT-2 is atypical and Adam uses same lr as EAGLE.",
+            "No pseudocode/algorithm box for the full EAGLE optimizer including Adam state handling.",
+            "No description of LR schedule, warmup, weight-decay treatment for biases/LayerNorm in baselines.",
+            "Code is released, which mitigates some concerns, but experimental protocol description is incomplete."
+          ]
+        },
+        "claim_support": {
+          "supported": [
+            "On the two reported single-seed experiments, EAGLE reaches the baselines' reported final losses in fewer steps and achieves higher final train/test accuracy than the configured baselines.",
+            "Wall-clock time per epoch is worse for EAGLE (Table 6).",
+            "Adam fallback outperforms SGD-M fallback in the reported runs (Appendix D)."
+          ],
+          "partially_supported": [
+            "EAGLE adaptive switching mechanism functions as intended — usage ratio decreases over time (Fig 9), but no ablation isolates the contribution of the EAGLE rule from the gating + Adam fallback.",
+            "Generalization across NLP and vision — only fine-tuning two small classification tasks; not from-scratch training, not larger benchmarks."
+          ],
+          "unsupported_or_overstated": [
+            "EAGLE is a principled Newton-method approximation — justified only via a 1D deterministic quadratic example; stochastic and high-dimensional cases unaddressed.",
+            "EAGLE 'combines practicality of first-order methods with fast convergence of second-order methods' — contradicted by Table 6 (1.3–5.6× wall-clock overhead).",
+            "Speedup numbers (3.4–6.8×) represent genuine acceleration — they are step-based; wall-clock and FLOP-comparable speedup is not demonstrated.",
+            "Novel curvature-aware optimizer — Barzilai-Borwein and quasi-Newton secant methods use the same Δθ/Δg ratio; no comparison or even citation.",
+            "Switching framework is 'agnostic to choice of backup optimizer' — only two backups tested."
+          ]
+        },
+        "experimental_rigor": {
+          "baseline_quality": "Weak. Only SGD-M and Adam, no AdamW (standard for Transformers/ViT fine-tuning), no curvature-aware baselines (K-FAC, Shampoo, AdaHessian, Sophia, L-BFGS), no Barzilai-Borwein, no LR-scheduled baselines. Adam's 80.62% SST-2 test accuracy on GPT-2 suggests poor tuning; SGD-M lr=5e-5 on GPT-2 is atypical.",
+          "missing_baselines": [
+            "AdamW",
+            "Adam + LR warmup/decay schedule (standard fine-tuning recipe)",
+            "Barzilai-Borwein step size",
+            "Curvature-aware methods (Sophia, AdaHessian, Shampoo, K-FAC)",
+            "L-BFGS",
+            "Adam-only baseline using the same adaptive thresholding (to isolate EAGLE update rule contribution)"
+          ],
+          "dataset_quality": "Limited: only two small fine-tuning benchmarks (SST-2 sentiment classification, CIFAR-10 image classification). No language modeling, no larger image benchmarks (ImageNet), no from-scratch training, no other GLUE tasks.",
+          "metric_appropriateness": "Step-to-reach-final-loss is a problematic metric — sensitive to baselines being undertrained, ignores per-step compute, and rewards optimizers that overfit faster. Wall-clock time is reported but underemphasized. Train/test accuracy reasonable, but only point estimates.",
+          "missing_ablations": [
+            "Ablation removing the EAGLE update rule (Adam-only with same adaptive thresholding)",
+            "Ablation removing condition 1 vs condition 2",
+            "Sensitivity to α, τ_min, τ_max, initial τ_0",
+            "Sensitivity to learning rate η for EAGLE",
+            "Memory overhead measurement",
+            "Effect of mini-batch size on secant approximation quality"
+          ],
+          "statistical_significance": "None reported. Single-seed runs; no error bars, confidence intervals, or significance tests. Claims of 'superior performance' rest on single observations.",
+          "hyperparameter_clarity": "Partial. Table 7 lists key hyperparameters, but threshold values differ across tasks without selection protocol; no LR schedules described; no validation/dev set protocol; no tuning budget disclosed.",
+          "negative_results_discussed": "partial",
+          "possible_confounders": [
+            "Undertuned baselines (especially Adam on GPT-2 with 80.62% test accuracy)",
+            "Same learning rate for Adam and EAGLE may not be optimal for Adam",
+            "Spikes in baseline training curves suggest LR schedule issues",
+            "Adam fallback fires 80–90% of the time, so most gains may come from Adam's behavior rather than EAGLE rule",
+            "Different batch sizes between text (16) and image (64) tasks make cross-task comparisons noisy",
+            "Single seed makes any single-run noise indistinguishable from genuine effect"
+          ],
+          "reproducibility_score_1_to_10": 5
+        }
+      },
+      "usage": {
+        "input_tokens": 6654,
+        "output_tokens": 2595,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 53380
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_7": {
+      "parsed": {
+        "strengths": [
+          "Addresses an important and well-motivated problem: practical curvature-aware optimization for deep learning",
+          "Clear exposition of the update rule with intuitive 1D illustrations",
+          "Honest acknowledgment of wall-clock overhead limitation",
+          "Code released, mitigating some reproducibility concerns",
+          "Adaptive switching mechanism is a sensible safeguard against known failure modes of secant methods"
+        ],
+        "weaknesses": [
+          "The proposed update rule is essentially a per-coordinate Barzilai-Borwein/secant step, but no related work on BB, quasi-Newton secant methods, or modern curvature-aware optimizers (Sophia, AdaHessian, Shampoo, K-FAC) is cited or compared",
+          "Theoretical justification is only an informal 1D deterministic quadratic argument; does not address stochastic mini-batch setting where g_n and g_{n-1} use different batches, invalidating the secant interpretation",
+          "Eq. 6 (condition 2) is dimensionally ambiguous: multiplying scalar loss L_n by vector Δ∇L is not properly defined for per-coordinate switching",
+          "Experimental evaluation is too narrow: only two small fine-tuning tasks, single seed, no error bars, no statistical tests",
+          "Baselines appear undertuned (Adam achieves only 80.62% test accuracy on SST-2/GPT-2, well below typical fine-tuning results; no AdamW; no LR schedule; same lr used for Adam and EAGLE)",
+          "Speedup claims (3.4–6.8×) are step-based; wall-clock time is 1.3–5.6× worse per epoch, directly contradicting the 'practicality' framing",
+          "No ablation isolating EAGLE update rule contribution from the Adam fallback — given fallback fires 80–90% of the time, gains may largely stem from Adam",
+          "No sensitivity analysis for the multiple introduced hyperparameters (α, τ_min, τ_max, τ_0, threshold)",
+          "Related work section is extremely thin (only Adam is discussed)",
+          "Generalization of 1D sign-based case analysis to high-dimensional parameter spaces is asserted without justification"
+        ],
+        "fatal_flaws": [],
+        "minor_issues": [
+          "Typo: 'Intrduction' (Section 1 heading)",
+          "Figure 1 markers for 'reach final loss' are visually confusing",
+          "GPT-2 (Radford et al.) not cited",
+          "No pseudocode/algorithm box for the full method including Adam state handling at switching boundaries",
+          "Threshold values differ across tasks without selection protocol described"
+        ],
+        "questions_for_authors": [
+          "How does EAGLE relate to the Barzilai-Borwein method, which uses essentially the same Δθ/Δg ratio?",
+          "In stochastic mini-batch training, g_n and g_{n-1} come from different batches; how does this affect the secant approximation's validity?",
+          "Can you provide an ablation isolating the EAGLE update rule from the adaptive switching + Adam fallback (e.g., Adam-only with the same gating)?",
+          "How is condition 2 (L_n · Δ∇L ≥ 0) applied per-coordinate when L_n is scalar?",
+          "Were baselines tuned (LR, schedule, AdamW vs Adam, weight decay on biases/LN)? Why does Adam on GPT-2/SST-2 achieve only 80.62% test accuracy?",
+          "Can you report multi-seed results with error bars?",
+          "How does EAGLE compare to AdaHessian, Sophia, K-FAC, or L-BFGS on these tasks?",
+          "How sensitive is performance to α, τ_min, τ_max, and the threshold?",
+          "How is Adam's momentum/variance state maintained across EAGLE↔Adam switches?"
+        ],
+        "recommendation": "reject",
+        "recommendation_rationale": "The paper addresses an important problem but has substantial weaknesses: (1) the core update rule overlaps with the well-known Barzilai-Borwein method without citation or comparison; (2) the theoretical justification is limited to a 1D deterministic example and ignores the stochastic mini-batch nature of DL training; (3) empirical evaluation is too narrow (two small fine-tuning tasks, single seed, no error bars), with baselines that appear undertuned and no comparison to relevant curvature-aware optimizers; (4) the headline step-based speedups are undermined by 1.3–5.6× worse wall-clock time, contradicting the paper's central practicality claim; (5) no ablation isolates the EAGLE rule from the Adam fallback, which fires 80–90% of the time. These issues are not minor revisions but require substantial additional work.",
+        "confidence_1_to_5": 4
+      },
+      "usage": {
+        "input_tokens": 7913,
+        "output_tokens": 1669,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 53380
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_8": {
+      "parsed": {
+        "summary_of_paper": "The paper proposes EAGLE, an optimizer that uses a per-parameter secant-style approximation of Newton's step — the ratio of consecutive parameter differences to consecutive gradient differences — to approximate the inverse-Hessian-gradient product. Because this update can diverge when gradient differences vanish or in locally non-convex regions, EAGLE incorporates an adaptive switching mechanism that falls back to Adam based on (1) an adaptive threshold on |Δ∇L| computed from the coefficient of variation of recent gradient norms and (2) sign-based conditions characterizing locally upward-curving loss regions. The authors evaluate EAGLE on two fine-tuning tasks (GPT-2 Small on SST-2 and ViT-B/16 on CIFAR-10), reporting step-wise speedups of 3.4–6.8× to reach baseline final loss and higher final train/test accuracy than SGD-Momentum and Adam, while acknowledging that pure-Python wall-clock time is 1.3–5.6× worse per epoch.",
+        "main_strengths": [
+          "Tackles a well-motivated problem: practical curvature-aware optimization remains an active research area.",
+          "Clear, intuitive exposition of the update rule using a 1D quadratic illustration (Fig. 2) and a careful case analysis (Fig. 4, Table 1) of when the secant step fails.",
+          "The adaptive switching mechanism is a sensible safeguard, and ablations (Appendix A, D) show both the learning-rate scaling and the choice of Adam as fallback matter.",
+          "Honest acknowledgment of the wall-clock overhead in the Limitations section.",
+          "Code is publicly released, supporting reproducibility on the two studied tasks."
+        ],
+        "main_weaknesses": [
+          "Missing critical related work: the proposed update rule is essentially a per-coordinate Barzilai–Borwein (BB) step / secant method. The paper neither cites nor compares to BB, quasi-Newton secant variants, nor modern curvature-aware deep learning optimizers (e.g., AdaHessian, Sophia, Shampoo, K-FAC, Hessian-free). The Related Work section discusses only Adam.",
+          "The theoretical justification is limited to a deterministic 1D quadratic. In stochastic mini-batch training, ∇L(θ_n) and ∇L(θ_{n-1}) are evaluated on different mini-batches, which invalidates the secant interpretation of (Δθ)/(Δg) as a curvature estimate. This central issue is not addressed.",
+          "Condition 2 (Eq. 6): L_n · Δ∇L ≥ 0 is dimensionally ambiguous when applied per-coordinate, since L_n is a scalar and Δ∇L is a vector. The intended semantics need clarification.",
+          "Empirical evaluation is narrow: only two small fine-tuning tasks, a single seed, no error bars or statistical tests. No training-from-scratch experiments and no large-scale tasks.",
+          "Baselines appear undertuned. Adam on GPT-2/SST-2 reaches only 80.62% test accuracy, well below typical published results for this setting. No AdamW, no learning-rate schedule, and Adam shares the same LR as EAGLE without per-optimizer tuning. The Adam test-loss curve (Fig. 5b) appears to diverge, suggesting overfitting/instability that better hyperparameters would mitigate.",
+          "The headline 3.4–6.8× step-based speedups are directly contradicted by 1.3–5.6× worse wall-clock time per epoch (Table 6), undermining the paper's central practicality claim. No PyTorch/CUDA implementation is provided.",
+          "No ablation isolating the contribution of the EAGLE update rule itself. Given that the EAGLE rule fires only ~10–20% of the time (Tables 3, 5), it is plausible that much of the observed improvement is attributable to the gating heuristics combined with Adam rather than to the secant step.",
+          "No sensitivity analysis for the many introduced hyperparameters (α, τ_min, τ_max, τ_0, the initial threshold), and threshold settings differ across tasks (1e-4 vs 5e-4) without a selection protocol.",
+          "Generalization of the 1D sign-based case analysis (Section 2.2.2, Table 1) to high-dimensional parameter spaces is asserted but not justified."
+        ],
+        "detailed_comments": [
+          "The EAGLE update rule is mathematically equivalent (up to sign and per-coordinate vs scalar formulation) to a coordinate-wise Barzilai–Borwein step y/s · g with y = Δ∇L, s = Δθ. The paper should acknowledge this connection and position its contribution accordingly — the novelty appears to lie in the gating/fallback mechanism, not in the secant rule itself.",
+          "The Newton's method justification in Section 2.1 treats H^{-1} as if approximated by a scalar ratio along the previous step direction, but applying this per-coordinate (as the algorithm does) corresponds to assuming a diagonal Hessian. This assumption should be stated and discussed.",
+          "Figure 5(b) shows Adam test loss diverging substantially while train loss decreases; this is a classic sign of overfitting/instability and suggests the Adam baseline needs regularization or LR tuning. The claim that EAGLE achieves better generalization is hard to assess until baselines are properly tuned.",
+          "When the optimizer switches between EAGLE and Adam, how are Adam's first/second moment estimates maintained? Discontinuities here could affect both stability and the fairness of comparison.",
+          "The 'EAGLE usage ratio' decreasing over training is presented as evidence that the mechanism works, but it could equally indicate that EAGLE is mainly used when gradients are large early in training — which is also when SGD/Adam make rapid progress, complicating attribution of the speedup.",
+          "Section 1 heading is misspelled ('Intrduction'). GPT-2 (Radford et al., 2019) is not cited.",
+          "An algorithm box / pseudocode would substantially improve clarity, especially regarding per-coordinate vs aggregate evaluation of the switching conditions and Adam state management."
+        ],
+        "questions_for_authors": [
+          "How does EAGLE relate to the Barzilai–Borwein method, which uses the same Δθ/Δg ratio? Why was this prior work not discussed or compared?",
+          "In stochastic mini-batch training, ∇L(θ_n) and ∇L(θ_{n-1}) use different mini-batches. How does this affect the validity of the secant approximation, and have you analyzed or mitigated this?",
+          "Condition 2 contains L_n · Δ∇L. Is L_n the scalar loss multiplied with a vector? Or did you mean ∇L_n · Δ∇L (per-coordinate)? Please clarify.",
+          "Can you provide an ablation where Adam is used with exactly the same gating mechanism but the EAGLE branch is replaced by a no-op or a standard SGD/Adam step, to isolate the contribution of the EAGLE update rule itself?",
+          "Were baselines tuned (learning rate, schedule, AdamW vs Adam, weight decay scope)? Why does Adam on GPT-2/SST-2 reach only ~80% test accuracy, and why does its test loss diverge in Fig. 5(b)?",
+          "Can you report results over multiple seeds with error bars?",
+          "How does EAGLE compare to AdaHessian, Sophia, K-FAC, Shampoo, or L-BFGS on these tasks?",
+          "How sensitive is performance to α, τ_min, τ_max, τ_0, and the initial threshold? How were the per-task threshold values (1e-4 vs 5e-4) selected?",
+          "How are Adam's momentum and variance estimates maintained across EAGLE↔Adam switches?",
+          "How does EAGLE behave in training-from-scratch settings, where loss landscapes are less benign than during fine-tuning?"
+        ],
+        "suggestions_for_improvement": [
+          "Add a thorough Related Work discussion that includes Barzilai–Borwein, quasi-Newton secant methods, and modern curvature-aware deep learning optimizers (AdaHessian, Sophia, Shampoo, K-FAC, Hessian-free).",
+          "Provide an ablation that isolates the EAGLE update rule from the gating + Adam fallback.",
+          "Tune baselines per-optimizer (LR sweep, AdamW, LR schedule) and report multi-seed results with error bars.",
+          "Implement a GPU-efficient version and compare wall-clock time fairly; without this, step-based speedup claims are misleading.",
+          "Discuss the stochastic mini-batch issue explicitly and consider using EMA-smoothed gradients or same-batch evaluation at θ_{n-1} for the secant.",
+          "Clarify Eq. (6) and provide an algorithm box with explicit per-coordinate semantics and Adam state handling at switching boundaries.",
+          "Add training-from-scratch experiments and at least one larger-scale benchmark (e.g., ImageNet, a GLUE task with BERT pretraining, or a language modeling task) to substantiate scalability claims.",
+          "Conduct a sensitivity analysis for the introduced hyperparameters and document the selection protocol.",
+          "Fix typos ('Intrduction'), cite GPT-2 properly, and improve Figure 1 markers for clarity."
+        ],
+        "overall_recommendation": "Reject",
+        "reviewer_confidence_1_to_5": 4,
+        "score_card": {
+          "soundness_1_to_4": 2,
+          "presentation_1_to_4": 2,
+          "contribution_1_to_4": 2,
+          "overall_1_to_10": 3
+        }
+      },
+      "usage": {
+        "input_tokens": 3533,
+        "output_tokens": 3280,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 53380
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_9": {
+      "parsed": {
+        "hallucinated_comments": [],
+        "misrepresentations": [],
+        "missed_strengths": [],
+        "missed_weaknesses": [],
+        "too_strong_claims": [
+          "The claim that Adam on GPT-2/SST-2 'reaches only 80.62% test accuracy, well below typical published results' is asserted without citation; while plausible, it should be softened or supported."
+        ],
+        "non_actionable_criticisms": [],
+        "tone_issues": [],
+        "consistency_between_summary_weaknesses_and_recommendation": "consistent",
+        "external_novelty_claims_supported": "partial",
+        "corrections_needed": [
+          "Soften the comparison to 'typical published results' for Adam on SST-2, or frame it as a concern about baseline tuning rather than a factual benchmark gap.",
+          "Note that the per-coordinate BB connection is the standard interpretation but acknowledge the paper does present it as a Newton approximation; phrase the BB comment as a missing connection rather than equivalence claim being self-evident."
+        ]
+      },
+      "usage": {
+        "input_tokens": 3734,
+        "output_tokens": 332,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 53380
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_10": {
+      "parsed": {
+        "final_review": {
+          "summary_of_paper": "The paper proposes EAGLE, an optimizer that uses a per-parameter secant-style approximation of Newton's step — the ratio of consecutive parameter differences to consecutive gradient differences — to approximate the inverse-Hessian-gradient product. Because this update can diverge when gradient differences vanish or in locally non-convex regions, EAGLE incorporates an adaptive switching mechanism that falls back to Adam based on (1) an adaptive threshold on |Δ∇L| computed from the coefficient of variation of recent gradient norms and (2) sign-based conditions characterizing locally upward-curving loss regions. The authors evaluate EAGLE on two fine-tuning tasks (GPT-2 Small on SST-2 and ViT-B/16 on CIFAR-10), reporting step-wise speedups of 3.4–6.8× to reach baseline final loss and higher final train/test accuracy than SGD-Momentum and Adam, while acknowledging that pure-Python wall-clock time is 1.3–5.6× worse per epoch.",
+          "main_strengths": [
+            "Tackles a well-motivated problem: practical curvature-aware optimization remains an active research area.",
+            "Clear, intuitive exposition of the update rule using a 1D quadratic illustration (Fig. 2) and a careful case analysis (Fig. 4, Table 1) of when the secant step fails.",
+            "The adaptive switching mechanism is a sensible safeguard, and ablations (Appendix A, D) show both the learning-rate scaling and the choice of Adam as fallback matter.",
+            "Honest acknowledgment of the wall-clock overhead in the Limitations section.",
+            "Code is publicly released, supporting reproducibility on the two studied tasks."
+          ],
+          "main_weaknesses": [
+            "Missing critical related work: the proposed update rule closely resembles per-coordinate Barzilai–Borwein (BB) / secant methods. The paper neither cites nor compares to BB, quasi-Newton secant variants, nor modern curvature-aware deep learning optimizers (e.g., AdaHessian, Sophia, Shampoo, K-FAC, Hessian-free). The Related Work section discusses only Adam.",
+            "The theoretical justification is limited to a deterministic 1D quadratic. In stochastic mini-batch training, ∇L(θ_n) and ∇L(θ_{n-1}) are evaluated on different mini-batches, which weakens the secant interpretation of (Δθ)/(Δg) as a curvature estimate. This central issue is not addressed.",
+            "Condition 2 (Eq. 6): L_n · Δ∇L ≥ 0 is dimensionally ambiguous when applied per-coordinate, since L_n is a scalar and Δ∇L is a vector. The intended semantics need clarification (possibly ∇L_n · Δ∇L was meant).",
+            "Empirical evaluation is narrow: only two small fine-tuning tasks, apparently a single seed, no error bars or statistical tests. No training-from-scratch experiments and no large-scale tasks.",
+            "Baselines may be undertuned. Adam and EAGLE share the same learning rate without per-optimizer tuning, no LR schedule or AdamW is used, and Adam's test-loss curve (Fig. 5b) diverges significantly while train loss decreases, indicating instability that better hyperparameters could mitigate. This undermines the final-performance comparison.",
+            "The headline 3.4–6.8× step-based speedups are directly contradicted by 1.3–5.6× worse wall-clock time per epoch (Table 6), undermining the paper's central practicality claim. No PyTorch/CUDA implementation is provided.",
+            "No ablation isolating the contribution of the EAGLE update rule itself. Given that the EAGLE rule fires only ~10–20% of the time (Tables 3, 5), it is plausible that much of the observed improvement comes from the gating heuristics combined with Adam rather than from the secant step.",
+            "No sensitivity analysis for the introduced hyperparameters (α, τ_min, τ_max, τ_0, initial threshold), and threshold settings differ across tasks (1e-4 vs 5e-4) without a stated selection protocol.",
+            "Generalization of the 1D sign-based case analysis (Section 2.2.2, Table 1) to high-dimensional parameter spaces is asserted but not justified."
+          ],
+          "detailed_comments": [
+            "The EAGLE update rule, applied per coordinate, has a strong structural resemblance to a coordinate-wise Barzilai–Borwein step (y/s · g with y = Δ∇L, s = Δθ). The paper frames it as a Newton approximation, but the connection to the BB/secant literature should be acknowledged and discussed; the novelty appears to lie primarily in the gating/fallback mechanism rather than in the secant update itself.",
+            "The Newton's method justification in Section 2.1 treats H^{-1} as a scalar ratio along the previous step direction, but applying this per-coordinate corresponds to assuming a diagonal Hessian. This assumption should be stated and discussed.",
+            "Figure 5(b) shows Adam test loss diverging substantially while train loss decreases; this suggests overfitting/instability that LR tuning, weight-decay tuning, or schedules might address. Until baselines are properly tuned, the generalization claim is difficult to interpret.",
+            "When the optimizer switches between EAGLE and Adam, how are Adam's first/second moment estimates maintained? Discontinuities here could affect both stability and fairness of comparison.",
+            "The 'EAGLE usage ratio' decreasing over training is presented as evidence the mechanism works, but it could equally indicate that EAGLE is used mainly when gradients are large early in training — precisely when SGD/Adam also make rapid progress, complicating attribution of the speedup.",
+            "Section 1 heading is misspelled ('Intrduction'). GPT-2 (Radford et al., 2019) is not cited.",
+            "An algorithm box / pseudocode would substantially improve clarity, especially regarding per-coordinate vs aggregate evaluation of the switching conditions and Adam state management."
+          ],
+          "questions_for_authors": [
+            "How does EAGLE relate to the Barzilai–Borwein method, which uses the same Δθ/Δg ratio? Why was this prior work not discussed or compared?",
+            "In stochastic mini-batch training, ∇L(θ_n) and ∇L(θ_{n-1}) use different mini-batches. How does this affect the validity of the secant approximation, and have you analyzed or mitigated this (e.g., re-evaluating on the same batch, EMA smoothing)?",
+            "Condition 2 contains L_n · Δ∇L. Is L_n the scalar loss multiplied with a vector, or did you mean ∇L_n · Δ∇L (per-coordinate)? Please clarify.",
+            "Can you provide an ablation where the EAGLE branch is replaced by a no-op or standard Adam step but the gating remains, to isolate the contribution of the EAGLE update rule itself?",
+            "Were baselines tuned per-optimizer (LR, schedule, AdamW vs Adam, weight-decay scope)? Why does Adam's test loss diverge in Fig. 5(b)?",
+            "Can you report results over multiple seeds with error bars?",
+            "How does EAGLE compare to AdaHessian, Sophia, K-FAC, Shampoo, or L-BFGS on these tasks?",
+            "How sensitive is performance to α, τ_min, τ_max, τ_0, and the initial threshold? How were the per-task threshold values (1e-4 vs 5e-4) selected?",
+            "How are Adam's momentum and variance estimates maintained across EAGLE↔Adam switches?",
+            "How does EAGLE behave in training-from-scratch settings, where loss landscapes are less benign than during fine-tuning?"
+          ],
+          "suggestions_for_improvement": [
+            "Add a thorough Related Work discussion including Barzilai–Borwein, quasi-Newton secant methods, and modern curvature-aware deep learning optimizers (AdaHessian, Sophia, Shampoo, K-FAC, Hessian-free).",
+            "Provide an ablation that isolates the EAGLE update rule from the gating + Adam fallback.",
+            "Tune baselines per-optimizer (LR sweep, AdamW, LR schedule) and report multi-seed results with error bars.",
+            "Implement a GPU-efficient version and compare wall-clock time fairly; without this, step-based speedup claims are misleading.",
+            "Discuss the stochastic mini-batch issue explicitly and consider using EMA-smoothed gradients or same-batch evaluation at θ_{n-1} for the secant.",
+            "Clarify Eq. (6) and provide an algorithm box with explicit per-coordinate semantics and Adam state handling at switching boundaries.",
+            "Add training-from-scratch experiments and at least one larger-scale benchmark (e.g., ImageNet, a GLUE task with BERT, or a language modeling task).",
+            "Conduct a sensitivity analysis for introduced hyperparameters and document the selection protocol.",
+            "Fix typos ('Intrduction'), cite GPT-2 properly, and improve Figure 1 markers for clarity."
+          ],
+          "overall_recommendation": "Reject",
+          "reviewer_confidence_1_to_5": 4,
+          "score_card": {
+            "soundness_1_to_4": 2,
+            "presentation_1_to_4": 2,
+            "contribution_1_to_4": 2,
+            "overall_1_to_10": 3
+          }
+        },
+        "author_facing_improvement_checklist": [
+          "Discuss and compare to Barzilai–Borwein, secant/quasi-Newton methods, and curvature-aware DL optimizers (AdaHessian, Sophia, Shampoo, K-FAC).",
+          "Address the stochastic mini-batch issue affecting the secant approximation.",
+          "Clarify Eq. (6) semantics and provide an algorithm box; specify Adam state handling at switches.",
+          "Add ablation isolating the EAGLE update rule from the gating + Adam mechanism.",
+          "Tune baselines per-optimizer; include AdamW, LR schedules, and report multi-seed results with error bars.",
+          "Provide a GPU-efficient implementation and fair wall-clock comparisons.",
+          "Add training-from-scratch and larger-scale experiments.",
+          "Sensitivity analysis for α, τ_min, τ_max, τ_0, initial threshold; state selection protocol.",
+          "Fix 'Intrduction' typo and cite GPT-2."
+        ],
+        "changes_from_draft": [
+          "Softened the claim about Adam's SST-2 test accuracy being 'well below typical published results' to focus on the observed instability (diverging test loss) rather than an uncited benchmark comparison.",
+          "Reframed the Barzilai–Borwein connection as a strong structural resemblance and missed citation rather than asserting mathematical equivalence as self-evident."
+        ]
+      },
+      "usage": {
+        "input_tokens": 4140,
+        "output_tokens": 3699,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 53380
+      },
+      "stop_reason": "end_turn"
+    }
+  },
+  "total_usage": {
+    "input_tokens": 38417,
+    "output_tokens": 26108,
+    "cache_creation_input_tokens": 116621,
+    "cache_read_input_tokens": 602756
+  }
+}
