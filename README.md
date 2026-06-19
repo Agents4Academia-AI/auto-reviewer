@@ -82,7 +82,7 @@ reviewer_agent.py   - CLI entry point, including Markdown report rendering
 * Request size / page count: The PDF must satisfy Anthropic API limits for document input. Very large papers or supplementary materials may need to be split.
 * Novelty check depends on the retrieval quality of the `web_search` tool. For more reliable search, dedicated APIs such as Semantic Scholar or arXiv can be added.
 * No parallelization: the 10 stages run strictly in sequence because they have dependencies.
-* No persistent intermediate results: if the pipeline fails halfway, it must be rerun from the beginning.
+
 
 ## Suggested Next Steps
 
