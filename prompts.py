@@ -180,37 +180,50 @@ Prior context (Stage 1 summary):
 """
 
 
-STAGE_6_RIGOR = """Stage 6 — Rigor check.
+STAGE_6_RIGOR = """Stage 6 - Rigor check.
 
-Evaluate three dimensions:
-(A) Internal correctness — definitions, assumptions, derivations, algorithms, experimental procedures, hidden assumptions, possible failure cases, reproducibility.
-(B) Claim support — for each major claim, decide if it is supported, partially supported, or unsupported by the experiments.
-(C) Experimental rigor — baselines, datasets, metrics, ablations, statistical significance / uncertainty, hyperparameters, negative results, confounders.
+Evaluate four dimensions:
+(A) Problem and solution formulation: for each major problem, check whether definitions are clear, whether assumptions are made clear, whether derivations and algorithms are clear.
+(B) Theoretical support: if theoretical claims are made, for each major theoretical claim, decide whether the statement and proof is correct.
+(C) Experimental support: if experimental support is provided, for each major claim, decide if it is supported, partially supported, or unsupported by the experiments. Consider experimental procedures, hidden assumptions, possible failure cases, reproducibility.
+(D) Experimental rigor: if experimental support is provided, check the rigor in the use of baselines, datasets, metrics, ablations, statistical significance / uncertainty, hyperparameters, negative results, confounders.
 
 Return JSON:
 {
-  "internal_correctness": {
-    "notes": ["..."],
-    "ambiguous_or_invalid_reasoning": ["..."],
-    "reproducibility_concerns": ["..."]
+  "problem_and_solution_formulation": {
+    "definitions_clear": ["..."],
+    "assumptions_clear": ["..."],
+    "derivations_algorithms_clear": ["..."]
+    "suggested_improvements_for_formulation": ["..."] or [],
   },
-  "claim_support": {
+  "theoretical_support": {
+    "correct": ["..."],
+    "partially_correct": ["..."],
+    "suggested_improvements_for_theoretical_support": ["..."] or [],
+  } or null,
+  "experimental_support": {
     "supported": ["..."],
     "partially_supported": ["..."],
-    "unsupported_or_overstated": ["..."]
-  },
+    "unsupported_or_overstated": ["..."],
+    "suggested_improvements_for_claim_support": ["..."] or [],
+  } or null,
   "experimental_rigor": {
     "baseline_quality": "...",
     "missing_baselines": ["..."],
     "dataset_quality": "...",
+    "better_datasets": ["..."] or [],
     "metric_appropriateness": "...",
+    "better_metric": ["..."] or []
     "missing_ablations": ["..."],
     "statistical_significance": "...",
+    "better_significance_test_or_confidence_interval": ["..."] or [],
     "hyperparameter_clarity": "...",
     "negative_results_discussed": "yes | no | partial",
     "possible_confounders": ["..."],
-    "reproducibility_score_1_to_10": 0
-  }
+    "confounder_reduction_alternatives": ["..."] or [],
+    "reproducibility_score_1_to_10": 0,
+    "suggestions_for_improving_reproducibility": ["..."] or []
+  } or null 
 }
 
 Prior context (Stage 3 claims, Stage 2 sections):
@@ -327,3 +340,5 @@ Prior context:
 Stage 8 draft: {stage_8}
 Stage 9 critique: {stage_9}
 """
+
+
