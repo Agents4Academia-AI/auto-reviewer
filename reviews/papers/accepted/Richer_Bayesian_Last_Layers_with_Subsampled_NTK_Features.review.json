@@ -1,0 +1,1142 @@
+{
+  "paper": {
+    "filename": "Richer_Bayesian_Last_Layers_with_Subsampled_NTK_Features.pdf",
+    "path": "papers/accepted/Richer_Bayesian_Last_Layers_with_Subsampled_NTK_Features.pdf",
+    "num_bytes": 1016022,
+    "input_mode": "pdf_document"
+  },
+  "config": {
+    "model": "claude-opus-4-7",
+    "effort": "high",
+    "web_search": true
+  },
+  "stages": {
+    "stage_0": {
+      "parsed": {
+        "title": "Richer Bayesian Last Layers with Subsampled NTK Features",
+        "authors": [
+          "Sergio Calvo-Ordoñez",
+          "Jonathan Plenk",
+          "Richard Bergna",
+          "Álvaro Cartea",
+          "Yarin Gal",
+          "José Miguel Hernández-Lobato",
+          "Kamil Ciosek"
+        ],
+        "venue_hint": "ICML 2026 (PMLR 306)",
+        "field": "Bayesian deep learning / uncertainty quantification",
+        "abstract": "The paper proposes Rich-BLL, a method that improves Bayesian Last Layers (BLLs) by using a low-dimensional projection of Neural Tangent Kernel (NTK) features onto the span of last-layer features. This enriches the posterior to account for variability of the full network while retaining BLL-level computational cost. Authors prove posterior variance is always ≥ that of standard BLL, propose a uniform subsampling scheme with approximation bounds, and validate on UCI regression, contextual bandits, image classification, and OOD detection.",
+        "sections": {
+          "introduction": "BLLs are computationally efficient but underestimate epistemic uncertainty because only the final layer is treated Bayesian. NTK-GP captures full-network epistemic uncertainty but scales poorly (O(N^3 + N^2 p)). The authors propose a middle-ground method approximating NTK-GP inference with BLL-level cost by enriching last-layer features with a low-rank correction that captures contributions of earlier layers.",
+          "related_work": "Discusses linearized Laplace and NTK-based uncertainty (MacKay; Daxberger et al.; Jacot et al.; He et al.), scalable curvature approximations (KFAC, Ritter et al., Kristiadi et al.), inducing-point GP methods (Titsias; Wilson & Nickisch), and post-hoc function-space uncertainty methods (Ortega et al.; Bergna et al.). Notes parallel work (Ciosek et al. 2025) uses a similar low-rank NTK idea for optimization but not uncertainty.",
+          "method": "Decompose eNTK features ϕ^p(x) = (ϕ^m(x), ϕ^r(x)) into earlier-layer and last-layer parts. Approximate ϕ^m(x) ≈ A ϕ^r(x) via least squares on training data, yielding A = Φ^{m⊤}_x Φ^r_x (Φ^{r⊤}_x Φ^r_x)^{-1}. Define B = [A; I_r] so ϕ^p(x) ≈ B ϕ^r(x). Posterior covariance computed in r-dim space using Cholesky B^⊤B = LL^⊤ with features ϕ^L(x) = L^⊤ ϕ^r(x). Only L (r×r) needs to be stored. Subsampling scheme uses k uniformly drawn training points for both estimating L and posterior inference, achieving O(kr^2 + r^3) cost.",
+          "theory": "Theorem 3.1: closed-form r×r posterior covariance for B-features. Theorem 3.2: equivalence with L-features. Theorem 3.3: Rich-BLL predictive variance ≽ BLL variance. Theorem 3.4: estimator Â of A concentrates around true A at O(√(log/N)) rate. Theorem 3.5: subsampled posterior covariance approximation error O(1/√k) independent of N, under bounded features and positive λ_min(Σ). Appendix B provides exact recovery lemma under low-rank eNTK and bounds on covariance error via train/test residuals.",
+          "experiments": "Evaluations on (1) 5 UCI regression datasets (Boston, Concrete, Energy, Power, Wine) measuring test NLL; (2) Wine Quality OOD AUROC (red vs white); (3) Wheel Bandit contextual bandit with varying difficulty δ ∈ {0.5,...,0.99}; (4) CIFAR-10 image classification with SVHN and CIFAR-100 as OOD using a 7-layer CNN. Baselines include NNGP/BLL, VBLL, MAP, RBF GP, MC Dropout, SWAG, BBB, Ensembles, LL Laplace, SNGP, NeuralLinear, LinDiagPost.",
+          "results": "Rich-BLL consistently improves over NNGP/BLL across all benchmarks. On UCI regression NLL is lower across all five datasets with minimal degradation under subsampling (40%). On Wine OOD AUROC 0.96 vs 0.88 for BLL. On Wheel Bandit, regret roughly halved compared to NNGP, comparable to VBLL. On CIFAR-10: lower NLL/ECE and higher AUROC on SVHN (0.91) and CIFAR-100 (0.65) than NNGP and LL Laplace.",
+          "limitations": "Method relies on assumption that earlier-layer eNTK features can be captured by a low-dimensional correction in the last-layer space; assumes bounded features and positive eigenvalue of population matrix for theoretical bounds; image classification uses global (not class-specific) transformation; experiments use relatively small networks (5M-param CNN, small MLPs).",
+          "conclusion": "Rich-BLL provides a scalable approximation to NTK-GP that enriches BLLs at BLL cost, supports subsampling with provable error bounds, and empirically improves calibration, OOD detection, and exploration in bandits."
+        },
+        "main_claims": [
+          "Approximating eNTK features by a linear map from last-layer features yields a posterior covariance computable at BLL cost (O(r^3 + Nr^2)).",
+          "Rich-BLL posterior variance is provably ≥ standard BLL variance, correcting underestimation of epistemic uncertainty.",
+          "Uniform subsampling of size k gives approximation error O(1/√k) independent of N for the predictive covariance.",
+          "Empirical estimator Â of the projection matrix concentrates at O(√(log/N)) rate around the population minimizer.",
+          "Rich-BLL empirically outperforms BLL/NNGP on regression NLL, contextual bandit regret, image classification calibration, and OOD detection."
+        ],
+        "key_contributions": [
+          "Scalable approximation to NTK-GP inference via low-dimensional kernel correction of BLL features.",
+          "Uniform subsampling scheme for estimating the kernel correction and posterior with k-sized subsets.",
+          "Theoretical guarantees: variance dominance over BLL, concentration of Â, subsampled-posterior approximation bounds.",
+          "Empirical validation on UCI regression, Wheel Bandit, CIFAR-10/SVHN/CIFAR-100 OOD detection."
+        ],
+        "experimental_results": [
+          "UCI regression (Table 2): Rich-BLL achieves lower NLL than BLL on all 5 datasets (e.g., Boston 2.61 vs 2.78; Concrete 3.10 vs 3.39; Energy 0.75 vs 0.92); Rich-BLL (S) nearly matches Rich-BLL.",
+          "Wine OOD AUROC (Table 4): Rich-BLL 0.96 vs BLL 0.88, VBLL 0.95.",
+          "Wheel Bandit (Table 3): Rich-BLL cumulative regret substantially below NNGP across all δ (e.g., δ=0.99: 21.8 vs 55.8); comparable to VBLL.",
+          "CIFAR-10 (Table 5): Rich-BLL (S) achieves NLL 0.56, ECE 0.029, SVHN AUROC 0.91, CIFAR-100 AUROC 0.65, beating NNGP and LL Laplace on most metrics.",
+          "Subsample ratio ablation (Table 6): performance largely insensitive to subsample fraction between 30%–90%."
+        ],
+        "assumptions_and_limitations": [
+          "Assumes earlier-layer eNTK features are approximately linearly spanned by last-layer features (low-rank assumption).",
+          "Theoretical bounds require bounded features (compact input support) and λ_min(Σ) > 0.",
+          "Uses μ-parameterization to keep parameter gradients O(1) for NTK validity.",
+          "Image classification experiments use a single global transformation rather than class-specific; only one CNN architecture tested.",
+          "Bounds for Â concentration depend on K and λ_min(Σ) which may be large in practice.",
+          "Direct comparison to full NTK-GP/Linearized Laplace at scale is not shown in the main experimental tables."
+        ],
+        "figures_tables": [
+          "Figure 1: 1D regression comparing full NTK-GP, NNGP/BLL, Rich-BLL, Rich-BLL (S) showing Rich-BLL recovers NTK-like uncertainty.",
+          "Figure 2: 1D classification toy showing predictive uncertainty regions for MAP, NNGP, Rich-BLL, Rich-BLL (S).",
+          "Table 1: Computational complexity comparison (NTK-GP O(N^3+N^2 p), BLL O(r^3+Nr^2), Rich-BLL same as BLL, with subsampling O(kr^2+r^3)).",
+          "Table 2: UCI regression NLL across 5 datasets with baselines.",
+          "Table 3: Wheel Bandit cumulative regret across δ ∈ {0.5,...,0.99}.",
+          "Table 4: Wine Quality OOD AUROC.",
+          "Table 5: CIFAR-10 NLL/ECE and SVHN/CIFAR-100 AUROC.",
+          "Figures 3-4: Empirical NTK spectra showing fast eigenvalue decay supporting low-rank assumption.",
+          "Table 6: Subsample ratio ablation."
+        ],
+        "equations_algorithms": [
+          "Eq. (3): NTK-GP posterior predictive covariance.",
+          "Eq. (9): Closed-form least-squares estimator A = Φ^{m⊤}_x Φ^r_x (Φ^{r⊤}_x Φ^r_x)^{-1}.",
+          "Eq. (13)/(15)/(16): r×r closed-form predictive covariance using B and L features.",
+          "Eq. (14): Transformed feature ϕ^L(x) = L^⊤ ϕ^r(x) via Cholesky B^⊤B = LL^⊤.",
+          "Eq. (22): Subsampled posterior covariance formula.",
+          "Theorem 3.5 bound: ||S^{B,k} - S^B||_2 ≤ N' (2K^4/λ_min(Σ)) √(8 log(4r/δ)/(3k)).",
+          "Appendix C algorithm: Efficient computation of L using random projection of parameter Jacobian (following Park et al. 2023 TRAK-style projection)."
+        ]
+      },
+      "usage": {
+        "input_tokens": 354,
+        "output_tokens": 3783,
+        "cache_creation_input_tokens": 74047,
+        "cache_read_input_tokens": 0
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_1": {
+      "parsed": {
+        "field_and_subfield": "Bayesian deep learning; uncertainty quantification in neural networks via NTK/Last-Layer methods",
+        "problem_addressed": "Bayesian Last Layers (BLLs) are computationally cheap but underestimate epistemic uncertainty because they ignore variability from earlier layers; full NTK-GP / Linearized Laplace captures this but is prohibitively expensive (O(N^3 + N^2 p)).",
+        "research_question": "Can one approximate NTK-GP posterior inference, accounting for parameter uncertainty across the whole network, while retaining the computational cost of a standard Bayesian Last Layer?",
+        "one_paragraph_summary": "The paper proposes Rich-BLL, a post-hoc uncertainty method that enriches a Bayesian Last Layer by approximating empirical NTK (eNTK) features as a linear function of last-layer (NNGP) features. The earlier-layer Jacobian features ϕ^m(x) are regressed onto last-layer features ϕ^r(x) via a closed-form least-squares solution, producing a low-dimensional kernel correction B^⊤B = LL^⊤ that allows posterior inference to be carried out in the r-dimensional last-layer space. This yields a closed-form r×r predictive covariance with cost identical to a standard BLL but with provably larger (more conservative) variance. A uniform subsampling scheme further reduces the cost to depend only on the subsample size k, with concentration bounds showing the predictive covariance error decays as O(1/√k) independently of N. Empirical results on UCI regression, the Wheel contextual bandit, and CIFAR-10 image classification with SVHN/CIFAR-100 OOD detection show consistent improvements over BLL/NNGP and competitive performance versus VBLL, last-layer Laplace, SNGP, and ensembles.",
+        "problem_statement": "Standard Bayesian Last Layers underestimate epistemic uncertainty because they treat only the final-layer weights as Bayesian; the NTK-GP / Linearized Laplace alternative captures full-network parameter uncertainty but scales as O(N^3 + N^2 p), making it impractical. The goal is a method that approximates NTK-GP-quality uncertainty while preserving BLL-level computational complexity.",
+        "main_contributions": [
+          "A scalable approximation to NTK-GP inference (Rich-BLL) that enriches BLL features via a low-dimensional projection of earlier-layer eNTK features onto the span of last-layer features, computable at BLL cost O(r^3 + Nr^2).",
+          "A uniform subsampling scheme for both estimating the projection matrix and computing the posterior, reducing cost to O(r^3 + kr^2).",
+          "Theoretical guarantees: (i) posterior variance dominance over standard BLL (Thm 3.3); (ii) concentration of the empirical projection estimator at O(√(log/N)) (Thm 3.4); (iii) subsampled-posterior approximation bound O(1/√k) independent of N (Thm 3.5); supporting analysis of low-rank residual in Appendix B.",
+          "Empirical validation on UCI regression (NLL), Wine Quality OOD detection, the Wheel contextual bandit (cumulative regret), and CIFAR-10 image classification with SVHN/CIFAR-100 OOD AUROC, ECE and NLL."
+        ],
+        "claim_evidence_map": [
+          {
+            "claim": "Rich-BLL posterior covariance can be computed in the r-dimensional last-layer feature space at BLL cost.",
+            "evidence_in_paper": "Theorem 3.1 (Eq. 13) and Theorem 3.2 (Eq. 15-16) give r×r closed-form covariance expressions; Table 1 lists Rich-BLL complexity as O(r^3 + Nr^2), matching BLL."
+          },
+          {
+            "claim": "Rich-BLL predictive variance is always at least as large as the standard BLL variance.",
+            "evidence_in_paper": "Theorem 3.3 with proof in Appendix A.1: B^⊤B = A^⊤A + I_r ≽ I_r implies S^B ≽ S^{bll}."
+          },
+          {
+            "claim": "Uniform subsampling yields an accurate approximation of the predictive covariance with error independent of N.",
+            "evidence_in_paper": "Theorem 3.5: ||S^{B,k} - S^B||_2 ≤ N' (2K^4/λ_min(Σ)) √(8 log(4r/δ)/(3k)), depending on k but not on N."
+          },
+          {
+            "claim": "The empirical least-squares estimator of the projection matrix concentrates around the population minimizer.",
+            "evidence_in_paper": "Theorem 3.4: with prob 1-δ, ||Â - A||_2 ≤ K' √(log(2(m+r)/δ)/N); proof in Appendix A.3 via matrix Bernstein."
+          },
+          {
+            "claim": "Rich-BLL improves test NLL over BLL on UCI regression benchmarks.",
+            "evidence_in_paper": "Table 2: e.g. Boston 2.61±0.04 vs 2.78±0.06; Concrete 3.10 vs 3.39; Energy 0.75 vs 0.92; Power 2.78 vs 2.82; Wine 1.00 vs 1.03."
+          },
+          {
+            "claim": "Rich-BLL substantially reduces cumulative regret on the Wheel Bandit relative to BLL/NNGP.",
+            "evidence_in_paper": "Table 3: at δ=0.99, Rich-BLL 21.80±1.60 vs NNGP 55.80±2.30; comparable to VBLL 24.44±0.71."
+          },
+          {
+            "claim": "Rich-BLL improves OOD detection on Wine (red vs white) and CIFAR-10 (SVHN, CIFAR-100).",
+            "evidence_in_paper": "Table 4: AUROC 0.96 vs BLL 0.88. Table 5: SVHN AUROC 0.91 (Rich-BLL S) vs 0.88 (NNGP); CIFAR-100 0.65 vs 0.62."
+          },
+          {
+            "claim": "Subsampling negligibly affects performance.",
+            "evidence_in_paper": "Tables 2-5 show Rich-BLL (S) closely matches Rich-BLL; Table 6 ablation shows NLL almost invariant for subsample fractions 30%-90%."
+          },
+          {
+            "claim": "The low-rank approximation assumption holds empirically: eNTK spectra concentrate.",
+            "evidence_in_paper": "Figures 3 and 4 show fast eigenvalue decay of empirical NTK for the regression MLP and CIFAR CNN; Appendix B Lemma B.1 gives an exact recovery result under exact low-rank eNTK."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 3991,
+        "output_tokens": 2401,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 74047
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_2": {
+      "parsed": {
+        "sections": [
+          {
+            "name": "Abstract",
+            "summary": "States the problem of BLL underestimating epistemic uncertainty, proposes Rich-BLL using a projection of NTK features onto last-layer feature space, claims provable variance dominance over BLL, introduces subsampling with approximation bounds, and lists empirical settings.",
+            "key_claims": [
+              "Rich-BLL yields posterior variance provably ≥ BLL.",
+              "Subsampling produces approximation bounds for both projection matrix and posterior.",
+              "Method retains BLL-level computational cost."
+            ],
+            "supporting_evidence": [
+              "Theorems 3.3, 3.4, 3.5 referenced in later sections.",
+              "Complexity table (Table 1) referenced in the body."
+            ],
+            "issues": [
+              "The phrase 'posterior inference that accounts for variability of the full network' is overstated, since the method only approximates earlier-layer contributions via a linear projection onto last-layer span.",
+              "Abstract does not quantify accuracy of NTK-GP approximation relative to the true NTK-GP."
+            ],
+            "missing_information": [
+              "No mention that bounds require bounded features and λ_min(Σ) > 0.",
+              "No statement of what 'competitive baselines' specifically include."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim of 'reducing computational cost' is relative to NTK-GP, not explicitly relative to BLL (Rich-BLL same as BLL without subsampling)."
+            ]
+          },
+          {
+            "name": "Introduction",
+            "summary": "Motivates need for uncertainty estimation, reviews limitations of existing Bayesian DL methods, introduces NTK-GP as a principled but expensive framework, and BLL as cheap but underestimating epistemic uncertainty. Sets up the method as a middle-ground that incorporates earlier-layer NTK contributions cheaply.",
+            "key_claims": [
+              "BLLs underestimate epistemic uncertainty relative to NTK-GP.",
+              "Existing methods either ignore earlier layers or scale poorly with parameter count.",
+              "The proposed method approximates NTK-GP at BLL cost."
+            ],
+            "supporting_evidence": [
+              "References to NTK-GP (He et al., Jacot et al.) and BLL/NNGP foundations.",
+              "Table 1 complexity comparison."
+            ],
+            "issues": [
+              "Claim that BLLs 'underestimate' epistemic uncertainty compared to NTK-GP is asserted but only justified informally and via Figure 1 toy example; not all NTK-GP/BLL comparisons in the literature agree this is the canonical ground truth.",
+              "The motivation conflates NTK-GP with full Bayesian inference; NTK-GP is itself an approximation (linearization around MAP) and not a definitive ground truth for epistemic uncertainty."
+            ],
+            "missing_information": [
+              "No discussion of when the low-rank assumption ϕ^m ≈ A ϕ^r is expected to hold or fail in practice for different architectures.",
+              "Does not discuss relationship to Linearized Laplace last-layer (LL-LLA) which is conceptually similar."
+            ],
+            "ambiguous_or_unsupported": [
+              "The claim that NTK-GP captures 'the full network' epistemic uncertainty assumes a particular linearization-based notion of uncertainty."
+            ]
+          },
+          {
+            "name": "Related Work",
+            "summary": "Reviews linearized Laplace and NTK-based uncertainty, structured curvature approximations (KFAC, Laplace variants), GP scalability (inducing points), and post-hoc function-space methods.",
+            "key_claims": [
+              "Existing scalable methods either restrict Bayesian treatment to the last layer or use structured approximations costly in number of parameters.",
+              "Parallel work (Ciosek et al. 2025) uses a similar low-rank NTK idea for optimization but not uncertainty."
+            ],
+            "supporting_evidence": [
+              "Comprehensive list of references covering relevant subareas."
+            ],
+            "issues": [
+              "Missing comparison/contextualization with 'Subnetwork inference' (Daxberger et al. 2021b) and recent low-rank Laplace variants, which are conceptually close to selecting a low-dimensional subspace.",
+              "Wilson et al. 2025 (Uncertainty quantification with empirical NTK) is cited but not contrasted explicitly with the proposed method.",
+              "Discussion of LL-LLA (which appears in Table 1) is folded into general Laplace discussion; differences between LL-LLA and Rich-BLL deserve clearer separation."
+            ],
+            "missing_information": [
+              "No explicit comparison to NeuralLinear (Riquelme et al. 2018) in related work, even though it appears as a baseline.",
+              "No discussion of how Rich-BLL relates to spectral/SVD-based approximations of NTK."
+            ],
+            "ambiguous_or_unsupported": [
+              "Statement 'that work does not study uncertainty estimation' for Ciosek et al. is a useful clarification but raises questions about novelty of the core approximation (which is shared)."
+            ]
+          },
+          {
+            "name": "Method",
+            "summary": "Decomposes eNTK feature into last-layer ϕ^r and earlier-layer ϕ^m. Approximates ϕ^m ≈ A ϕ^r via least squares; defines B = [A; I_r], reduces inference to an r×r system via Cholesky factor L. Introduces uniform subsampling scheme for computing L and posterior.",
+            "key_claims": [
+              "Closed-form posterior covariance in r-dim space (Theorems 3.1, 3.2).",
+              "Approximation requires only storing r×r matrix L.",
+              "Subsampling reduces cost from O(Nr^2) to O(kr^2) while preserving posterior quality."
+            ],
+            "supporting_evidence": [
+              "Algebraic derivations leading to (13), (15), (16).",
+              "Appendix B motivates low-rank assumption via NTK spectral decay and provides exact recovery condition.",
+              "Appendix C describes efficient computation of L using TRAK-style random projections."
+            ],
+            "issues": [
+              "Equation (7) ϕ^m(x) ≈ A ϕ^r(x) is presented as an assumption, but practically the least-squares fit always produces some A; the substantive assumption is that this A is small or the residual εx is small. This nuance is somewhat glossed over in the main text (clearer in Appendix B).",
+              "The classification setting requires extension beyond regression formulation, but the move from regression to logit-level Gaussian posterior is only briefly described.",
+              "Choice of single global vs class-specific transformation is mentioned but not analyzed; only one chosen.",
+              "Use of ridge regularization (λ=1.0) for learning A in CIFAR-10 experiments is in Appendix D but not motivated in main text or analyzed for sensitivity."
+            ],
+            "missing_information": [
+              "Sensitivity of the method to choice of σ^2 (the noise variance hyperparameter) is not discussed.",
+              "Algorithm box summarizing the procedure end-to-end is absent.",
+              "No analysis of behavior when N < r or N is comparable to r (other than mentioning need for N ≥ r)."
+            ],
+            "ambiguous_or_unsupported": [
+              "The label 'rich' suggests the method matches NTK-GP, but the approximation may be far from NTK-GP when residual εx is large; this gap is not characterized empirically in main text."
+            ]
+          },
+          {
+            "name": "Theory",
+            "summary": "Presents four theorems (3.1–3.5): closed-form posterior, equivalence of B and L feature representations, variance dominance over BLL, concentration of Â, and subsampled posterior approximation bound.",
+            "key_claims": [
+              "S^B ≽ S^{bll} unconditionally (Theorem 3.3).",
+              "||Â - A||_2 ≤ K' √(log/N) (Theorem 3.4).",
+              "Subsampled posterior approximation error scales as 1/√k independent of N (Theorem 3.5)."
+            ],
+            "supporting_evidence": [
+              "Proofs in Appendix A using Woodbury identity, matrix Bernstein, and resolvent identities.",
+              "Lemma A.1 provides standard matrix Bernstein bound."
+            ],
+            "issues": [
+              "Theorem 3.5 bound has prefactor 2K^4/λ_min(Σ) and scales with N' (number of test points) — the latter is unusual and arguably loose for a covariance approximation bound; the bound implicitly assumes summing over test points.",
+              "Theorem 3.3 (variance dominance) only shows S^B ≽ S^{bll}, not that S^B ≤ S^{ntk}; thus Rich-BLL could in principle overestimate uncertainty relative to true NTK-GP. This direction is not bounded.",
+              "Theorem 3.4 hides constants K and λ_min(Σ)^{-1}, which can be very large in practice; constants are not quantified empirically.",
+              "Theorem 3.5 condition k ≥ (8/3) log(4r/δ) (8K^2/λ_min(Σ))^2 may be very large; not verified that experiments satisfy it.",
+              "The 'low rank' interpretation in Appendix B relies on the assumption that the spectrum of eNTK decays fast enough that ϕ^m lies in span of ϕ^r. The provided spectra (Figs 3, 4) show decay but do not directly measure the residual εx that controls the actual approximation error."
+            ],
+            "missing_information": [
+              "No bound on ||S^B - S^{ntk}||; only on ||S^B - S^{B,k}||. So the theory does not say Rich-BLL approximates NTK-GP, only that it dominates BLL and that subsampling preserves the modified posterior.",
+              "Theorem 3.4 assumes the population covariance E[ϕ^r ϕ^{r⊤}] has positive λ_min but no discussion of how this scales with width.",
+              "No discussion of whether bounds are tight or have known matching lower bounds."
+            ],
+            "ambiguous_or_unsupported": [
+              "Statement 'this bound is remarkable, as it does not grow with the number of training points N' is overstated; the bound does depend on test-point count N' and on properties of Σ which depend on the data distribution."
+            ]
+          },
+          {
+            "name": "Experiments",
+            "summary": "Evaluates Rich-BLL on UCI regression (NLL, OOD on Wine), Wheel Bandit, and CIFAR-10 (NLL, ECE, OOD AUROC for SVHN and CIFAR-100). Compares to BLL/NNGP, VBLL, MAP, RBF GP, Dropout, Ensemble, SWAG, BBB, LL Laplace, SNGP, NeuralLinear variants.",
+            "key_claims": [
+              "Rich-BLL consistently improves over BLL/NNGP.",
+              "Subsampling has minimal effect on performance.",
+              "Rich-BLL competitive with VBLL and more expensive baselines."
+            ],
+            "supporting_evidence": [
+              "Tables 2 (UCI), 3 (Wheel), 4 (Wine OOD), 5 (CIFAR-10), 6 (subsample ablation)."
+            ],
+            "issues": [
+              "No direct empirical comparison to full NTK-GP / Linearized Laplace at any scale, despite the method being motivated as an NTK-GP approximation. This is a significant gap because the theory does not bound ||S^B - S^{ntk}||.",
+              "Toy 1D regression (Fig 1) shows Rich-BLL recovering NTK-GP-like uncertainty visually, but no quantitative comparison.",
+              "On CIFAR-10 (Table 5), the 'best' value is bolded inconsistently (e.g., Dropout has the lowest NLL 0.31 ± 0.05 — notably much lower than Rich-BLL 0.56 — but Rich-BLL is also bolded; this is questionable and not addressed).",
+              "Standard error on Dropout NLL (0.31 ± 0.05) is suspiciously high relative to mean — no explanation.",
+              "Image classification only uses one CNN backbone (5M params); no transformer or larger CNN.",
+              "Wheel Bandit results for some baselines marked as 'borrowed from' Harrison et al. (VBLL, NeuralLinear, LinDiagPost), making fair comparison contingent on identical setup, which is not verified.",
+              "UCI regression dataset selection omits standard 'protein' and 'naval' benchmarks; only 5 small datasets are used.",
+              "OOD detection in tabular setting (Wine) is a single benchmark; no other tabular OOD tasks to confirm trend.",
+              "Subsampling fraction of 40% on already small UCI datasets is not a stringent test of subsampling scalability."
+            ],
+            "missing_information": [
+              "Wall-clock time / memory measurements supporting computational claims are not reported.",
+              "No analysis of how performance degrades as subsample fraction approaches O(r) (the theoretical regime).",
+              "No analysis of test residual εx' (defined in Appendix B) empirically.",
+              "Confidence intervals on AUROC for some baselines (e.g., Ensemble SVHN AUROC 0.80 ± 0.20) are extremely large — likely a typo or instability not discussed.",
+              "No image classification accuracy reported in Table 5 despite text saying it is measured."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that Rich-BLL 'approaches the performance of more expensive methods such as ensembles' is partially supported but in several datasets (e.g., Boston) ensembles still win by margin > standard error.",
+              "In bandit experiments, the cited 'empirical Bayes heuristic' for noise variance may differ in implementation from baselines borrowed from Harrison et al., creating apples-to-oranges comparison."
+            ]
+          },
+          {
+            "name": "Conclusion",
+            "summary": "Summarizes that Rich-BLL is a scalable approximation to NTK-GP, retains BLL cost, supports subsampling with guarantees, and empirically improves uncertainty quality.",
+            "key_claims": [
+              "Rich-BLL provides a scalable, well-calibrated, OOD-robust alternative to BLL."
+            ],
+            "supporting_evidence": [
+              "References to experiments and theory."
+            ],
+            "issues": [
+              "Does not discuss limitations explicitly (only an Impact Statement that defers to generic ML risks).",
+              "Does not flag the gap between approximation and true NTK-GP."
+            ],
+            "missing_information": [
+              "No future work directions (e.g., extending to per-class transformations, larger architectures, alternative loss landscapes).",
+              "No mention of when/where the method may underperform."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim 'competitive with more expensive uncertainty estimation methods' is debatable for CIFAR-10 NLL given Dropout's lower NLL."
+            ]
+          },
+          {
+            "name": "Supplementary",
+            "summary": "Provides proofs (Appendix A), motivation for low-rank assumption via NTK spectra and residual analysis (Appendix B), efficient computation algorithm (Appendix C), detailed experimental setups (Appendix D), and subsample size ablation (Appendix E).",
+            "key_claims": [
+              "Exact recovery if eNTK has rank ≤ r and last-layer features have rank r (Lemma B.1).",
+              "Posterior covariance error bounded by train/test residuals εx, εx' (Proposition B.4).",
+              "TRAK-style random projection enables efficient computation of L for large m."
+            ],
+            "supporting_evidence": [
+              "Detailed proofs and propositions.",
+              "Spectra in Figures 3 and 4 supporting NTK low-rank claim.",
+              "Table 6 showing performance is insensitive to subsample fraction 30%-90%."
+            ],
+            "issues": [
+              "Proposition B.4 bound has constants ||Φ^p_x||_2 and ||Φ^B_x||_2 that can be large; bound's practical tightness is unclear.",
+              "Random projection step in Appendix C uses Johnson-Lindenstrauss-style argument but choice of q (projection dim) is not discussed nor ablated.",
+              "Table 6 ablation is only on regression, not on CIFAR-10 or bandits, so subsampling robustness on large-scale tasks is not demonstrated.",
+              "Appendix D mentions per-class feature subsets of size 1024 for CIFAR-10 but the role of 'subsets' here is ambiguous.",
+              "Spectral plots show fast decay but do not show the residual εx (the actual quantity that bounds approximation error)."
+            ],
+            "missing_information": [
+              "No ablation comparing class-specific vs global transformation in classification.",
+              "No measurement of empirical εx, εx' on real datasets.",
+              "No comparison of random-projection-based L computation to exact L (when feasible).",
+              "No discussion of numerical stability of Cholesky when (Φ^{r⊤}_x Φ^r_x) is ill-conditioned."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that the random projection 'preserves the inner product with high probability' is stated without quantifying q or distortion guarantees in this specific application."
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4050,
+        "output_tokens": 6091,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 74047
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_3": {
+      "parsed": {
+        "claims": [
+          {
+            "claim": "Rich-BLL posterior covariance can be computed in the r-dimensional last-layer feature space at the same computational cost as a standard BLL.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Theorem 3.1 (Eq. 13) and Theorem 3.2 (Eqs. 15-16) derive r×r closed-form expressions via Woodbury and a push-through identity; Table 1 lists Rich-BLL complexity O(r^3 + Nr^2) = BLL complexity. Appendix C describes efficient computation of L.",
+            "evidence_strength": "strong",
+            "notes": "Proofs are sound. However, the one-time computation of B^⊤B (or L) still requires forming/projecting the per-example Jacobian Φ^m, which is O(Nmq) with random projection q. This pre-processing cost is not reflected in Table 1's complexity row for Rich-BLL."
+          },
+          {
+            "claim": "Rich-BLL predictive variance is always at least as large as the standard BLL variance (Loewner-order dominance).",
+            "category": "theoretical",
+            "evidence_in_paper": "Theorem 3.3 with proof in Appendix A.1: B^⊤B = A^⊤A + I_r ≽ I_r implies S^B ≽ S^{bll}.",
+            "evidence_strength": "strong",
+            "notes": "Proof is correct and elementary. Note this dominance holds only when A is the exact least-squares solution; under subsampling the bound is approximate."
+          },
+          {
+            "claim": "Uniform subsampling yields an approximation of the predictive covariance whose error depends on k but not on N.",
+            "category": "theoretical",
+            "evidence_in_paper": "Theorem 3.5: ||S^{B,k} - S^B||_2 ≤ N' · (2K^4/λ_min(Σ)) √(8 log(4r/δ)/(3k)).",
+            "evidence_strength": "strong",
+            "notes": "Bound is technically correct but its practical value is limited: (1) it scales linearly with the number of test points N' (so per-test-point variance error doesn't shrink in aggregate operator norm); (2) the bound assumes ϕ^L is constructed using L from the same subsample, but the analysis treats L as fixed — the joint error from estimating both L and Σ via subsampling is not addressed; (3) the k requirement scales as K^4/λ_min(Σ)^2 which may be large in practice."
+          },
+          {
+            "claim": "The empirical projection matrix Â concentrates around the population least-squares solution at O(√(log/N)) rate.",
+            "category": "theoretical",
+            "evidence_in_paper": "Theorem 3.4 and Appendix A.3 proof via matrix Bernstein inequality.",
+            "evidence_strength": "strong",
+            "notes": "Proof is correct. The bound depends on λ_min of the population last-layer feature covariance, which could be small for over-parameterized r."
+          },
+          {
+            "claim": "Rich-BLL improves test NLL over BLL/NNGP on UCI regression benchmarks.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 2: improvements on all 5 datasets, e.g., Boston 2.61±0.04 vs 2.78±0.06; Energy 0.75±0.03 vs 0.92±0.01.",
+            "evidence_strength": "strong",
+            "notes": "Improvements are consistent though sometimes modest (e.g., Power 2.78 vs 2.82, Wine 1.00 vs 1.03). UCI datasets are small and well-known; standard errors over 20 seeds support significance. Only NLL is reported — RMSE would help readers separate calibration vs accuracy effects."
+          },
+          {
+            "claim": "Rich-BLL substantially reduces cumulative regret on Wheel Bandit versus BLL/NNGP and is competitive with VBLL.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 3: at δ=0.99, Rich-BLL 21.80±1.60 vs NNGP 55.80±2.30; VBLL 24.44±0.71.",
+            "evidence_strength": "strong",
+            "notes": "Large gains over NNGP are convincing. VBLL numbers are borrowed from Harrison et al. (2024), which may differ in protocol — this caveat is noted but readers should be cautious in direct comparison."
+          },
+          {
+            "claim": "Rich-BLL improves OOD detection on Wine (red vs white) and CIFAR-10 (SVHN, CIFAR-100).",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 4 (Wine AUROC 0.96 vs 0.88); Table 5 (SVHN 0.91 vs 0.88; CIFAR-100 0.65 vs 0.62).",
+            "evidence_strength": "weak",
+            "notes": "CIFAR-100 AUROC gains are small (0.65 vs 0.62) and tied with Ensembles. Dropout achieves higher SVHN AUROC (0.92) and significantly lower NLL/ECE; the paper's claim of being 'competitive' is fair but should not be read as strong superiority. Only one CNN architecture and one ID dataset are tested for image classification."
+          },
+          {
+            "claim": "Subsampling has minimal effect on performance.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Tables 2-5 show Rich-BLL (S) within standard error of full Rich-BLL; Table 6 ablation across 30%-90% subsample fractions shows nearly identical NLL.",
+            "evidence_strength": "strong",
+            "notes": "The ablation is limited to small UCI datasets where even 30% subsampling leaves enough data. Subsampling impact on much larger datasets (e.g., scenarios where subsampling is essential) is not directly studied; CIFAR-10 only uses the subsampled variant without comparison to the full version."
+          },
+          {
+            "claim": "The eNTK has effective low-rank structure that justifies the projection approximation.",
+            "category": "theoretical",
+            "evidence_in_paper": "Appendix B Lemma B.1 (exact recovery under rank-r eNTK); Figures 3-4 show fast spectral decay for the MLP and CNN used.",
+            "evidence_strength": "weak",
+            "notes": "Figures show the empirical NTK spectrum has decay, but the cumulative explained trace plots show that >100-200 directions are needed for 95% trace — the last-layer feature dimension r=50 (MLP) or 512 (CNN) is not obviously sufficient. There is no direct empirical measurement of the residual ε_x defined in Appendix B for the actual networks used. The exact-recovery lemma requires rank(eNTK) ≤ r which is generally false in practice."
+          },
+          {
+            "claim": "The method approximates NTK-GP inference (i.e., produces uncertainty close to the full NTK-GP).",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 1 shows visual similarity of Rich-BLL to NTK-GP on a 1D toy.",
+            "evidence_strength": "weak",
+            "notes": "No quantitative comparison to full NTK-GP/LLA is provided on any real dataset. The claim that Rich-BLL 'approximates NTK-GP' rests primarily on the 1D illustration. Given that BLL is the main baseline in most experiments, the gap to actual NTK-GP/LLA is not directly measured."
+          },
+          {
+            "claim": "Computational cost is reduced relative to NTK-GP/LLA.",
+            "category": "practical_impact",
+            "evidence_in_paper": "Table 1 complexity comparison.",
+            "evidence_strength": "weak",
+            "notes": "Complexity table is correct asymptotically, but no wall-clock timing measurements are reported in any experiment. The actual upfront cost of computing the projection L via the random projection scheme of Park et al. (2023) is not quantified."
+          },
+          {
+            "claim": "Method extends cleanly to image classification via a single global feature transformation matrix.",
+            "category": "generalization",
+            "evidence_in_paper": "Section 4.4 reports using a 'single global transformation shared across classes' that 'performed better' than class-specific variants; uses Park et al. (2023) random projection.",
+            "evidence_strength": "weak",
+            "notes": "Construction for classification is informal — uses logit-level predictive variance for the predicted class as OOD score. The mapping from the regression-style theory (Theorems 3.1-3.5 assume Gaussian likelihood) to classification is not theoretically grounded. The choice of which logit to use, the global-vs-class design decision, and the Laplace baselines' hyperparameter selection (α=1.0) are insufficiently justified."
+          },
+          {
+            "claim": "Rich-BLL is a 'scalable' approach to NTK-GP-like inference.",
+            "category": "practical_impact",
+            "evidence_in_paper": "Theoretical complexity argument; subsampling reduces dependence on N.",
+            "evidence_strength": "weak",
+            "notes": "Largest dataset tested is CIFAR-10 (50k images). No demonstration on truly large-scale settings (e.g., ImageNet, large language models) where 'scalability' matters most. The pre-processing step of estimating B^⊤B still requires touching all (or subsampled) training points and computing per-example gradients."
+          }
+        ],
+        "unsupported_claims": [
+          "That Rich-BLL closely approximates the full NTK-GP posterior in non-toy settings — no quantitative comparison to NTK-GP/LLA is reported beyond the 1D figure.",
+          "That the eNTK is sufficiently low-rank in the span of last-layer features for the chosen networks — Figures 3-4 show decay but not that the residual ε_x is small relative to ε_x' or to last-layer dimension r.",
+          "That the subsampling scheme provides practical computational benefit at scale — no runtime comparisons or large-scale experiments are reported."
+        ],
+        "overstated_claims": [
+          "'Provably greater or equal' posterior variance — true exactly only when A is the population/exact least-squares solution; under subsampled or empirically-estimated A the dominance is only approximate, but the abstract/intro phrasing suggests it holds unconditionally.",
+          "'Approximation bounds for both types of subsampling' — Theorem 3.5 bounds the error from subsampling Σ but conditions on a fixed L; the joint error of subsampling both the projection-matrix estimation and the posterior covariance is not bounded.",
+          "Description of Rich-BLL as a 'scalable approximation to NTK-GP inference' — experiments are limited to small/medium datasets and there is no direct empirical NTK-GP baseline.",
+          "OOD detection results presented as broadly improved — improvements over strong baselines (Ensemble, Dropout) are mixed and small, especially for CIFAR-100."
+        ],
+        "claims_requiring_external_verification": [
+          "VBLL Wheel Bandit numbers borrowed from Harrison et al. (2024) — protocol consistency with this paper's reimplementation should be verified.",
+          "Computational complexity claims for NTK-GP/LLA (O(N^3 + N^2 p)) — accurate but ignore that LLA implementations often use Kronecker-factored or low-rank approximations with substantially lower cost; the comparison thus overstates the LLA baseline cost.",
+          "Random projection feature extraction following Park et al. (2023) — accuracy of projected B^⊤B as an estimate of the true value depends on projection dimension q, which is not specified in Section 4.4."
+        ]
+      },
+      "usage": {
+        "input_tokens": 2645,
+        "output_tokens": 4066,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 74047
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_4": {
+      "parsed": {
+        "novelty_axes": [
+          {
+            "axis": "method",
+            "claimed_contribution": "A low-dimensional linear projection of non-last-layer eNTK features onto the span of last-layer (NNGP) features, yielding an enriched Bayesian last-layer posterior whose covariance is computable as a closed-form r×r expression at BLL cost while implicitly incorporating earlier-layer NTK structure.",
+            "why_it_matters": "The core technical contribution is this specific construction (least-squares fit A, Cholesky reparameterization via L, predictive covariance in r-dim space). Novelty depends on whether prior NTK/Laplace-based methods already proposed a projection-based correction of BLL features in this form.",
+            "search_keywords": [
+              "Bayesian last layer NTK projection",
+              "neural tangent kernel BLL low-rank correction",
+              "linearized Laplace last layer subspace",
+              "NTK feature decomposition last-layer non-last-layer"
+            ],
+            "search_question": "Has any prior work approximated NTK-GP/linearized-Laplace inference by projecting earlier-layer Jacobian features onto the last-layer feature span to yield an enriched BLL posterior?",
+            "closest_prior_work_ref": "Ciosek 2025 [similar_prior_work #1]; Wilson 2025 [similar_prior_work #2]; Deng 2022 [similar_prior_work #3]",
+            "axis_verdict": "novel"
+          },
+          {
+            "axis": "theory",
+            "claimed_contribution": "Three theoretical results: (i) Theorem 3.3 — Loewner-order dominance S^B ≽ S^{bll}; (ii) Theorem 3.4 — O(√(log/N)) concentration of Â; (iii) Theorem 3.5 — subsampled posterior approximation bound O(1/√k) independent of N.",
+            "why_it_matters": "These guarantees justify the method's two main selling points (it does not underestimate uncertainty vs BLL, and subsampling is provably safe). If similar bounds exist in prior work, the theoretical contribution is incremental.",
+            "search_keywords": [
+              "matrix Bernstein subsampled Gaussian process posterior",
+              "Nystrom GP variance bound",
+              "Laplace approximation subsampling concentration"
+            ],
+            "search_question": "Are the variance-dominance and matrix-Bernstein-based subsampling bounds standard applications or genuinely novel results?",
+            "closest_prior_work_ref": "Tropp 2012 [similar_prior_work #4]; Deng 2022 [similar_prior_work #3]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "problem",
+            "claimed_contribution": "Framing the problem as 'enrich BLL with earlier-layer NTK information at BLL cost' between two known extremes (BLL vs full NTK-GP/LLA).",
+            "why_it_matters": "This is a well-trodden positioning — many works (LL-Laplace, KFAC-Laplace, accelerated LLA, NeuralLinear with various tricks, VBLL) already target this middle ground.",
+            "search_keywords": [
+              "scalable Bayesian last layer alternative",
+              "linearized Laplace scalable Bayesian deep learning"
+            ],
+            "search_question": "Is the problem framing of bridging BLL and full-network Bayesian inference itself new?",
+            "closest_prior_work_ref": "Daxberger 2021 [similar_prior_work #5]; Kristiadi 2020 [similar_prior_work #6]; Harrison 2024 [similar_prior_work #7]",
+            "axis_verdict": "derivative"
+          },
+          {
+            "axis": "empirical",
+            "claimed_contribution": "Improved NLL on UCI regression, regret on Wheel Bandit, OOD AUROC on Wine/SVHN/CIFAR-100 versus BLL/NNGP and several baselines.",
+            "why_it_matters": "Validates that the method translates to standard benchmarks; novelty here would come from new phenomena or new SOTA, not just modest improvements over BLL.",
+            "search_keywords": [
+              "UCI regression Bayesian last layer NLL benchmark",
+              "Wheel bandit VBLL regret comparison"
+            ],
+            "search_question": "Are the empirical regimes and results comparable to prior BLL improvements, or do they expose new phenomena?",
+            "closest_prior_work_ref": "Harrison 2024 [similar_prior_work #7]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "training",
+            "claimed_contribution": "Post-hoc procedure on top of a frozen μP-trained backbone using random Jacobian projections (à la TRAK) for scalable computation of L.",
+            "why_it_matters": "If the training/feature-extraction pipeline is borrowed essentially intact from prior work, it's a derivative engineering choice.",
+            "search_keywords": [
+              "TRAK random projection Jacobian features attribution",
+              "Park 2023 projection neural tangent kernel"
+            ],
+            "search_question": "Is the Jacobian-projection pipeline itself novel?",
+            "closest_prior_work_ref": "Park 2023 [similar_prior_work #8]",
+            "axis_verdict": "derivative"
+          }
+        ],
+        "novelty_axes_searched": [
+          "Bayesian last layer NTK features uncertainty",
+          "linearized Laplace approximation last layer NTK",
+          "neural tangent kernel Gaussian process posterior approximation low rank",
+          "Variational Bayesian Last Layers Harrison 2024",
+          "TRAK Park 2023 random projection neural tangent kernel",
+          "Bayesian last layer enriched epistemic uncertainty earlier layers"
+        ],
+        "similar_prior_work": [
+          {
+            "title": "Linear gradient prediction with control variates",
+            "venue_or_source": "arXiv:2511.05187",
+            "year": "2025",
+            "similarity_summary": "Parallel work by Ciosek (a co-author of this paper) that uses the exact same low-rank assumption ϕ^m(x) ≈ A ϕ^r(x) for neural network optimization via control variates.",
+            "key_difference": "Ciosek 2025 applies the same projection idea to optimization, not uncertainty quantification. This paper applies it to derive a BLL-cost posterior covariance with variance dominance and subsampling guarantees. Explicitly acknowledged in the related work."
+          },
+          {
+            "title": "Uncertainty Quantification with the Empirical Neural Tangent Kernel",
+            "venue_or_source": "arXiv:2502.02870 (Wilson, van der Heide, Hodgkinson, Roosta)",
+            "year": "2025",
+            "similarity_summary": "Directly studies UQ using eNTK features in the same parameter-gradient framework; the most closely matched contemporaneous work on eNTK-based uncertainty.",
+            "key_difference": "Wilson et al. study eNTK-based uncertainty more broadly (and use SGD/ensemble connections). They do not propose a last-layer-feature projection that reduces inference to BLL r×r cost, nor the variance-dominance theorem and subsampling bounds proposed here."
+          },
+          {
+            "title": "Accelerated Linearized Laplace Approximation for Bayesian Deep Learning",
+            "venue_or_source": "NeurIPS 2022 (Deng, Zhou, Zhu)",
+            "year": "2022",
+            "similarity_summary": "Closest scalable-LLA competitor: addresses the same scaling bottleneck of NTK-GP/LLA inference using Nyström/randomized linear-algebra approximations.",
+            "key_difference": "ELLA uses Nyström-style low-rank approximations of the GGN/NTK Gram matrix; the present paper instead uses a deterministic projection of Jacobian features onto last-layer span, leveraging that the BLL features already form a useful subspace. The proposed method does not require sampling Nyström landmarks and gives a specific variance-dominance guarantee over BLL."
+          },
+          {
+            "title": "User-friendly tail bounds for sums of random matrices (matrix Bernstein)",
+            "venue_or_source": "Foundations of Computational Mathematics (Tropp)",
+            "year": "2012",
+            "similarity_summary": "Provides the matrix concentration tool underlying Theorems 3.4–3.5.",
+            "key_difference": "The paper applies a standard matrix-Bernstein argument to a new estimator (Â and the subsampled covariance Σ̂_k); the theoretical novelty is the application, not the technique."
+          },
+          {
+            "title": "Laplace Redux — Effortless Bayesian Deep Learning",
+            "venue_or_source": "NeurIPS 2021 (Daxberger et al.)",
+            "year": "2021",
+            "similarity_summary": "Comprehensive Laplace-approximation toolbox including last-layer and full-network variants, KFAC/diagonal/low-rank.",
+            "key_difference": "Daxberger et al. catalog existing curvature approximations; the present paper proposes a new specific reduction (last-layer-span projection) that none of those variants implements."
+          },
+          {
+            "title": "Being Bayesian, Even Just a Bit, Fixes Overconfidence in ReLU Networks",
+            "venue_or_source": "ICML 2020 (Kristiadi, Hein, Hennig)",
+            "year": "2020",
+            "similarity_summary": "Last-layer Laplace baseline; same Bayesian-just-the-last-layer philosophy and used as baseline (LL Laplace) in Table 5.",
+            "key_difference": "LL-Laplace places a Gaussian posterior on last-layer weights only and ignores Jacobian information from earlier layers. Rich-BLL explicitly uses earlier-layer Jacobian information via the projection A while keeping inference in the last-layer space."
+          },
+          {
+            "title": "Variational Bayesian Last Layers (VBLL)",
+            "venue_or_source": "arXiv:2404.11599 (Harrison, Willes, Snoek)",
+            "year": "2024",
+            "similarity_summary": "Sampling-free single-forward-pass last-layer variational Bayesian model; primary BLL-style competitor in regression and Wheel Bandit experiments.",
+            "key_difference": "VBLL uses variational inference restricted to the last layer; it does not incorporate earlier-layer NTK structure or provide a variance-dominance result over BLL. Rich-BLL's NTK-based correction is orthogonal in design."
+          },
+          {
+            "title": "TRAK: Attributing Model Behavior at Scale",
+            "venue_or_source": "arXiv:2303.14186 (Park, Georgiev, Ilyas, Leclerc, Madry)",
+            "year": "2023",
+            "similarity_summary": "Provides the random-projection trick for high-dimensional Jacobian/gradient features used in Appendix C to compute B^⊤B at scale.",
+            "key_difference": "TRAK uses the projection for data attribution; this paper imports the technique to compute the projection matrix L for posterior inference."
+          },
+          {
+            "title": "Bayesian Deep Ensembles via the Neural Tangent Kernel",
+            "venue_or_source": "NeurIPS 2020 (He, Lakshminarayanan, Teh)",
+            "year": "2020",
+            "similarity_summary": "Frames deep ensemble uncertainty via the NTK-GP and motivates NTK-based UQ.",
+            "key_difference": "He et al. operate in the full NTK-GP regime with ensembles; the present paper proposes a deterministic last-layer-span projection rather than ensemble averaging."
+          }
+        ],
+        "potential_missing_citations": [
+          "Khan et al. 'Approximate Inference Turns Deep Networks into Gaussian Processes' (NeurIPS 2019) — discusses GP-equivalence of last-layer-style Bayesian deep learning; relevant context that is not cited.",
+          "Foong et al. 'On the Expressiveness of Approximate Inference in Bayesian Neural Networks' (NeurIPS 2020) — directly studies pathologies of approximate posteriors including last-layer ones underestimating uncertainty in input regions, very pertinent motivation.",
+          "Antorán et al. 'Adapting the Linearised Laplace Model Evidence for Modern Deep Learning' (ICML 2022) — closely related work on practical linearised Laplace at scale; not cited.",
+          "Watson et al. 'Latent Derivative Bayesian Last Layer Networks' (AISTATS 2021) — earlier proposal to enrich Bayesian last layers with gradient/Jacobian information; conceptually adjacent and not cited.",
+          "Fiedler & Lucia 'Improved uncertainty quantification for neural networks with Bayesian last layer' (2023) — explicitly improves BLL uncertainty; appears in search results but not cited."
+        ],
+        "novelty_type": "technical",
+        "novelty_assessment": "moderate",
+        "novelty_risk_level": "medium",
+        "rationale": "The paper's load-bearing novelty is on the method axis: a specific, well-motivated reduction in which non-last-layer eNTK features are projected onto the span of last-layer (NNGP) features, giving a closed-form r×r posterior covariance whose variance is provably ≥ standard BLL and that admits a uniform subsampling scheme. This particular construction — coupled with the Cholesky-based feature reparameterization ϕ^L = L^⊤ϕ^r and the Loewner-order dominance proof — does not appear, as far as I can determine, in prior BLL/Laplace/NTK-GP literature, even though the high-level idea of bridging BLL and full-network Bayesian inference is well-trodden (LL-Laplace, accelerated LLA, KFAC-Laplace, VBLL, NTK-GP ensembles). The parallel work by a co-author (Ciosek et al. 2025) uses the same projection ϕ^m ≈ Aϕ^r for optimization rather than UQ and is acknowledged. The theoretical contributions are correct but rest on standard matrix-Bernstein machinery — the novelty lies in the application, not the technique. The problem framing and the training/feature-extraction pipeline (μP backbone, TRAK-style Jacobian projection) are derivative. Empirically, the experiments confirm improvements over BLL but do not introduce new phenomena, new benchmarks, or a direct comparison to the full NTK-GP/LLA they claim to approximate. The package is therefore moderately novel: one clearly new methodological recipe with neat theory, embedded in a heavily-studied area with several close neighbors (especially Wilson et al. 2025, Deng et al. 2022, and the parallel Ciosek et al. 2025), so the risk of being characterized as an incremental refinement is real but not overwhelming.",
+        "source_of_judgment": "web_search"
+      },
+      "usage": {
+        "input_tokens": 9782,
+        "output_tokens": 7321,
+        "cache_creation_input_tokens": 93055,
+        "cache_read_input_tokens": 265386
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_5": {
+      "parsed": {
+        "perspectives": {
+          "domain_expert": {
+            "add_to_field": "Provides a principled bridge between Bayesian Last Layers (NNGP) and full NTK-GP/Linearized Laplace by expressing earlier-layer eNTK contributions as a linear correction in last-layer feature space, with provable variance dominance over BLL.",
+            "beneficiaries": "Researchers working on post-hoc Bayesian deep learning, Linearized Laplace, NTK-based uncertainty, and last-layer methods (VBLL, NNGP, SNGP).",
+            "importance": "Addresses a well-known and widely cited limitation of BLLs (underestimating epistemic uncertainty) without requiring full-parameter Jacobian inversion; this is a recurring concern in the field.",
+            "improvement_meaningful": "Yes, both theoretically (closed-form covariance, variance dominance, concentration bounds) and conceptually (linking BLL to NTK-GP through a low-rank residual).",
+            "future_influence": "Likely to inspire further work using eNTK projections onto cheap feature subspaces and could be combined with KFAC/structured Laplace or activation-space methods."
+          },
+          "methodology_expert": {
+            "add_to_field": "A clean reparameterization via Cholesky factor L of B^⊤B = A^⊤A + I_r, allowing inference in r×r space; concentration analysis using matrix Bernstein for both estimator and subsampling.",
+            "beneficiaries": "Practitioners and theorists designing scalable approximations to GP/NTK posteriors and structured Laplace approximations.",
+            "importance": "The methodological insight—that the contribution of earlier-layer Jacobian features can be captured by a low-dimensional correction projected onto last-layer features—is non-trivial and well-justified.",
+            "improvement_meaningful": "Yes; the derivation is elegant and the subsampling bound's independence from N is a notable theoretical contribution.",
+            "future_influence": "Could influence design of scalable Laplace approximations, sparse GP methods on neural features, and analysis of low-rank eNTK structure."
+          },
+          "empirical_evaluation_expert": {
+            "add_to_field": "A reasonably broad empirical study spanning regression (UCI), bandits (Wheel), image classification (CIFAR-10), and OOD detection (SVHN, CIFAR-100, Wine).",
+            "beneficiaries": "Practitioners benchmarking calibration and OOD methods, particularly those comparing against last-layer baselines.",
+            "importance": "Demonstrates consistent (if modest) gains over BLL/NNGP and competitive performance with VBLL, Laplace, and ensembles at similar or lower cost.",
+            "improvement_meaningful": "Mixed: UCI NLL improvements are modest (e.g., 0.02–0.17 nats) and within range of standard baselines; bandit gains are substantial; image classification gains are small but consistent. Scaling experiments to larger backbones (ResNet/ViT, ImageNet) are absent.",
+            "future_influence": "Useful as a baseline, but stronger large-scale evidence would be needed for broader adoption."
+          },
+          "skeptical_reviewer": {
+            "add_to_field": "Incremental over existing BLL/Laplace literature; the linear projection idea (Eq. 7) is acknowledged to overlap with parallel work (Ciosek et al., 2025) on optimization.",
+            "beneficiaries": "Limited primarily to researchers already invested in BLL variants.",
+            "importance": "The problem is real but already addressed by VBLL, last-layer Laplace, and KFAC; gains over VBLL are small and inconsistent (e.g., Wine NLL 1.00 vs 1.05; Boston 2.61 vs 2.75 but Energy 0.75 vs 0.74).",
+            "improvement_meaningful": "Modest. Variance dominance over BLL is by construction (A^⊤A + I_r ≽ I_r), so the theoretical guarantee is somewhat trivial. Approximation bounds depend on λ_min(Σ) which may be small in practice, weakening guarantees.",
+            "future_influence": "Possible but limited unless extended to modern large-scale architectures with more compelling empirical wins."
+          },
+          "practical_impact_expert": {
+            "add_to_field": "A post-hoc, single-forward-pass method that requires no retraining, has BLL-level inference cost, and improves OOD detection and exploration.",
+            "beneficiaries": "Practitioners deploying neural networks needing cheap calibrated uncertainty, OOD detection, or Thompson sampling for bandits/RL.",
+            "importance": "Practical drop-in upgrade to BLLs; the subsampling scheme makes it tractable on large datasets.",
+            "improvement_meaningful": "Yes for bandits (large regret reductions) and OOD AUROC; smaller for regression NLL and ECE.",
+            "future_influence": "Could be adopted in production-style pipelines using TRAK-style random projections to scale eNTK features; lends itself to integration in libraries like laplax."
+          }
+        },
+        "consensus": [
+          "The method is theoretically sound and computationally elegant, retaining BLL cost while provably increasing variance over BLL.",
+          "Subsampling analysis (error independent of N) is a notable contribution.",
+          "Empirical gains over standard BLL/NNGP are consistent across diverse tasks.",
+          "Scope is mostly post-hoc Bayesian deep learning; impact strongest for practitioners using BLL-style uncertainty."
+        ],
+        "disagreement": [
+          "Magnitude of empirical improvements: domain/practical experts see meaningful gains, while skeptical/empirical reviewers find UCI and CIFAR gains modest and lacking large-scale validation.",
+          "Novelty: methodology expert emphasizes elegant reparameterization, while skeptic notes overlap with parallel optimization work and incremental nature relative to VBLL/Laplace.",
+          "Strength of theoretical guarantees: methodology expert finds them compelling; skeptic notes variance dominance is structural and bounds depend on potentially small λ_min(Σ)."
+        ],
+        "significance_score_1_to_10": 6,
+        "impact_assessment": "moderate"
+      },
+      "usage": {
+        "input_tokens": 2833,
+        "output_tokens": 2171,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 74047
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_6": {
+      "parsed": {
+        "problem_and_solution_formulation": {
+          "definitions_clear": [
+            "eNTK features ϕ^p, last-layer features ϕ^r, and decomposition ϕ^p = (ϕ^m, ϕ^r) are clearly defined.",
+            "BLL and NTK-GP posterior predictive forms are explicitly written (Eqs. 3-4).",
+            "Subsampled estimator NΣ̂_k is precisely defined."
+          ],
+          "assumptions_clear": [
+            "Theorems explicitly state bounded-feature and λ_min(Σ) > 0 assumptions.",
+            "Regression with Gaussian likelihood is assumed throughout the theory."
+          ],
+          "derivations_algorithms_clear": [
+            "Derivations of Eqs. 13-16 are clear; Woodbury and push-through identity proofs are step-by-step.",
+            "Appendix C describes the L-computation pipeline using random projection."
+          ],
+          "suggested_improvements_for_formulation": [
+            "Make explicit that Eq. 7 is an approximation and that the substantive assumption is that the residual ε_x is small, not that A exists exactly.",
+            "Provide a formal algorithmic specification (pseudocode) of Rich-BLL and Rich-BLL (S) including the random-projection step and choice of projection dimension q.",
+            "Formalize the extension to multi-class classification (logit-level Gaussian posterior, choice of predicted class, global vs class-specific A) rather than describing it only informally in Section 4.4.",
+            "State clearly that variance dominance holds for the population/empirical least-squares A but not necessarily under subsampling-based estimation of A.",
+            "Discuss the role and selection of σ^2 and ridge parameter λ used in classification experiments."
+          ]
+        },
+        "theoretical_support": {
+          "correct": [
+            "Theorem 3.1 (r×r reformulation via Woodbury and push-through identity) is correct.",
+            "Theorem 3.2 (equivalence of B and L feature representations via Cholesky) is correct.",
+            "Theorem 3.3 (S^B ⪰ S^bll) is correct under the exact least-squares A.",
+            "Theorem 3.4 (concentration of Â) follows correctly from matrix Bernstein.",
+            "Theorem 3.5 (subsampled posterior error) is technically correct given the stated assumptions."
+          ],
+          "partially_correct": [
+            "Theorem 3.5's claim that the bound 'does not grow with the number of training points N' is technically accurate but scales linearly with N' (test points); the per-test-point variance error is the more meaningful quantity, and the claim of 'remarkable' independence should be qualified.",
+            "Theorem 3.3 dominance result assumes A is the exact least-squares solution; under subsampling-based estimation the inequality is only approximate, but the abstract phrases this as unconditional.",
+            "The motivation chain from spectral decay (Appendix B) to small ε_x is suggestive but not proven; Lemma B.1 requires rank(eNTK) ≤ r which is essentially never exactly satisfied."
+          ],
+          "suggested_improvements_for_theoretical_support": [
+            "Derive a bound on ||S^B - S^ntk||, the actual approximation quality of the NTK-GP, not just dominance over BLL and subsampling error.",
+            "Quantify constants K and λ_min(Σ) for the actual networks in the experiments to verify the k threshold in Theorem 3.5 is satisfied.",
+            "Provide a joint subsampling bound that accounts for using the same subsample to estimate both L and Σ.",
+            "State a result for the classification setting (e.g., via GGN linearization) to bring the theory in line with experiments.",
+            "Empirically measure ε_x and ε_x' for the trained networks to support the practical relevance of Proposition B.4."
+          ]
+        },
+        "experimental_support": {
+          "supported": [
+            "Rich-BLL improves NLL over BLL/NNGP on UCI regression (Table 2, 20 seeds with SEs).",
+            "Rich-BLL substantially reduces cumulative regret vs BLL/NNGP on Wheel Bandit, especially in high-δ regimes (Table 3).",
+            "Subsampling has minimal performance impact on UCI regression (Tables 2 and 6 ablation)."
+          ],
+          "partially_supported": [
+            "Rich-BLL improves OOD detection — supported for Wine (red vs white) and SVHN, but CIFAR-100 AUROC gain is small (0.65 vs 0.62) and tied with Ensembles.",
+            "Subsampling preserves uncertainty quality broadly — only directly ablated on small UCI datasets; CIFAR-10 uses only the subsampled variant without comparison to the full method.",
+            "Rich-BLL is competitive with more expensive baselines — true in some settings, but Dropout achieves significantly lower NLL on CIFAR-10 (0.31 vs 0.56) and ensembles still win some UCI datasets."
+          ],
+          "unsupported_or_overstated": [
+            "Claim that Rich-BLL approximates the full NTK-GP — only one 1D toy figure supports this; no quantitative comparison to NTK-GP/LLA on any real dataset.",
+            "Claim that the eNTK low-rank assumption is empirically satisfied — Figures 3-4 show spectral decay, but the actual residual ε_x is not measured.",
+            "'Scalability' claim — largest experiment is CIFAR-10 (50k); no wall-clock or memory measurements; no experiments on truly large-scale data where scalability matters most.",
+            "Computational cost reduction is only shown via asymptotic complexity table; no actual timing comparison.",
+            "Bolding in Table 5 includes Rich-BLL on NLL despite Dropout being clearly lower — overstates competitiveness."
+          ],
+          "suggested_improvements_for_claim_support": [
+            "Provide direct quantitative comparison to NTK-GP / LLA on at least small/medium datasets where it is feasible.",
+            "Report wall-clock and memory measurements for all methods, including the Rich-BLL pre-processing step (random projection, L computation).",
+            "Measure ε_x and ε_x' empirically on the actual networks used to validate the low-rank assumption.",
+            "Test the subsampling scheme on a larger-scale dataset (e.g., ImageNet, full CIFAR with much larger N) where subsampling is essential.",
+            "Add image classification accuracy to Table 5 (mentioned in text but not reported).",
+            "Verify protocol consistency with Harrison et al. (2024) for borrowed Wheel Bandit baselines, or re-run them locally.",
+            "Add experiments on additional standard UCI datasets (e.g., protein, naval) and additional architectures (e.g., ResNet, transformer)."
+          ]
+        },
+        "experimental_rigor": {
+          "baseline_quality": "Strong coverage of last-layer and Bayesian baselines (BLL, VBLL, LL Laplace, SNGP, MC dropout, ensemble, BBB, SWAG, RBF GP, NeuralLinear variants), but the central baseline implied by motivation — full NTK-GP / LLA — is absent from quantitative experiments.",
+          "missing_baselines": [
+            "Full NTK-GP or Linearized Laplace Approximation (LLA) on small-to-medium datasets.",
+            "KFAC Laplace / subnetwork Laplace variants.",
+            "Last-layer Laplace (LL-LLA) on regression and bandit tasks (only included for CIFAR-10).",
+            "Spectral / low-rank NTK approximations as direct comparisons to the projection scheme."
+          ],
+          "dataset_quality": "UCI datasets are standard but small; only 5 of the commonly used 9-10 are reported. Image classification only uses CIFAR-10 with a single CNN. Bandit uses standard Wheel Bandit setup.",
+          "better_datasets": [
+            "UCI protein and naval for larger-N regression.",
+            "ImageNet or TinyImageNet for testing scalability claim.",
+            "Additional tabular OOD benchmarks beyond Wine.",
+            "Standard OOD benchmarks like CIFAR-10 vs CIFAR-10C or near-OOD vs far-OOD splits."
+          ],
+          "metric_appropriateness": "NLL, ECE, AUROC, and cumulative regret are appropriate, though RMSE/accuracy would help disentangle calibration from predictive accuracy.",
+          "better_metric": [
+            "RMSE on UCI regression in addition to NLL.",
+            "Test accuracy on CIFAR-10 (mentioned in text, not in Table 5).",
+            "Direct posterior covariance error vs NTK-GP where feasible.",
+            "Wall-clock / memory metrics for the scalability claim."
+          ],
+          "missing_ablations": [
+            "Class-specific vs global transformation matrix in classification (mentioned but not reported quantitatively).",
+            "Sensitivity to noise variance σ^2.",
+            "Sensitivity to ridge λ used in classification experiments.",
+            "Sensitivity to random projection dimension q in Appendix C.",
+            "Subsampling ablation on larger datasets (CIFAR-10) and at fractions approaching the theoretical O(r) regime.",
+            "Effect of last-layer width r on quality of approximation."
+          ],
+          "statistical_significance": "Standard errors over 10-20 seeds are reported, which is reasonable, but no formal significance tests. Some SEs are suspiciously large (e.g., Ensemble SVHN AUROC 0.80 ± 0.20, Dropout NLL 0.31 ± 0.05) and not discussed.",
+          "better_significance_test_or_confidence_interval": [
+            "Paired t-tests or Wilcoxon signed-rank tests across seeds for head-to-head comparisons.",
+            "Investigate and report outlier seeds for high-variance baselines.",
+            "Bootstrap confidence intervals for AUROC."
+          ],
+          "hyperparameter_clarity": "Most hyperparameters are documented in Appendix D, but classification hyperparameters (e.g., ridge λ=1.0, projection dimension q, per-class feature subsets of size 1024) are unmotivated and not ablated.",
+          "negative_results_discussed": "partial",
+          "possible_confounders": [
+            "Borrowed Wheel Bandit baselines (VBLL, NeuralLinear, LinDiagPost) from Harrison et al. (2024) — potential protocol mismatch.",
+            "Empirical Bayes noise variance heuristic in bandits may differ from baselines' setup.",
+            "Use of µP parameterization across all baselines may favor methods aligned with NTK structure (e.g., Rich-BLL).",
+            "Single CNN architecture for CIFAR-10 limits generalizability.",
+            "Ridge regularization choice in classification may affect comparison with BLL.",
+            "Random projection dimension q in Appendix C affects approximation but is unreported."
+          ],
+          "confounder_reduction_alternatives": [
+            "Re-run borrowed bandit baselines under identical protocol.",
+            "Repeat CIFAR-10 with at least one additional architecture (ResNet) and another ID dataset.",
+            "Ablate µP vs standard parameterization.",
+            "Match noise-variance treatment across all bandit baselines."
+          ],
+          "reproducibility_score_1_to_10": 6,
+          "suggestions_for_improving_reproducibility": [
+            "Release code and seeds for all experiments.",
+            "Specify the random projection dimension q used in classification.",
+            "Provide explicit pseudocode for Rich-BLL/Rich-BLL (S) including pre-processing.",
+            "Document Wheel Bandit baselines protocol explicitly to ensure consistency with borrowed numbers.",
+            "Report computational resources and wall-clock times used."
+          ]
+        }
+      },
+      "usage": {
+        "input_tokens": 11026,
+        "output_tokens": 4146,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 74047
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_7": {
+      "parsed": {
+        "strengths": [
+          "Clean and elegant methodological idea: expressing the contribution of earlier-layer eNTK features as a linear projection onto the last-layer feature span, reducing posterior inference to an r×r problem at standard BLL cost.",
+          "Solid theoretical analysis: Theorems 3.1–3.2 give closed-form reductions via Woodbury and a push-through identity; Theorem 3.3 provably establishes variance dominance over BLL; Theorems 3.4 and 3.5 provide matrix-Bernstein-based concentration bounds for both the estimator Â and the subsampled posterior, with the subsampling bound notably independent of N.",
+          "Broad empirical evaluation across qualitatively different tasks (UCI regression, Wheel Bandit, CIFAR-10 classification with SVHN/CIFAR-100 OOD, Wine OOD), with consistent improvements over BLL/NNGP baselines.",
+          "Strong gains in the Wheel Bandit setting (e.g., 21.8 vs 55.8 cumulative regret at δ=0.99) where epistemic uncertainty quality directly drives exploration.",
+          "Practical attractiveness: post-hoc method, single forward pass at inference, no retraining required, with a subsampling extension grounded in theory.",
+          "Appendix B provides an interpretable framework (relative quasi-low-rank residual ε_x) that links the method's quality to a geometric property of the eNTK; Appendix C describes a scalable computation pipeline using random projections."
+        ],
+        "weaknesses": [
+          "No quantitative comparison to the actual full NTK-GP / Linearized Laplace baseline on any real dataset — the central motivation (approximating NTK-GP) is only illustrated via a 1D toy figure, leaving the approximation quality on real tasks unmeasured.",
+          "The eNTK low-rank assumption that underlies the approach is supported only by spectral plots (Figures 3–4) showing that >100–200 eigenvalues are needed to explain 95% of trace; the relevant residual ε_x is never measured for the actual networks, so the practical validity of the low-rank-in-last-layer-span assumption is not directly demonstrated.",
+          "The variance-dominance result (Theorem 3.3) holds exactly only when A is the population/exact least-squares solution. Under empirical subsampling-based estimation, the dominance is only approximate, but the abstract/intro phrases it as unconditional.",
+          "Theorem 3.5 conditions on a fixed L while in practice L itself is estimated (and possibly subsampled) — the joint error from simultaneously estimating L and Σ from data is not analyzed.",
+          "Scalability claim is supported only by an asymptotic complexity table; no wall-clock or memory measurements are reported anywhere, and the largest experiment is CIFAR-10 (50k examples).",
+          "Empirical improvements over strong competitors (VBLL, Dropout, Ensembles) are often within standard error or mixed: e.g., CIFAR-10 NLL 0.56 (Rich-BLL S) vs 0.31 (Dropout); CIFAR-100 AUROC 0.65 (Rich-BLL) vs 0.65 (Ensemble); several UCI datasets show small gaps to VBLL.",
+          "Classification extension is presented informally — choice of global vs class-specific transformation, choice of predicted-class logit variance as OOD score, ridge λ=1.0, projection dimension q, and per-class subset size 1024 are not ablated or theoretically justified; the regression-style theory does not formally cover this setting.",
+          "Several Wheel Bandit baselines (VBLL, NeuralLinear, LinDiagPost) are imported from Harrison et al. (2024) rather than re-run under matched protocol, introducing a possible confounder.",
+          "Important baselines are missing: full LLA/NTK-GP (where feasible), KFAC/subnetwork Laplace, and LL-LLA for regression and bandits (only included for image classification).",
+          "Single architecture per experiment (small MLP for regression, single CNN for CIFAR-10); no evaluation on modern architectures (ResNet, ViT) or larger datasets to support the scalability story.",
+          "Ablations of key hyperparameters (σ², ridge λ, projection dim q, last-layer width r, subsampling fraction on large datasets) are missing or limited."
+        ],
+        "fatal_flaws": [],
+        "minor_issues": [
+          "Pseudocode for Rich-BLL and Rich-BLL (S) including the random-projection preprocessing would aid clarity and reproducibility.",
+          "Test accuracy on CIFAR-10 is mentioned in the experimental setup text but not reported in Table 5.",
+          "Bolding in Table 5 includes Rich-BLL on NLL despite Dropout being substantially lower; bolding choices should be reconsidered.",
+          "Statistical significance is reported via standard errors only; paired tests across seeds would strengthen claims, particularly for closely matched baselines.",
+          "Some standard errors are large (e.g., Ensemble SVHN AUROC 0.80 ± 0.20) without discussion of variance sources.",
+          "The constant K' in Theorem 3.4 and the threshold in Theorem 3.5 depend on λ_min(Σ), which may be small for over-parameterized r; this practical concern is not discussed.",
+          "Appendix C uses random projection from Park et al. (2023), but projection dimension q is not specified for any experiment.",
+          "Notational asymmetry: the abstract claims variance is 'provably greater or equal' to BLL, while strictly this holds only for the exact least-squares A; this should be stated more precisely.",
+          "Theorem 3.5 bound scales linearly with N' (number of test points); the per-test-point variance error would be a more interpretable quantity.",
+          "Typo / minor: 'µtransfer' citation formatting and several arXiv IDs (e.g., '2602.01279', '2602.14934') appear with future-looking numeric prefixes that should be verified.",
+          "Computational complexity table omits the one-time cost of computing the projection L (Jacobian extraction with random projection), which is non-trivial."
+        ],
+        "questions_for_authors": [
+          "Can you quantitatively compare Rich-BLL's predictive covariance to the full NTK-GP/LLA on at least small/medium datasets (UCI), to validate the central approximation claim beyond the 1D toy figure?",
+          "What are the measured values of the residual ε_x and ε_x' (Appendix B) for the trained MLP and CNN in your experiments? Are they small enough to support the linear-projection assumption?",
+          "How does variance dominance over BLL hold (or fail) empirically when A is estimated via subsampling rather than exact least-squares? Can the theorem be extended to this realistic regime?",
+          "Can you provide a joint concentration bound covering simultaneous subsampling-based estimation of L and Σ, rather than treating L as fixed in Theorem 3.5?",
+          "What is the wall-clock and memory cost of Rich-BLL (including the preprocessing step to compute L via random projection) compared to BLL, VBLL, last-layer Laplace, and full LLA?",
+          "What projection dimension q (Appendix C) was used in the CIFAR-10 experiments, and how sensitive are the results to this choice?",
+          "Why was a single global transformation chosen for classification over class-specific ones? Could you report a quantitative comparison?",
+          "How does the method scale to larger datasets (e.g., ImageNet) and to modern architectures (ResNet, ViT)? Are there fundamental obstacles to applying it there?",
+          "Were the borrowed Wheel Bandit baselines (VBLL, NeuralLinear, LinDiagPost) verified under your protocol? How would they compare if re-run locally?",
+          "How sensitive is performance to the noise variance σ², ridge λ, last-layer width r, and the choice of µP vs standard parameterization?",
+          "Why does Rich-BLL (S) outperform Rich-BLL slightly in some bandit settings (e.g., δ=0.7) — is this within noise, or does subsampling provide an implicit regularization effect?"
+        ],
+        "recommendation": "weak_accept",
+        "recommendation_rationale": "The paper makes a clean and theoretically grounded contribution by extending Bayesian Last Layers with a low-dimensional eNTK correction that preserves BLL-level inference cost while provably increasing predictive variance. The Cholesky reparameterization, push-through identity, and concentration analysis for both estimator and subsampling are technically sound and elegant, with the subsampling bound's independence from N being a notable theoretical observation. Empirical results consistently improve over BLL/NNGP across regression, contextual bandits (large gains), and OOD detection, with the subsampling variant matching the full method closely. However, several limitations temper enthusiasm: (i) the central claim of approximating NTK-GP is never quantitatively verified against the actual NTK-GP/LLA baseline on real data; (ii) the low-rank-in-last-layer-span assumption is supported only by qualitative spectral plots, never by direct measurement of the residual ε_x; (iii) scalability is asserted via asymptotic complexity only — no wall-clock or larger-scale experiments are provided; (iv) gains over strong competitors (VBLL, Dropout, Ensembles) are often within noise; and (v) the classification extension is informal and not theoretically grounded. On balance, the methodological clarity, theoretical guarantees, and consistent (if modest) empirical improvements justify acceptance as a useful contribution to the Bayesian deep learning literature, but the missing NTK-GP comparison and scalability evidence prevent a stronger recommendation.",
+        "confidence_1_to_5": 4
+      },
+      "usage": {
+        "input_tokens": 13020,
+        "output_tokens": 3370,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 74047
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_8": {
+      "parsed": {
+        "summary_of_paper": "The paper introduces Rich-BLL, a post-hoc uncertainty estimation method that enriches Bayesian Last Layers (BLLs) by incorporating contributions from earlier layers through a low-dimensional projection of empirical NTK (eNTK) features onto the span of last-layer features. The earlier-layer Jacobian features are regressed onto last-layer features via closed-form least squares, producing a kernel correction B⊤B = LL⊤ that allows inference to be carried out in the r-dimensional last-layer space at standard BLL cost. A uniform subsampling scheme further reduces cost to depend on the subsample size k rather than the training set size N.\n\nThe authors provide several theoretical results: a closed-form r×r predictive covariance via Woodbury and a push-through identity (Thm 3.1–3.2); a proof that Rich-BLL predictive variance is always at least as large as standard BLL (Thm 3.3); and matrix-Bernstein-based concentration bounds for both the projection estimator (Thm 3.4) and the subsampled posterior (Thm 3.5), with the latter notably independent of N. Empirical results on UCI regression, the Wheel contextual bandit, CIFAR-10 classification, and OOD detection tasks show consistent improvements over BLL/NNGP and competitive performance versus VBLL, last-layer Laplace, SNGP, and ensembles.",
+        "main_strengths": [
+          "Clean and elegant methodological idea: expressing the contribution of earlier-layer eNTK features as a linear projection onto the last-layer feature span, reducing posterior inference to an r×r problem at standard BLL cost.",
+          "Solid theoretical analysis: Theorems 3.1–3.2 give closed-form reductions via Woodbury and a push-through identity; Theorem 3.3 establishes variance dominance over BLL; Theorems 3.4 and 3.5 provide matrix-Bernstein concentration bounds, with the subsampling bound being independent of N.",
+          "Broad empirical evaluation across qualitatively different tasks (UCI regression, Wheel Bandit, CIFAR-10 with SVHN/CIFAR-100 OOD, Wine OOD), with consistent improvements over BLL/NNGP.",
+          "Strong gains in the Wheel Bandit setting (e.g., 21.8 vs 55.8 cumulative regret at δ=0.99), where epistemic uncertainty quality directly drives exploration performance.",
+          "Practical post-hoc method with no retraining required, plus a subsampling extension grounded in theory.",
+          "Appendix B provides an interpretable framework (relative quasi-low-rank residual ε_x) connecting the method to a geometric property of the eNTK, and Appendix C describes a scalable computation pipeline using random projections."
+        ],
+        "main_weaknesses": [
+          "No quantitative comparison to the actual full NTK-GP / Linearized Laplace baseline on any real dataset. The central motivation (approximating NTK-GP) is only illustrated via a 1D toy figure, leaving the approximation quality on real tasks unmeasured.",
+          "The eNTK low-rank assumption underlying the approach is supported only by spectral plots (Figures 3–4), which actually show that >100–200 eigenvalues are needed to explain 95% of trace. The relevant residual ε_x defined in Appendix B is never measured for the actual trained networks.",
+          "The variance-dominance result (Theorem 3.3) holds exactly only when A is the population/exact least-squares solution. Under empirical and subsampled estimation, dominance is only approximate, but the abstract and intro phrase the result unconditionally ('provably greater or equal').",
+          "Theorem 3.5 conditions on a fixed L while in practice L itself is estimated (and possibly subsampled). The joint error from simultaneously estimating L and Σ is not analyzed.",
+          "Scalability claims are supported only by an asymptotic complexity table; no wall-clock or memory measurements are reported, and the largest experiment is CIFAR-10 (50k examples) on a small CNN.",
+          "Empirical improvements over strong competitors are often within standard error or mixed: e.g., CIFAR-10 NLL 0.56 (Rich-BLL S) vs 0.31 (Dropout); CIFAR-100 AUROC 0.65 (Rich-BLL) vs 0.65 (Ensemble); several UCI datasets show small gaps to VBLL.",
+          "The classification extension is presented informally: the choice of global vs class-specific transformation, the use of predicted-class logit variance as OOD score, ridge λ=1.0, projection dimension q, and per-class subset size 1024 are not ablated or justified, and the regression-style theory does not formally cover this setting.",
+          "Several Wheel Bandit baselines (VBLL, NeuralLinear, LinDiagPost) are imported from Harrison et al. (2024) rather than re-run under matched protocol, introducing a possible confounder.",
+          "Important baselines are missing or only partially included: full LLA/NTK-GP where feasible, KFAC/subnetwork Laplace, and LL-LLA (only listed for image classification)."
+        ],
+        "detailed_comments": [
+          "Sec. 3.2: The derivation is clean, and the push-through identity (Eq. 30) used to avoid inverting the p×p system is a nice technical step. The Cholesky reparameterization in Theorem 3.2 makes the method elegantly implementable, since only L ∈ R^{r×r} needs to be stored. However, the operational sequence — estimate A from data, form B⊤B, then Cholesky — should be made explicit via pseudocode for reproducibility.",
+          "Sec. 3.2, Theorem 3.3: The dominance result is mathematically correct for exact A, but the abstract phrasing ('provably greater or equal') overstates what holds in practice, where A is estimated. Even Theorem 3.4 only gives O(1/√N) convergence of Â to A; this small mismatch should be clearly acknowledged.",
+          "Sec. 3.3, Theorem 3.5: The N-independent bound is a nice observation, but the constant scales as 1/λ_min(Σ) and the threshold on k scales as 1/λ_min(Σ)^2. For wide last layers (large r), λ_min(Σ) can be small, and the practical implication of this dependence is not discussed.",
+          "Appendix B: The framework of the relative quasi-low-rank residual ε_x is the right conceptual bridge between spectral decay and Rich-BLL accuracy. It is surprising and disappointing that ε_x is never measured empirically for the experimental networks; doing so would directly substantiate the central methodological claim.",
+          "Figures 3–4: The spectra do show concentration, but only ~95% of trace is captured by roughly 100–250 directions in both networks. Whether the last-layer feature span (of dimension r = 50/512) contains these dominant directions is precisely what determines Rich-BLL accuracy, and this is not verified.",
+          "Table 1: The complexity table omits the one-time cost of computing L, which involves Jacobian extraction with random projection. This should be added or commented on.",
+          "Table 5 (CIFAR-10): Test accuracy is not reported despite being mentioned in the experimental setup; bolding choices are inconsistent (e.g., Rich-BLL bolded on NLL despite Dropout being substantially lower). The Ensemble's SVHN AUROC of 0.80 ± 0.20 has remarkably high variance and should be discussed.",
+          "Table 3 (Wheel Bandit): Rich-BLL (S) outperforms Rich-BLL at δ=0.7 — is this within noise, or evidence of an implicit regularization effect from subsampling? A brief comment would be helpful.",
+          "Sec. 4.4: The classification setup involves several non-trivial design choices (global vs per-class transformation, ridge λ, projection dimension q, subset size 1024) that are stated as outcomes of internal comparisons but not quantitatively shown. An ablation table would strengthen the contribution.",
+          "Bandit experiments: The empirical-Bayes noise heuristic ('periodically sets the aleatoric noise variance to the mean of recent squared prediction errors') is potentially impactful and should be ablated against a fixed σ² to ensure the gains are not driven primarily by this device.",
+          "Minor: arXiv IDs starting '2602.*' appear future-dated; the µTransfer reference is formatted as a non-standard 'Microsoft Research, 8, 2022'."
+        ],
+        "questions_for_authors": [
+          "Can you quantitatively compare Rich-BLL's predictive covariance to the full NTK-GP / LLA on at least small/medium datasets (UCI), to validate the central approximation claim beyond the 1D toy figure?",
+          "What are the measured values of the residual ε_x and ε_{x'} (Appendix B) for the trained MLP and CNN in your experiments? Are they small enough to support the linear-projection assumption?",
+          "How does variance dominance over BLL (Theorem 3.3) hold empirically when A is estimated via subsampling rather than exact least-squares? Can the theorem be extended to this realistic regime?",
+          "Can you provide a joint concentration bound covering simultaneous estimation of L and Σ from data, rather than treating L as fixed in Theorem 3.5?",
+          "What are the wall-clock and memory costs of Rich-BLL (including the preprocessing to compute L via random projection) compared to BLL, VBLL, last-layer Laplace, and full LLA?",
+          "What projection dimension q (Appendix C) was used in the CIFAR-10 experiments, and how sensitive are the results to this choice?",
+          "Why was a single global transformation chosen over class-specific ones for classification? Can you provide a quantitative comparison?",
+          "How does the method scale to larger datasets (e.g., ImageNet) and modern architectures (ResNet, ViT)? Are there fundamental obstacles?",
+          "Were the borrowed Wheel Bandit baselines (VBLL, NeuralLinear, LinDiagPost) verified under your protocol? How would they compare if re-run locally with the same noise heuristic?",
+          "How sensitive is performance to σ², ridge λ, last-layer width r, and the choice of µP vs standard parameterization?",
+          "How does the empirical-Bayes noise heuristic in the bandit experiments affect Rich-BLL versus baselines? Is the regret gap preserved with a fixed σ²?"
+        ],
+        "suggestions_for_improvement": [
+          "Add a quantitative comparison against the full NTK-GP / LLA on at least the UCI regression datasets (and ideally on a small image-classification setup), reporting both predictive uncertainty and computational cost.",
+          "Empirically measure the residual ε_x defined in Appendix B for the trained networks, ideally as a function of the last-layer width r, to directly support the linear-projection assumption.",
+          "Sharpen Theorem 3.3's framing in the abstract and introduction: state precisely that exact dominance holds for the population estimator A, and quantify (or empirically illustrate) how subsampling-based estimation may temporarily violate this property.",
+          "Extend the concentration analysis to cover joint estimation of L and Σ, or at least discuss the qualitative effect.",
+          "Provide wall-clock and memory measurements for Rich-BLL (including the L-computation pipeline) versus BLL, VBLL, LL-Laplace, and full LLA on at least one task.",
+          "Add ablations on the projection dimension q, ridge λ, last-layer width r, σ², and on the global vs class-specific transformation choice for classification.",
+          "Include pseudocode for Rich-BLL and Rich-BLL (S), and report test accuracy for CIFAR-10 in Table 5; reconsider bolding choices.",
+          "Re-run the Wheel Bandit baselines under matched protocol, or at minimum discuss the protocol differences with Harrison et al. (2024).",
+          "Add LL-LLA / KFAC Laplace baselines for regression and bandit experiments, since they are natural competitors at comparable cost.",
+          "Verify and fix arXiv ID formatting (e.g., '2602.*' entries) and reference formatting for µTransfer."
+        ],
+        "overall_recommendation": "weak_accept",
+        "reviewer_confidence_1_to_5": 4,
+        "score_card": {
+          "soundness_1_to_4": 3,
+          "presentation_1_to_4": 3,
+          "contribution_1_to_4": 2,
+          "overall_1_to_10": 6
+        }
+      },
+      "usage": {
+        "input_tokens": 6120,
+        "output_tokens": 4360,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 74047
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_9": {
+      "parsed": {
+        "hallucinated_comments": [],
+        "misrepresentations": [],
+        "missed_strengths": [],
+        "missed_weaknesses": [
+          "The paper assumes N >= r for the least-squares estimator A to be well-defined (Eq. 9), but this may not hold in low-data UCI settings (e.g., Boston) with r=50 last-layer features and subsampling at 30-40% — this regime is not discussed."
+        ],
+        "too_strong_claims": [
+          "The critique that 'CIFAR-10 NLL 0.56 vs 0.31 (Dropout)' implies Rich-BLL is weak should be tempered: Dropout uses a different training procedure (stochastic forward passes), so direct comparison is not entirely apples-to-apples among post-hoc methods."
+        ],
+        "non_actionable_criticisms": [],
+        "tone_issues": [],
+        "consistency_between_summary_weaknesses_and_recommendation": "consistent",
+        "external_novelty_claims_supported": "partial",
+        "corrections_needed": [
+          "Soften the framing of the CIFAR-10 NLL comparison with Dropout to acknowledge that Dropout requires a different training procedure, while still noting that the comparison is informative.",
+          "Add a brief comment in 'detailed_comments' noting the N >= r assumption for Eq. 9 and how it interacts with subsampling at small UCI datasets.",
+          "Consider noting in detailed comments that Figure 1's NTK-GP panel suggests Rich-BLL visually matches NTK-GP only qualitatively — quantitative match on this toy was not provided."
+        ]
+      },
+      "usage": {
+        "input_tokens": 4690,
+        "output_tokens": 520,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 74047
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_10": {
+      "parsed": {
+        "final_review": {
+          "summary_of_paper": "The paper introduces Rich-BLL, a post-hoc uncertainty estimation method that enriches Bayesian Last Layers (BLLs) by incorporating contributions from earlier layers through a low-dimensional projection of empirical NTK (eNTK) features onto the span of last-layer features. The earlier-layer Jacobian features are regressed onto last-layer features via closed-form least squares, producing a kernel correction B^T B = L L^T that allows inference to be carried out in the r-dimensional last-layer space at standard BLL cost. A uniform subsampling scheme further reduces cost to depend on the subsample size k rather than the training set size N.\n\nThe authors provide several theoretical results: a closed-form r x r predictive covariance via Woodbury and a push-through identity (Thm 3.1-3.2); a proof that Rich-BLL predictive variance is always at least as large as standard BLL when A is the exact solution (Thm 3.3); and matrix-Bernstein-based concentration bounds for both the projection estimator (Thm 3.4) and the subsampled posterior (Thm 3.5), with the latter notably independent of N. Empirical results on UCI regression, the Wheel contextual bandit, CIFAR-10 classification, and OOD detection tasks show consistent improvements over BLL/NNGP and competitive performance versus VBLL, last-layer Laplace, SNGP, and ensembles.",
+          "main_strengths": [
+            "Clean and elegant methodological idea: expressing the contribution of earlier-layer eNTK features as a linear projection onto the last-layer feature span, reducing posterior inference to an r x r problem at standard BLL cost.",
+            "Solid theoretical analysis: Theorems 3.1-3.2 give closed-form reductions via Woodbury and a push-through identity; Theorem 3.3 establishes variance dominance over BLL; Theorems 3.4 and 3.5 provide matrix-Bernstein concentration bounds, with the subsampling bound being independent of N.",
+            "Broad empirical evaluation across qualitatively different tasks (UCI regression, Wheel Bandit, CIFAR-10 with SVHN/CIFAR-100 OOD, Wine OOD), with consistent improvements over BLL/NNGP.",
+            "Strong gains in the Wheel Bandit setting (e.g., 21.8 vs 55.8 cumulative regret at delta=0.99), where epistemic uncertainty quality directly drives exploration performance.",
+            "Practical post-hoc method with no retraining required, plus a subsampling extension grounded in theory.",
+            "Appendix B provides an interpretable framework (relative quasi-low-rank residual epsilon_x) connecting the method to a geometric property of the eNTK, and Appendix C describes a scalable computation pipeline using random projections."
+          ],
+          "main_weaknesses": [
+            "No quantitative comparison to the full NTK-GP / Linearized Laplace baseline on any real dataset. The central motivation (approximating NTK-GP) is only illustrated via a 1D toy figure (Fig. 1), and even there the match is shown only qualitatively.",
+            "The eNTK low-rank assumption underlying the approach is supported only by spectral plots (Figures 3-4), which actually show that >100-250 eigenvalues are needed to explain 95% of trace. The relevant residual epsilon_x defined in Appendix B is never measured for the actual trained networks.",
+            "The variance-dominance result (Theorem 3.3) holds exactly only when A is the population/exact least-squares solution. Under empirical and subsampled estimation, dominance is only approximate, but the abstract and intro phrase the result unconditionally ('provably greater or equal').",
+            "Theorem 3.5 conditions on a fixed L while in practice L itself is estimated (and possibly subsampled). The joint error from simultaneously estimating L and Sigma is not analyzed.",
+            "Scalability claims are supported only by an asymptotic complexity table; no wall-clock or memory measurements are reported, and the largest experiment is CIFAR-10 (50k examples) on a small CNN.",
+            "The classification extension is presented informally: the choice of global vs class-specific transformation, the use of predicted-class logit variance as OOD score, ridge lambda=1.0, projection dimension q, and per-class subset size 1024 are not ablated or justified, and the regression-style theory does not formally cover this setting.",
+            "Several Wheel Bandit baselines (VBLL, NeuralLinear, LinDiagPost) are imported from Harrison et al. (2024) rather than re-run under matched protocol, introducing a possible confounder.",
+            "Important baselines are missing or only partially included: full LLA/NTK-GP where feasible, KFAC/subnetwork Laplace, and LL-LLA (only listed for image classification, not regression or bandits)."
+          ],
+          "detailed_comments": [
+            "Sec. 3.2: The derivation is clean, and the push-through identity (Eq. 30) used to avoid inverting the p x p system is a nice technical step. The Cholesky reparameterization in Theorem 3.2 makes the method elegantly implementable, since only L in R^{r x r} needs to be stored. However, the operational sequence -- estimate A from data, form B^T B, then Cholesky -- should be made explicit via pseudocode for reproducibility.",
+            "Sec. 3.2, Theorem 3.3: The dominance result is mathematically correct for exact A, but the abstract phrasing ('provably greater or equal') overstates what holds in practice, where A is estimated. Theorem 3.4 only gives O(1/sqrt(N)) convergence of hat(A) to A; this mismatch should be clearly acknowledged.",
+            "Eq. 9 requires N >= r for Phi_x^{r T} Phi_x^r to be invertible. With subsampling at 30-40% on small UCI datasets like Boston (~500 examples) and r=50, this can leave the regime quite tight; a brief discussion of how the method behaves (and what regularization is used) when k approaches r would be valuable.",
+            "Sec. 3.3, Theorem 3.5: The N-independent bound is a nice observation, but the constant scales as 1/lambda_min(Sigma) and the threshold on k scales as 1/lambda_min(Sigma)^2. For wide last layers (large r), lambda_min(Sigma) can be small, and the practical implication of this dependence is not discussed.",
+            "Appendix B: The framework of the relative quasi-low-rank residual epsilon_x is the right conceptual bridge between spectral decay and Rich-BLL accuracy. It would significantly strengthen the paper to measure epsilon_x empirically for the experimental networks; doing so would directly substantiate the central methodological claim.",
+            "Figures 3-4: The spectra do show concentration, but only ~95% of trace is captured by roughly 100-250 directions in both networks. Whether the last-layer feature span (of dimension r = 50/512) contains these dominant directions is precisely what determines Rich-BLL accuracy, and this is not verified.",
+            "Figure 1: The NTK-GP and Rich-BLL panels look similar qualitatively, but no quantitative comparison (e.g., predictive variance MSE) is reported even on this 1D toy. Adding such a measurement would help substantiate the central claim.",
+            "Table 1: The complexity table omits the one-time cost of computing L, which involves Jacobian extraction with random projection. This should be added or commented on.",
+            "Table 5 (CIFAR-10): Test accuracy is not reported despite being mentioned in the experimental setup; bolding choices are inconsistent. The comparison with Dropout (NLL 0.31) is not strictly apples-to-apples since Dropout requires a different training procedure (stochastic forward passes), whereas Rich-BLL is post-hoc on a deterministic backbone; however, even among post-hoc/single-pass methods, this gap is informative for context. The Ensemble's SVHN AUROC of 0.80 +/- 0.20 has remarkably high variance and should be discussed.",
+            "Table 3 (Wheel Bandit): Rich-BLL (S) outperforms Rich-BLL at delta=0.7 -- is this within noise, or evidence of an implicit regularization effect from subsampling? A brief comment would be helpful.",
+            "Sec. 4.4: The classification setup involves several non-trivial design choices (global vs per-class transformation, ridge lambda, projection dimension q, subset size 1024) that are stated as outcomes of internal comparisons but not quantitatively shown. An ablation table would strengthen the contribution.",
+            "Bandit experiments: The empirical-Bayes noise heuristic ('periodically sets the aleatoric noise variance to the mean of recent squared prediction errors') is potentially impactful and should be ablated against a fixed sigma^2 to ensure the gains are not driven primarily by this device.",
+            "Minor: arXiv IDs starting '2602.*' appear future-dated (likely a typo for 2502 or 2602 should be checked); the muTransfer reference is formatted as a non-standard 'Microsoft Research, 8, 2022'."
+          ],
+          "questions_for_authors": [
+            "Can you quantitatively compare Rich-BLL's predictive covariance to the full NTK-GP / LLA on at least small/medium datasets (UCI), to validate the central approximation claim beyond the 1D toy figure?",
+            "What are the measured values of the residual epsilon_x and epsilon_{x'} (Appendix B) for the trained MLP and CNN in your experiments? Are they small enough to support the linear-projection assumption?",
+            "How does variance dominance over BLL (Theorem 3.3) hold empirically when A is estimated via subsampling rather than exact least-squares? Can the theorem be extended to this realistic regime?",
+            "Can you provide a joint concentration bound covering simultaneous estimation of L and Sigma from data, rather than treating L as fixed in Theorem 3.5?",
+            "What are the wall-clock and memory costs of Rich-BLL (including the preprocessing to compute L via random projection) compared to BLL, VBLL, last-layer Laplace, and full LLA?",
+            "What projection dimension q (Appendix C) was used in the CIFAR-10 experiments, and how sensitive are the results to this choice?",
+            "Why was a single global transformation chosen over class-specific ones for classification? Can you provide a quantitative comparison?",
+            "How does the method scale to larger datasets (e.g., ImageNet) and modern architectures (ResNet, ViT)? Are there fundamental obstacles?",
+            "Were the borrowed Wheel Bandit baselines (VBLL, NeuralLinear, LinDiagPost) verified under your protocol? How would they compare if re-run locally with the same noise heuristic?",
+            "How sensitive is performance to sigma^2, ridge lambda, last-layer width r, and the choice of muP vs standard parameterization?",
+            "How does the empirical-Bayes noise heuristic in the bandit experiments affect Rich-BLL versus baselines? Is the regret gap preserved with a fixed sigma^2?",
+            "How does the method behave when the subsample size k is close to r (which can occur in small UCI datasets at low subsampling ratios)? Is any regularization applied?"
+          ],
+          "suggestions_for_improvement": [
+            "Add a quantitative comparison against the full NTK-GP / LLA on at least the UCI regression datasets (and ideally on a small image-classification setup), reporting both predictive uncertainty and computational cost.",
+            "Empirically measure the residual epsilon_x defined in Appendix B for the trained networks, ideally as a function of the last-layer width r, to directly support the linear-projection assumption.",
+            "Sharpen Theorem 3.3's framing in the abstract and introduction: state precisely that exact dominance holds for the population estimator A, and quantify (or empirically illustrate) how subsampling-based estimation may temporarily violate this property.",
+            "Extend the concentration analysis to cover joint estimation of L and Sigma, or at least discuss the qualitative effect.",
+            "Provide wall-clock and memory measurements for Rich-BLL (including the L-computation pipeline) versus BLL, VBLL, LL-Laplace, and full LLA on at least one task.",
+            "Add ablations on the projection dimension q, ridge lambda, last-layer width r, sigma^2, and on the global vs class-specific transformation choice for classification.",
+            "Include pseudocode for Rich-BLL and Rich-BLL (S), and report test accuracy for CIFAR-10 in Table 5; reconsider bolding choices.",
+            "Re-run the Wheel Bandit baselines under matched protocol, or at minimum discuss the protocol differences with Harrison et al. (2024).",
+            "Add LL-LLA / KFAC Laplace baselines for regression and bandit experiments, since they are natural competitors at comparable cost.",
+            "Verify and fix arXiv ID formatting (e.g., '2602.*' entries) and reference formatting for muTransfer.",
+            "Discuss the regime where k is close to r, which arises in small UCI datasets at low subsampling ratios."
+          ],
+          "overall_recommendation": "weak_accept",
+          "reviewer_confidence_1_to_5": 4,
+          "score_card": {
+            "soundness_1_to_4": 3,
+            "presentation_1_to_4": 3,
+            "contribution_1_to_4": 2,
+            "overall_1_to_10": 6
+          }
+        },
+        "author_facing_improvement_checklist": [
+          "Provide a quantitative comparison to the full NTK-GP / LLA on UCI (and ideally a small image task), reporting predictive variance match and computational cost.",
+          "Empirically measure the Appendix B residual epsilon_x (train and test) for the trained MLP and CNN backbones used in the experiments.",
+          "Soften the wording of variance dominance (Thm 3.3) in the abstract/intro to reflect that it is exact only for the population A, and add empirical evidence that the property holds in practice under estimation/subsampling.",
+          "Extend or discuss the joint concentration of L and Sigma in Theorem 3.5.",
+          "Report wall-clock and memory measurements, including the cost of computing L (Appendix C pipeline), against BLL, VBLL, LL-Laplace, and LLA where feasible.",
+          "Add ablations: projection dimension q, ridge lambda, last-layer width r, sigma^2, global vs class-specific transformation for classification, and effect of the empirical-Bayes noise heuristic in bandits.",
+          "Add pseudocode for Rich-BLL and Rich-BLL (S); include CIFAR-10 test accuracy in Table 5 and revise bolding for consistency.",
+          "Re-run or clearly disclose protocol differences for the borrowed Wheel Bandit baselines.",
+          "Add LL-LLA / KFAC Laplace baselines for regression and bandits.",
+          "Discuss the small-k regime (k close to r) for small UCI datasets and any regularization needed.",
+          "Fix reference formatting issues (apparently future-dated arXiv IDs, non-standard muTransfer entry)."
+        ],
+        "changes_from_draft": [
+          "Softened the CIFAR-10 NLL vs Dropout comment to acknowledge that Dropout uses a different (non-post-hoc) training procedure, while preserving the informational value of the comparison.",
+          "Added a detailed comment and a question/suggestion about the N >= r requirement of Eq. 9 and its interaction with low-ratio subsampling on small UCI datasets.",
+          "Added a detailed comment noting that Figure 1 shows only qualitative agreement between Rich-BLL and NTK-GP, with no quantitative comparison even in this toy case.",
+          "Clarified in the weaknesses list that Figure 1's NTK-GP match is illustrative-qualitative only."
+        ]
+      },
+      "usage": {
+        "input_tokens": 5291,
+        "output_tokens": 5345,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 74047
+      },
+      "stop_reason": "end_turn"
+    }
+  },
+  "total_usage": {
+    "input_tokens": 63802,
+    "output_tokens": 43574,
+    "cache_creation_input_tokens": 167102,
+    "cache_read_input_tokens": 931809
+  }
+}

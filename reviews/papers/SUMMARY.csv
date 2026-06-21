@@ -1,0 +1,11 @@
+label,paper,recommendation,overall,soundness,presentation,contribution,confidence,novelty,verdict,correct,input_tokens,output_tokens,cache_read,cache_write
+accepted,Effective_Reasoning_Chains_Reduce_Intrinsic_Dimensionality,weak_accept,6,3,3,3,4,moderate,accept,correct,76295,44198,997336,86453
+accepted,Revisiting_the_Platonic_Representation_Hypothesis_An_Aristotelian_View,accept,7,3,3,3,4,moderate,accept,correct,70714,47922,1895236,243725
+accepted,Richer_Bayesian_Last_Layers_with_Subsampled_NTK_Features,weak_accept,6,3,3,2,4,moderate,accept,correct,63802,43574,931809,167102
+accepted,SuCo_Sufficiency-guided_Continuous_Adaptive_Reasoning,weak_accept,6,3,3,3,4,incremental,accept,correct,70877,49302,641922,130467
+accepted,Task_Tokens_A_Flexible_Approach_to_Adapting_Behavior_Foundation_Models,weak_reject,5,2,3,2,4,incremental,reject,wrong,55677,39400,607692,103106
+rejected,Adaptive_Uncertainty-Aware_Tree_Search_for_Robust_Reasoning,weak_reject,5,2,3,2,4,incremental,reject,correct,70342,49973,793779,143137
+rejected,Boosting_Speculative_Decoding_with_Decoupled_Multi-Head_via_MoE,weak_reject,4,2,2,2,3,incremental,reject,correct,67082,47234,641369,117128
+rejected,Emergent_Alignment,reject,4,2,2,2,4,incremental,reject,correct,63082,44412,371264,79959
+rejected,House_of_Cards_Massive_Weights_in_LLMs,borderline,5,2,3,2,4,incremental,reject,correct,62546,41861,940466,168351
+rejected,Variational_Learning_Induces_Adaptive_Label_Smoothing,weak_accept,6,3,3,2,4,moderate,accept,wrong,63898,43560,447695,93969

@@ -1,0 +1,1099 @@
+{
+  "paper": {
+    "filename": "Variational_Learning_Induces_Adaptive_Label_Smoothing.pdf",
+    "path": "papers/rejected/Variational_Learning_Induces_Adaptive_Label_Smoothing.pdf",
+    "num_bytes": 1996211,
+    "input_mode": "pdf_document"
+  },
+  "config": {
+    "model": "claude-opus-4-7",
+    "effort": "high",
+    "web_search": true
+  },
+  "stages": {
+    "stage_0": {
+      "parsed": {
+        "title": "Variational Learning Induces Adaptive Label Smoothing",
+        "authors": [
+          "Sin-Han Yang",
+          "Zhedong Liu",
+          "Gian Maria Marconi",
+          "Mohammad Emtiyaz Khan"
+        ],
+        "venue_hint": "ICML 2025 (arXiv preprint, cs.LG)",
+        "field": "Bayesian deep learning / variational inference / label smoothing / robust learning under label noise",
+        "abstract": "The paper claims that variational learning naturally induces an adaptive form of label smoothing where label noise is specialized for each example. The authors derive the form of this induced label noise for logistic regression, generalized linear models (GLM), and neural networks trained with IVON (Improved Variational Online Newton). They argue this connects Bayesian methods to label smoothing and provides a principled way to handle overconfident predictions. Experiments show IVON outperforms standard label smoothing (and is comparable to SAM) on datasets with synthetic and natural label noise.",
+        "sections": {
+          "introduction": "Adaptive label smoothing (LS) adjusts per-example label noise and has been used for generalization, mislabeled examples, calibration, and OOD detection. However, designing a good adaptivity strategy is task-specific and ad hoc. The authors propose to skip explicit strategy design by exploiting the natural adaptivity arising from variational learning. They claim variational learning assigns higher noise to atypical examples, behaves similarly to Online Label Smoothing (OLS, Zhang et al. 2021), and that IVON outperforms LS by up to 9% under pair-flip noise and up to ~50% under data-dependent noise.",
+          "related_work": "Reviews LS literature (Szegedy 2016, Pereyra 2017, Müller 2019, Damian 2021, Lukasik 2020), and adaptive LS strategies based on logits (Park 2023), softmax predictions (Zhang 2021, Ko 2023), entropy (Lee 2022), and OOD detection (Xu 2024). Also notes Bayesian-flavored motivations (Pereyra 2017b, Ghoshal 2021) that use posterior over labels but not over parameters θ.",
+          "method": "Variational learning minimizes E_q[loss] + KL(q||p) over a Gaussian q(θ). For logistic regression with q = N(θ_t, I), the authors show GD on the variational objective equals standard GD with labels y_i replaced by y_i + ε_{i|t}, where ε_{i|t} = σ(f_i(θ_t)) − E_{q_t}[σ(f_i(θ))]. The result extends to GLMs by replacing σ with A'(f). For Newton's method, VON gives the same noise form but with a learned covariance Σ_t, yielding more adaptive noise. For neural networks, a Taylor approximation yields ε_{i|t} ≈ σ'(f_i(θ_t)) ∇f_i(θ_t) Σ_t^{1/2} e. The authors use IVON, which estimates a diagonal covariance via Adam-like preconditioning.",
+          "theory": "Theorem 1 establishes that variational GD with q=N(θ_t,I) is equivalent to standard GD with adaptive label noise (Eq. 10). Theorem 2 (appendix) extends this to VON/Newton's method, yielding the same form of noise but with adaptive Σ_t. Derivations use the surrogate-minimization view of Newton's method and known reformulations of VON as inference on a linear model.",
+          "experiments": "Three sets of experiments: (1) MNIST visualization showing IVON assigns high noise to atypical digits; (2) CIFAR-10/100 comparison of IVON's smoothed labels to LS and OLS; (3) robustness experiments on CIFAR-10/100 with symmetric and pair-flip synthetic noise, data-dependent noise, and Clothing1M with natural noise, comparing IVON to LS (with α swept) and SAM (with ρ swept). Also an ablation comparing learned vs fixed diagonal Σ_t, and Hessian initialization sensitivity for IVON.",
+          "results": "IVON's induced label noise visually matches OLS and assigns more noise to ambiguous examples. On CIFAR-10/100 with symmetric and pair-flip noise, IVON outperforms the best LS by up to ~9% and is comparable to or better than tuned SAM. On data-dependent noise on CIFAR-10, IVON outperforms LS/SAM at all noise levels and can still learn at κ=0.4–0.5 where baselines collapse to ~10% accuracy (gap up to 51%). On Clothing1M, IVON ≥ LS by ~1% and is comparable to SAM. Learned Σ_t consistently outperforms fixed diagonal Σ_t.",
+          "limitations": "Authors note that variational learning introduces noise other than label noise (e.g., feature/parameter noise), and they only analyze the label-noise component. SAM-like derivations are possible but not pursued. No explicit limitations section.",
+          "conclusion": "Variational learning naturally provides adaptive label smoothing without manual design. IVON consistently beats LS and is comparable to SAM without hyperparameter tuning. Bayesian frameworks are suggested as a principled approach for handling label noise and overconfident predictions."
+        },
+        "main_claims": [
+          "Variational learning with a Gaussian posterior implicitly performs adaptive label smoothing whose noise has an explicit closed form (Eq. 10/16).",
+          "The induced label noise increases for atypical/ambiguous examples because predictive variance is amplified near decision boundaries.",
+          "Newton-like variational methods (VON/IVON) yield more adaptive noise than first-order variational GD due to a learned covariance.",
+          "IVON's adaptive noise behaves similarly to Online Label Smoothing (Zhang et al. 2021) but requires no extra design.",
+          "IVON outperforms LS and matches/exceeds SAM under symmetric, pair-flip, data-dependent, and natural label noise, without hyperparameter tuning."
+        ],
+        "key_contributions": [
+          "A theoretical derivation showing variational GD/Newton updates are equivalent to standard GD/Newton with adaptive per-example label noise.",
+          "Explicit form of induced label noise for logistic regression, GLMs, and (via Taylor approximation) neural networks.",
+          "Empirical demonstration that IVON's induced smoothing matches OLS qualitatively and improves robustness to label noise on CIFAR-10/100 and Clothing1M.",
+          "Connection between Bayesian/variational methods and the adaptive label-smoothing literature."
+        ],
+        "experimental_results": [
+          "MNIST (Fig. 3): IVON assigns visibly higher label noise to atypical/unclear digits than to canonical ones; LS noise is constant.",
+          "CIFAR-10/100 (Fig. 4): IVON's per-class smoothed-label distributions resemble OLS (Zhang 2021) but with stronger noise; differ qualitatively from uniform LS.",
+          "CIFAR-10 symmetric and pair-flip noise (Fig. 5): IVON beats best LS by 4.3% (20% sym), 6.7% (40% sym), 7.8% (20% pair); comparable to peak SAM, but SAM is sensitive to ρ.",
+          "CIFAR-100 symmetric and pair-flip noise (Fig. 8): IVON beats best LS by 2.4%/7.8%/9.1% and beats best SAM by 9.9%/13.3% in some settings.",
+          "CIFAR-10 data-dependent noise (Fig. 7): IVON outperforms LS/SAM at all noise levels; at high noise (κ=0.4), IVON gains ~51% over LS; learns where baselines fail.",
+          "Clothing1M (Fig. 9): IVON ~1% better than best LS; comparable to SAM.",
+          "Ablation (Fig. 6): Learned diagonal Σ_t outperforms fixed diagonal Σ_t across noise settings on CIFAR-100.",
+          "Hessian init ablation (Fig. 10): IVON's accuracy varies by <10% over h0 ∈ [0.05, 1.0], less sensitive than SAM's ρ."
+        ],
+        "assumptions_and_limitations": [
+          "Theoretical results assume Gaussian variational family q with identity (Sec. 3.1) or full (Sec. 3.3) covariance; logistic regression/GLM assumptions.",
+          "Neural-network derivation uses a single-sample Monte Carlo + first-order Taylor expansion, ignoring second-order terms; the equivalence is only approximate.",
+          "Analysis isolates the label-noise component while variational learning simultaneously introduces feature/parameter noise; predictive behavior is influenced by all noises.",
+          "Comparisons focus on LS and SAM; many other label-noise-robust methods (e.g., loss correction, sample selection, mixup, co-teaching) are not directly compared on benchmarks.",
+          "IVON still has hyperparameters (Hessian init, learning rate, λ); the paper claims robustness but tunes these per setting (Table 1).",
+          "Some hyperparameter ranges (e.g., SAM ρ on CIFAR-100 includes 0.3 where accuracy degrades sharply) raise questions about fairness of 'best LS' / 'best SAM' baselines."
+        ],
+        "figures_tables": [
+          "Fig. 1: Conceptual illustration — LS uses constant noise; variational learning assigns higher noise to atypical '6' digit.",
+          "Fig. 2: Label-noise magnitude |ε| as a function of mean f_{i|t} for fixed variance — peaks just off zero.",
+          "Fig. 3: MNIST high- vs low-noise examples ranked by IVON noise; atypical digits get high noise.",
+          "Fig. 4: Smoothed label distributions per class on CIFAR-10/100 comparing LS, OLS, IVON.",
+          "Fig. 5: CIFAR-10 accuracy vs α (LS) and ρ (SAM) at three synthetic noise settings; IVON shown as constant line.",
+          "Fig. 6: Learned vs fixed diagonal Σ_t on CIFAR-100 noisy datasets.",
+          "Fig. 7: CIFAR-10 with data-dependent noise (κ=0.1–0.5); IVON dominates at high noise.",
+          "Fig. 8: CIFAR-100 analogue of Fig. 5.",
+          "Fig. 9: Clothing1M results vs α and ρ.",
+          "Fig. 10: IVON sensitivity to Hessian initialization on CIFAR-100.",
+          "Table 1 (appendix): Per-noise-setting hyperparameters on CIFAR-100.",
+          "Algorithm 1 (appendix): IVON pseudo-code."
+        ],
+        "equations_algorithms": [
+          "Eq. 1: Standard LS y'_i = (1-α)y_i + α u.",
+          "Eq. 5: OLS noise ε_{i|t} = α(ū − y_i) using accumulated softmax predictions.",
+          "Eq. 7: Variational objective L(q) = Σ E_q[ℓ_i(θ)] + KL(q||p).",
+          "Eq. 10: Induced label noise for logistic regression: ε_{i|t} = σ(f_i(θ_t)) − E_{q_t}[σ(f_i(θ))].",
+          "Eq. 14: Taylor approximation of ε_{i|t} ≈ σ'(f_{i|t}) (φ_i^T φ_i)^{1/2} e.",
+          "Eq. 16: GLM generalization ε_{i|t} = A'(f_i(θ_t)) − E_{q_t}[A'(f_i(θ))].",
+          "Eq. 18: VON updates with full Gaussian covariance.",
+          "Eq. 20: NN-case induced noise via Taylor expansion: ε_{i|t} ≈ σ'(f_i(θ_t)) ∇f_i(θ_t) Σ_t^{1/2} e.",
+          "Algorithm 1: IVON pseudo-code with Adam-like preconditioning and diagonal Hessian estimate."
+        ]
+      },
+      "usage": {
+        "input_tokens": 354,
+        "output_tokens": 4260,
+        "cache_creation_input_tokens": 38635,
+        "cache_read_input_tokens": 0
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_1": {
+      "parsed": {
+        "field_and_subfield": "Bayesian deep learning / variational inference; robust learning under label noise; adaptive label smoothing.",
+        "problem_addressed": "Designing adaptive label-smoothing strategies is ad hoc and task-specific. The paper argues that variational learning implicitly performs adaptive label smoothing, avoiding the need to hand-design such strategies.",
+        "research_question": "Does optimizing a Gaussian variational objective implicitly induce a principled, per-example adaptive label noise, and if so, does the resulting algorithm (IVON) match or outperform explicit adaptive label-smoothing methods—especially under label noise?",
+        "one_paragraph_summary": "The paper draws an explicit connection between variational learning and adaptive label smoothing. By taking gradients of the expected loss under a Gaussian posterior q(θ), the authors show that variational GD on logistic regression is equivalent to standard GD with labels y_i replaced by y_i + ε_{i|t}, where ε_{i|t} = σ(f_i(θ_t)) − E_{q_t}[σ(f_i(θ))]. They extend this to GLMs (replacing σ with A') and, via a first-order Taylor approximation, to neural networks trained with IVON (a diagonal-covariance VON variant). Conceptually, this label noise grows for examples whose predictions sit near the decision boundary and have high predictive variance, naturally yielding more noise for atypical/ambiguous examples. Empirically, on MNIST IVON visibly assigns more noise to atypical digits; on CIFAR-10/100 its per-class smoothed-label distributions resemble Online Label Smoothing (Zhang et al., 2021); and across CIFAR-10/100 (symmetric, pair-flip, data-dependent noise) and Clothing1M, IVON consistently beats best-tuned LS and is comparable to best-tuned SAM, all without sweeping a smoothing hyperparameter.",
+        "problem_statement": "Adaptive label smoothing has shown benefits for handling labeling errors, miscalibration, and OOD detection, but each existing strategy is hand-designed for a particular issue (logits, softmax, entropy, etc.). The authors ask whether one can avoid this design step entirely by relying on a method that naturally produces per-example adaptive smoothing—specifically, variational learning with a Gaussian posterior—and whether this approach is competitive with both standard LS and modern robust-training methods such as SAM.",
+        "main_contributions": [
+          "Theorem 1: Gradient descent on the variational objective with q = N(θ_t, I) for logistic regression is exactly equivalent to standard GD with adaptive per-example label noise ε_{i|t} = σ(f_i(θ_t)) − E_{q_t}[σ(f_i(θ))].",
+          "Extension of this equivalence to general GLM losses (replacing σ with A') and to Newton/VON updates with a learned full covariance Σ_t, yielding noise that is adaptive in both location and spread.",
+          "Approximate derivation (via single-sample MC + first-order Taylor) of the label noise induced by IVON for neural networks: ε_{i|t} ≈ σ'(f_i(θ_t)) ∇f_i(θ_t) Σ_t^{1/2} e.",
+          "Empirical demonstration that IVON's induced noise (i) is higher on atypical examples (MNIST), (ii) qualitatively matches Online Label Smoothing on CIFAR-10/100, and (iii) yields robust gains over LS and tuned SAM on CIFAR-10/100 with synthetic, data-dependent, and natural (Clothing1M) label noise.",
+          "Ablation evidence that learned diagonal Σ_t is necessary (vs. a fixed diagonal) and that IVON is less sensitive to its main hyperparameter (Hessian init) than SAM is to ρ."
+        ],
+        "claim_evidence_map": [
+          {
+            "claim": "Variational learning is equivalent to GD/Newton on the original loss with adaptive per-example label noise.",
+            "evidence_in_paper": "Theorem 1 and its proof in Sec. 3.1 (Eqs. 9–11) for logistic regression with q=N(θ_t, I); Sec. 3.2 extension to GLMs (Eq. 16); Theorem 2 and App. A.1 for VON with full covariance via the surrogate-minimization view of Newton's method (Eqs. 23–25)."
+          },
+          {
+            "claim": "The induced label noise is larger for atypical/ambiguous examples.",
+            "evidence_in_paper": "Analytic argument that σ' peaks near 0 and the feature norm controls variance (Sec. 3.1, Eqs. 13–14, Fig. 2); MNIST visualization in Fig. 3 showing that the highest-noise examples are visually unclear digits and lowest-noise are canonical ones."
+          },
+          {
+            "claim": "Newton/VON-style variational learning gives more adaptive noise than first-order variants.",
+            "evidence_in_paper": "Sec. 3.3 argues Σ_t is learned and gives example-specific predictive variances (Eq. 19); Fig. 6 ablation shows learned diagonal Σ_t outperforms fixed diagonal Σ_t on CIFAR-100 with three noise settings."
+          },
+          {
+            "claim": "IVON's smoothed labels behave similarly to Online Label Smoothing (Zhang et al. 2021).",
+            "evidence_in_paper": "Fig. 4 compares per-class smoothed-label distributions for LS, OLS (α=0.5), and IVON on selected CIFAR-10 and CIFAR-100 classes; IVON and OLS distributions are visually similar (log scale), though IVON's noise tends to be stronger."
+          },
+          {
+            "claim": "IVON outperforms tuned LS and matches or beats tuned SAM under label noise, without smoothing hyperparameter tuning.",
+            "evidence_in_paper": "Fig. 5 (CIFAR-10 symmetric 20/40%, pair-flip 20%): IVON beats best LS by 4.3/6.7/7.8%. Fig. 8 (CIFAR-100): gains of 2.4/7.8/9.1% over LS and 9.9/13.3% over SAM in some settings. Fig. 7: on CIFAR-10 data-dependent noise, IVON gains up to ~51% at κ=0.4 where LS/SAM degrade to ~10%. Fig. 9: ~1% gain on Clothing1M and parity with SAM."
+          },
+          {
+            "claim": "IVON is less sensitive to its main hyperparameter than SAM is to its perturbation radius.",
+            "evidence_in_paper": "Fig. 10 shows accuracy varies <10% over Hessian init h_0 ∈ [0.05, 1.0] on CIFAR-100 noisy datasets, while SAM's accuracy in Figs. 5, 8, 9 varies sharply with ρ (e.g., collapses at ρ=0.2–0.3)."
+          },
+          {
+            "claim": "The neural-network derivation is only approximate.",
+            "evidence_in_paper": "Sec. 3.4 explicitly uses a single-sample Monte Carlo and a first-order Taylor expansion, dropping second-order terms; the resulting Eq. 20 is presented with ≈, and the authors note other noise types (e.g., on ∇f) are also introduced but not analyzed."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4462,
+        "output_tokens": 2588,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 38635
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_2": {
+      "parsed": {
+        "sections": [
+          {
+            "name": "Abstract",
+            "summary": "States that variational learning naturally induces adaptive label smoothing where label noise is specialized per example. Claims IVON outperforms LS and yields adaptivity similar to existing approaches, connecting Bayesian methods to label smoothing.",
+            "key_claims": [
+              "Variational learning naturally induces adaptive per-example label noise.",
+              "IVON outperforms traditional LS and induces noise similar to an existing adaptive approach."
+            ],
+            "supporting_evidence": [
+              "Forward references to Eq. 10 for the derived noise and Figs. 3/5/7/8 for empirical comparisons."
+            ],
+            "issues": [
+              "Abstract does not specify the scope of the theoretical equivalence (e.g., that for NNs it relies on Taylor approximation and only isolates label noise among multiple induced noises)."
+            ],
+            "missing_information": [
+              "No mention of the assumptions (Gaussian q, fixed identity covariance in the simplest case) or that variational learning also introduces parameter/feature noise."
+            ],
+            "ambiguous_or_unsupported": [
+              "Phrase 'naturally induces an adaptive label smoothing' could mislead readers into thinking the equivalence is exact in the deep learning setting."
+            ]
+          },
+          {
+            "name": "Introduction",
+            "summary": "Motivates adaptive LS, surveys ad hoc strategies, and proposes using the natural adaptivity from variational learning. Lists three empirical contributions: high noise for atypical examples, similarity to OLS, and improved robustness to label noise.",
+            "key_claims": [
+              "Designing good adaptive LS strategies is task-specific and ad hoc.",
+              "Variational learning yields adaptivity for free.",
+              "IVON beats LS by up to 9% on pair-flip and ~50% on data-dependent noise."
+            ],
+            "supporting_evidence": [
+              "Citations to Park 2023, Zhang 2021, Lee 2022, Ko 2023, Xu 2024.",
+              "Forward pointers to Figs. 1, 3, 7, 8."
+            ],
+            "issues": [
+              "The headline 9% and 50% gains are presented without context: they correspond to best-tuned LS in narrow settings; the framing slightly overstates the advantage.",
+              "The framing that other adaptive LS strategies require 'additional design effort' is partly rhetorical—IVON itself requires tuning Hessian init, lr, λ (Table 1)."
+            ],
+            "missing_information": [
+              "No clear statement of what is novel vs. known (e.g., that VON yields expected-loss surrogates is established; novelty is the label-noise interpretation).",
+              "No mention of related label-noise robust methods other than LS/SAM."
+            ],
+            "ambiguous_or_unsupported": [
+              "'IVON's adaptive label noise behaves similarly to the proposal of Zhang et al. (2021)' — similarity is shown only via per-class smoothed-label histograms in Fig. 4, which is qualitative."
+            ]
+          },
+          {
+            "name": "Related Work (Section 2: Label Smoothing and Adaptivity Strategies)",
+            "summary": "Reviews LS variants, adaptive strategies based on logits/softmax/entropy, and prior Bayesian-flavored motivations using posterior over labels rather than over parameters.",
+            "key_claims": [
+              "Existing adaptive LS methods are task-specific and heuristic.",
+              "No prior work investigates effectiveness of posterior over θ for label smoothing."
+            ],
+            "supporting_evidence": [
+              "Eqs. 3–5 describing OLS update; citations to Pereyra 2017b and Ghoshal 2021."
+            ],
+            "issues": [
+              "Claim that 'there are no approaches investigating the effectiveness of posterior over θ' could be challenged; Bayesian deep learning literature (e.g., MC-Dropout, Laplace, deep ensembles) implicitly captures parameter uncertainty effects on training labels via expected losses. The paper does not engage with these.",
+              "Discussion of OLS is somewhat brief—e.g., OLS's u is normalized accumulated softmax over the epoch, not the per-sample expected softmax IVON computes; the eventual 'similarity' claim deserves a more precise comparison."
+            ],
+            "missing_information": [
+              "Missing discussion of related noise-robust methods (loss correction, mixup, co-teaching, GLS, bootstrapping) that compete with or complement adaptive LS."
+            ],
+            "ambiguous_or_unsupported": [
+              "'Despite their usefulness, clarity of good ways to design adaptive strategy is lacking' — subjective framing without citation/evidence."
+            ]
+          },
+          {
+            "name": "Method / Theory (Section 3: Variational Learning Induces Adaptive LS)",
+            "summary": "Derives induced label noise: for logistic regression with q=N(θ_t,I), ε_{i|t} = σ(f_i(θ_t)) − E_{q_t}[σ(f_i(θ))] (Eq. 10). Extends to GLMs (Eq. 16) and Newton's method/VON with learned covariance (Eq. 19). For NNs uses Taylor expansion to derive Eq. 20. Uses IVON in experiments.",
+            "key_claims": [
+              "Theorem 1: variational GD with q=N(θ_t,I) equals GD with adaptive label noise (Eq. 10).",
+              "VON yields the same noise form but with adaptive Σ_t (Theorem 2 in appendix).",
+              "NN case yields analogous noise via Taylor expansion (Eq. 20)."
+            ],
+            "supporting_evidence": [
+              "Proof in Sec. 3.1 swapping expectation with derivative, exploiting q with identity covariance.",
+              "Appendix A.1 derives VON surrogate via Khan et al. 2019 / Nickl et al. 2024."
+            ],
+            "issues": [
+              "Theorem 1 assumes q has fixed identity covariance, which is unusual for variational learning where covariance is also learned. Calling this 'variational learning' is somewhat strong; the result is closer to expected-gradient under Gaussian smoothing.",
+              "The 'noise' ε_{i|t} is not zero-mean noise: it is a deterministic function of θ_t (Eq. 10) plus a stochastic component via MC sampling (Eq. 20). The mapping to 'label smoothing' (which traditionally redistributes probability mass) is conceptually loose: the induced 'smoothing' can shift the label arbitrarily and is not constrained to a valid probability simplex.",
+              "Sign and normalization: Eq. 10 produces a real-valued ε_{i|t} that, when added to a binary label y_i ∈ {0,1}, may produce values outside [0,1]. Authors do not discuss whether this is a valid 'label smoothing' in any meaningful sense.",
+              "For NNs (Eq. 20) the noise is single-sample MC-approximated and treated as label noise even though it contains random parameter noise—this conflates label smoothing with weight perturbation. The paper acknowledges other noises exist but still claims label-smoothing interpretation.",
+              "Theorem 1 proof skips justification for moving the gradient inside expectation (only valid because q has fixed mean-parametrization with identity covariance); should be more carefully stated.",
+              "Eq. 14 'Taylor approximation does not get better for larger number of samples' is a surprising statement that needs more explanation—why include the approximation then?",
+              "The 'adaptivity improves with learned covariance' (Sec. 3.3) is stated without quantitative theory; only Fig. 6 ablation supports it."
+            ],
+            "missing_information": [
+              "No discussion of the relationship between this 'label noise' and effective gradient regularization (which is the more standard view of variational learning's effect).",
+              "No comparison to existing analyses of variational learning as flat-minima or noise injection methods.",
+              "No statement of regularity conditions for swapping ∇ and E (Eq. 11).",
+              "No discussion of whether α (smoothing strength) has any analog in the induced noise—how would one control its magnitude?"
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that 'second-order methods yield more adaptive label noise than first-order methods, and are expected to perform better in practice' — this is plausible but only loosely supported by Fig. 6.",
+              "The phrase 'naturally induces' obscures that the equivalence requires specific algorithmic choices (Gaussian q, particular updates) and approximations for NNs."
+            ]
+          },
+          {
+            "name": "Experiments (Section 4)",
+            "summary": "Three groups of experiments: MNIST visualization of induced noise (4.1); comparison with LS/OLS smoothed-label distributions on CIFAR-10/100 (4.2); robustness to symmetric, pair-flip, data-dependent, and natural noise on CIFAR-10/100/Clothing1M (4.3), plus ablations on Σ_t and Hessian init.",
+            "key_claims": [
+              "IVON assigns higher noise to atypical examples (Fig. 3).",
+              "IVON's smoothed labels resemble OLS (Fig. 4).",
+              "IVON consistently outperforms LS and matches/exceeds SAM under various noise types.",
+              "Learned Σ_t outperforms fixed Σ_t (Fig. 6).",
+              "IVON is less sensitive to Hessian init than SAM is to ρ (Fig. 10)."
+            ],
+            "supporting_evidence": [
+              "Figs. 3, 4, 5, 6, 7, 8, 9, 10; results averaged over 5 seeds in most cases.",
+              "Appendix C with hyperparameter details and Table 1."
+            ],
+            "issues": [
+              "Fig. 4 'similarity to OLS' is qualitative; no quantitative metric (e.g., KL divergence, correlation) is provided to substantiate the central claim that IVON behaves like OLS.",
+              "OLS is shown only in Fig. 4 (visual smoothed-label comparison) but not in the noisy-label robustness experiments (Sec. 4.3). Since OLS is the closest baseline conceptually, its absence in performance benchmarks is a significant gap.",
+              "Comparisons are limited to LS and SAM. Many strong noise-robust methods (e.g., GCE, SCE, ELR, co-teaching, DivideMix, mixup, bootstrap) are not compared, especially on Clothing1M where such methods are standard baselines.",
+              "Clothing1M result (~1% improvement over LS) is reported with α ranging up to 0.9; baseline LS results appear weak (~65–68%) compared to literature (commonly ~70–74%); raises concerns about baseline strength.",
+              "SAM is reported as 'sensitive to ρ' but in Fig. 5 and Fig. 8, SAM's peak performance is sometimes equal to or above IVON; the 'IVON outperforms SAM' claim depends on which ρ is chosen.",
+              "Hyperparameters differ across noise settings (Table 1): IVON's lr changes from 0.5 to 0.8, Hessian init from 0.2 to 0.5, weight decay from 2e-4 to 5e-4. Yet the paper claims 'IVON does not need to tune any hyperparameters'—this is contradicted by Table 1.",
+              "Pair-flip flip order in CIFAR-10 (airplane→automobile→…→truck→airplane) is an unusual choice that may not match standard pair-flip conventions in the literature (which typically pair semantically similar classes); could affect comparability.",
+              "Data-dependent noise (Sec. 4.3.2) is constructed with an arbitrary parametric form (κ + βi); no discussion of why this is representative of realistic data-dependent noise.",
+              "'Best LS' is selected from a small α grid {0, 0.1, …, 0.9}; finer grids or other LS variants are not tried.",
+              "Fig. 6 ablation tests only three fixed variances (2e-5, 5e-5, 1e-4, 2e-4); range is narrow and biased to small values, possibly underestimating fixed-Σ baseline.",
+              "No measurement of calibration (ECE/NLL) despite the paper's framing around overconfidence."
+            ],
+            "missing_information": [
+              "No reporting of test NLL, ECE, or other calibration metrics, despite Sec. 1 motivation around overconfidence and calibration.",
+              "No comparison to OLS on actual noisy-label accuracy benchmarks.",
+              "No standard deviation values reported in figures (only 'over 5 seeds').",
+              "No experiments on standard clean benchmarks comparing IVON+LS combinations vs IVON alone.",
+              "No exploration of whether explicitly adding LS on top of IVON helps or hurts.",
+              "Compute cost comparison between IVON and SAM is not discussed (relevant since IVON requires posterior sampling)."
+            ],
+            "ambiguous_or_unsupported": [
+              "'IVON does not need to tune any hyperparameters to perform well' — contradicted by Table 1 and Fig. 10 (which itself shows non-trivial sensitivity, e.g., pair-flip drops sharply for h0=0.05).",
+              "Fig. 10 description claims '<10% variation' but the curve for pair-flip 20% noise drops to ~20% at h0=0.05—this is a much larger variation than claimed.",
+              "The 'up to 51%' headline gain on data-dependent noise is achieved only at κ=0.4, where both LS and SAM degenerate to near-random; framing it as a general gain overstates the result."
+            ]
+          },
+          {
+            "name": "Limitations / Conclusion",
+            "summary": "Concludes that variational learning provides adaptive label smoothing without manual design and that IVON is robust and competitive with SAM. Briefly acknowledges that other noises (feature/parameter) are also induced.",
+            "key_claims": [
+              "Bayesian frameworks are 'naturally suitable' for label noise.",
+              "IVON consistently beats LS and matches SAM without hyperparameter tuning."
+            ],
+            "supporting_evidence": [
+              "Summarized references to experiment results."
+            ],
+            "issues": [
+              "No dedicated limitations section; acknowledgement of other noise sources is brief and not analyzed.",
+              "The conclusion that no hyperparameter tuning is needed is undermined by Table 1 and Sec. C.2.",
+              "Broader question of when variational learning helps vs. hurts (e.g., on clean data) is not addressed."
+            ],
+            "missing_information": [
+              "Discussion of compute overhead, scalability, applicability beyond image classification.",
+              "Limitations of the theoretical analysis (Taylor approximation, single-sample MC, isolation of label noise component) not summarized."
+            ],
+            "ambiguous_or_unsupported": [
+              "'Bayesian frameworks are naturally suitable for label noise' is a broad inference from limited experiments restricted to IVON."
+            ]
+          },
+          {
+            "name": "Supplementary (Appendix A–C, Algorithm 1)",
+            "summary": "Provides VON surrogate derivation (A.1), Theorem 2 stating induced noise for Newton's update, IVON pseudo-code (A.2), Hessian init ablation (B.1), and experimental details (C).",
+            "key_claims": [
+              "VON updates equal Newton's update with expected gradient/Hessian.",
+              "Induced noise form matches Eq. 26 for VON with full covariance.",
+              "Hessian initialization has modest effect on IVON accuracy."
+            ],
+            "supporting_evidence": [
+              "Derivation referencing Khan et al. 2019 and Nickl et al. 2024; Algorithm 1 pseudo-code."
+            ],
+            "issues": [
+              "Theorem 2's proof is asserted to be 'identical' to Theorem 1's and omitted; given the more complex form (learned Σ_t, exponential family), a full proof should be included.",
+              "Fig. 10's claim that accuracy varies by 'up to 10%' is inaccurate for pair-flip 20% noise where accuracy ranges from ~20% (h0=0.05) to ~70% (h0≥0.2)—a ~50% spread.",
+              "Hyperparameter tables (Table 1) reveal nontrivial per-setting tuning that contradicts main-text claims of tuning-free behavior."
+            ],
+            "missing_information": [
+              "No explicit convergence guarantees or conditions for the theorems.",
+              "No appendix justifying single-sample Monte Carlo accuracy or comparing multi-sample variants.",
+              "No code / reproducibility statement."
+            ],
+            "ambiguous_or_unsupported": [
+              "Statement that IVON's variation '<10%' is contradicted by its own Fig. 10."
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4521,
+        "output_tokens": 5868,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 38635
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_3": {
+      "parsed": {
+        "claims": [
+          {
+            "claim": "Variational learning with q=N(θ_t, I) on logistic regression is exactly equivalent to GD on the original loss with per-example adaptive label noise ε_{i|t} = σ(f_i(θ_t)) − E_q[σ(f_i(θ))].",
+            "category": "theoretical",
+            "evidence_in_paper": "Theorem 1 with proof in Sec. 3.1 (Eqs. 9–11); derivation uses the reparameterization q(θ)=N(θ_t, I) and standard GLM gradient manipulations.",
+            "evidence_strength": "strong",
+            "notes": "Proof is short but correct for the specified setup. Note the equivalence holds only with fixed identity covariance and quadratic regularizer; the result is essentially a restatement of how the expected gradient differs from the gradient at the mean."
+          },
+          {
+            "claim": "The equivalence extends to all GLM losses by replacing σ with A'.",
+            "category": "theoretical",
+            "evidence_in_paper": "Sec. 3.2, Eq. 16; derivation omitted but follows immediately from log-partition function structure of GLMs.",
+            "evidence_strength": "strong",
+            "notes": "Standard extension; trivially correct given Theorem 1."
+          },
+          {
+            "claim": "VON with full covariance can be seen as a Newton step with noisy labels and the noise has the same form as the GLM case but with adaptive variance Σ_t.",
+            "category": "theoretical",
+            "evidence_in_paper": "Theorem 2 and App. A.1 (Eqs. 23–26); leverages Khan et al. (2019) and Nickl et al. (2024) surrogate view.",
+            "evidence_strength": "strong",
+            "notes": "Derivation relies on ρ_t=1 special case; otherwise sound."
+          },
+          {
+            "claim": "For neural networks, IVON induces label noise ε_{i|t} ≈ σ'(f_i(θ_t)) ∇f_i(θ_t) Σ_t^{1/2} e.",
+            "category": "theoretical",
+            "evidence_in_paper": "Sec. 3.4: uses single-sample MC + first-order Taylor expansion, dropping second-order terms.",
+            "evidence_strength": "weak",
+            "notes": "Approximation is heuristic; the paper acknowledges it does not improve with more samples (per Sec. 3.1 comment about Taylor approx). No empirical validation that the analytic noise formula matches the actual difference induced by IVON in NN training."
+          },
+          {
+            "claim": "Variational learning assigns higher label noise to atypical/ambiguous examples.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Fig. 3 on MNIST shows high-noise examples are visually atypical digits, low-noise are canonical; analytic argument via σ' peaking near 0 and feature norm (Eqs. 13–14, Fig. 2).",
+            "evidence_strength": "weak",
+            "notes": "Qualitative MNIST visualization only; no quantitative metric of 'atypicality' correlated with noise magnitude. Single dataset and small CNN."
+          },
+          {
+            "claim": "IVON's smoothed label distributions are similar to Online Label Smoothing (Zhang et al., 2021).",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Fig. 4 shows side-by-side log-scale bar plots for selected classes of CIFAR-10 and 10 randomly picked classes of CIFAR-100.",
+            "evidence_strength": "weak",
+            "notes": "Comparison is purely visual on log scale, which can hide large discrepancies. No quantitative similarity metric (e.g., KL, correlation). 'Surprisingly similar' is subjective."
+          },
+          {
+            "claim": "IVON consistently outperforms tuned Label Smoothing under labeling errors, with up to 9% gains for pair-flip and ~50% for data-dependent noise.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Fig. 5 (CIFAR-10): +4.3/6.7/7.8%; Fig. 8 (CIFAR-100): +2.4/7.8/9.1%; Fig. 7: ~51% at κ=0.4; Fig. 9: +1% on Clothing1M. Results over 5 seeds.",
+            "evidence_strength": "strong",
+            "notes": "Consistent direction across many settings; the ~50% gain occurs in an extreme regime where baselines collapse to ~10%, which is striking but the comparison fairness depends on training stability. No comparison to specialized noisy-label methods (e.g., Co-teaching, ELR, DivideMix) on Clothing1M."
+          },
+          {
+            "claim": "IVON is comparable to best-tuned SAM but does not require tuning a smoothing/perturbation hyperparameter.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figs. 5, 8, 9 show IVON near SAM peak; Fig. 10 shows IVON robust to Hessian init.",
+            "evidence_strength": "weak",
+            "notes": "Mischaracterization: IVON has multiple hyperparameters (learning rate, Hessian init h_0, β_2, λ); Table 1 shows lr and Hessian init were tuned per setting. Claim of 'no hyperparameter tuning' is overstated."
+          },
+          {
+            "claim": "Learned diagonal Σ_t outperforms fixed diagonal Σ_t in IVON.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Fig. 6 on CIFAR-100 with three noise settings shows learned > fixed across 4 fixed variance values.",
+            "evidence_strength": "strong",
+            "notes": "Single dataset but consistent across noise types."
+          },
+          {
+            "claim": "Connecting Bayesian methods to label smoothing provides a new way to handle overconfident predictions.",
+            "category": "novelty",
+            "evidence_in_paper": "Introduction and conclusion frame the contribution; Sec. 2 reviews prior Bayesian motivations (Pereyra 2017b, Ghoshal 2021) and distinguishes them as using only posterior over labels, not over θ.",
+            "evidence_strength": "weak",
+            "notes": "The connection between expected loss under a posterior and effective label noise is intuitive and arguably implicit in prior weight-noise/variational literature (e.g., Zhang et al. 2018 noisy natural gradient). The framing as 'label smoothing' is the novel contribution rather than the math itself."
+          },
+          {
+            "claim": "Second-order methods yield more adaptive label noise than first-order methods.",
+            "category": "theoretical",
+            "evidence_in_paper": "Sec. 3.3 argues this conceptually; Fig. 6 provides indirect empirical support via fixed-vs-learned Σ.",
+            "evidence_strength": "weak",
+            "notes": "No direct comparison between variational GD (fixed I covariance) and IVON on the same NN tasks. Fixed vs. learned diagonal is a weaker ablation than first- vs. second-order."
+          }
+        ],
+        "unsupported_claims": [
+          "IVON 'does not need to set any such hyperparameters' (Sec. 3.4 and Sec. 4.3.1)—Table 1 shows lr and Hessian init are tuned per setting.",
+          "The neural-network-case label-noise formula (Eq. 20) actually approximates the noise IVON induces—no empirical check correlating Eq. 20 with the realized difference between expected and pointwise gradients.",
+          "Adaptivity-by-variational-learning addresses the multiple issues motivated in the intro (miscalibration, OOD detection, generalization)—only labeling-error experiments are presented."
+        ],
+        "overstated_claims": [
+          "'IVON does not need to tune any hyperparameters to perform well' (Sec. 4.3.1)—contradicted by Table 1 and the need to set h_0, lr, λ, β_2.",
+          "Quantitative similarity between IVON and OLS smoothed labels in Fig. 4 (described as 'surprisingly similar') is shown only via log-scale bar plots on selected classes, with no similarity metric.",
+          "Claim that 'variational learning naturally induces' adaptive label smoothing somewhat overstates: the result is an algebraic equivalence between expected and pointwise gradients, conditional on specific variational family choices and (in the NN case) a Taylor approximation.",
+          "The intro positions the work as addressing labeling errors, distribution shift, miscalibration, and OOD, but empirical work covers only labeling errors."
+        ],
+        "claims_requiring_external_verification": [
+          "Whether IVON's gains over LS hold against modern label-noise-robust baselines (e.g., Co-teaching, ELR, DivideMix, GCE, SOP) on CIFAR-N and Clothing1M, where typical SOTA on Clothing1M is ~74–76%.",
+          "Whether Zhang et al. (2021) OLS is the strongest baseline for the smoothed-label-similarity comparison; other adaptive LS methods (Ko et al. 2023; Lee et al. 2022; Park et al. 2023) are mentioned but not compared.",
+          "Whether the Newton/VON equivalence claimed via Khan et al. (2019) and Nickl et al. (2024) genuinely yields exact equivalence at ρ_t=1 in the Newton step (App. A.1 derivation relies on these prior results).",
+          "Whether SAM with ρ tuned beyond the reported grid matches IVON in the data-dependent and high-noise CIFAR-10/100 regimes."
+        ]
+      },
+      "usage": {
+        "input_tokens": 2832,
+        "output_tokens": 3376,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 38635
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_4": {
+      "parsed": {
+        "novelty_axes": [
+          {
+            "axis": "theory",
+            "claimed_contribution": "A closed-form derivation that variational learning with a Gaussian posterior is algebraically equivalent to standard (S)GD / Newton on the original loss but with a per-example adaptive label noise ε_{i|t} = σ(f_i(θ_t)) − E_q[σ(f_i(θ))] (Eq. 10), generalized to GLMs via A'(·) and to NNs via a Taylor approximation.",
+            "why_it_matters": "This is the load-bearing theoretical claim — framing variational learning as inducing label smoothing. If the underlying algebraic equivalence was already shown (even implicitly) in the variational/weight-noise literature, then the contribution reduces to a reframing rather than a new theoretical result.",
+            "search_keywords": [
+              "expected gradient variational posterior label noise equivalence",
+              "noisy natural gradient variational inference GLM",
+              "Bayesian learning rule label smoothing",
+              "weight perturbation Adam VOGN gradient noise"
+            ],
+            "search_question": "Has any prior variational-inference-for-deep-learning paper explicitly derived the difference between E_q[∇ℓ] and ∇ℓ(mean) and identified it as an additive, adaptive label-noise term?",
+            "closest_prior_work_ref": "Zhang et al. 2018 [similar_prior_work #1]; Khan et al. 2018 [similar_prior_work #2]; Khan & Rue 2023 [similar_prior_work #3]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "problem",
+            "claimed_contribution": "Reframing variational Bayesian deep learning as a principled, design-free source of adaptive label smoothing, and explicitly connecting the variational and adaptive-LS literatures.",
+            "why_it_matters": "The conceptual bridge between two literatures (Bayesian DL ↔ adaptive LS) is one of the paper's main selling points; novelty here is mostly about framing.",
+            "search_keywords": [
+              "Bayesian adaptive label smoothing posterior parameters",
+              "variational inference as label smoothing",
+              "label smoothing as Bayesian regularization"
+            ],
+            "search_question": "Has any prior work explicitly proposed Bayesian posterior over θ (not over y) as a substitute for designing adaptive label smoothing strategies?",
+            "closest_prior_work_ref": "Pereyra et al. 2017b [similar_prior_work #4]; Ghoshal et al. 2021 [similar_prior_work #5]",
+            "axis_verdict": "novel"
+          },
+          {
+            "axis": "method",
+            "claimed_contribution": "Using IVON (an existing variational optimizer from Shen et al. 2024) as an adaptive-LS method without designing a smoothing strategy.",
+            "why_it_matters": "The 'method' itself is IVON applied as-is; novelty here depends on whether IVON has been used to handle label noise before.",
+            "search_keywords": [
+              "IVON improved variational online Newton label noise",
+              "Shen 2024 IVON noisy labels robustness",
+              "variational deep learning noisy labels Clothing1M"
+            ],
+            "search_question": "Has IVON or a closely related variational optimizer already been evaluated as a robust-to-label-noise training method against LS and SAM?",
+            "closest_prior_work_ref": "Shen et al. 2024 [similar_prior_work #6]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "empirical",
+            "claimed_contribution": "Empirical demonstrations that (a) IVON's per-example label noise distribution resembles Online Label Smoothing (Zhang et al. 2021); (b) IVON outperforms tuned LS by up to 9% on pair-flip and up to ~51% on data-dependent noise; (c) IVON matches tuned SAM on Clothing1M.",
+            "why_it_matters": "If these gains are real and robust they constitute a non-trivial empirical finding; their novelty depends on whether prior label-noise-robust baselines already match or beat them.",
+            "search_keywords": [
+              "CIFAR-10 pair flip noise label smoothing baseline accuracy",
+              "Clothing1M label noise SOTA DivideMix ELR",
+              "adaptive label smoothing CIFAR noisy labels benchmark"
+            ],
+            "search_question": "Are IVON's reported gains over LS/SAM on synthetic and natural label noise novel relative to specialized noisy-label methods (Co-teaching, DivideMix, ELR, GCE, SOP), or only relative to the two baselines chosen?",
+            "closest_prior_work_ref": "Zhang et al. 2021 [similar_prior_work #7]; Ko et al. 2023 [similar_prior_work #8]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "training",
+            "claimed_contribution": "An ablation showing that a learned (Newton-style) diagonal covariance Σ_t produces more adaptive label noise than a fixed diagonal covariance, supporting the second-order > first-order story.",
+            "why_it_matters": "Supports the theoretical claim that VON/IVON's Hessian-driven covariance adds adaptivity not available to plain variational GD; minor but novel as a finding.",
+            "search_keywords": [
+              "fixed vs learned covariance variational deep learning ablation",
+              "diagonal Hessian covariance VON IVON noisy labels"
+            ],
+            "search_question": "Has the role of learned vs fixed posterior covariance been studied as a source of per-example adaptivity?",
+            "closest_prior_work_ref": "Khan et al. 2018 [similar_prior_work #2]; Shen et al. 2024 [similar_prior_work #6]",
+            "axis_verdict": "incremental"
+          }
+        ],
+        "novelty_axes_searched": [],
+        "similar_prior_work": [
+          {
+            "title": "Noisy Natural Gradient as Variational Inference",
+            "venue_or_source": "ICML",
+            "year": "2018",
+            "similarity_summary": "Shows that natural-gradient updates with injected weight noise are equivalent to variational inference with a Gaussian posterior; the implicit gradient becomes E_q[∇ℓ], exactly the quantity this paper expands into 'gradient at mean plus label noise'.",
+            "key_difference": "Zhang et al. focus on the weight-noise interpretation and on optimizing Gaussian posteriors; they do not algebraically decompose E_q[∇ℓ] into a 'gradient at mean + per-example label-noise' form and do not connect it to the label-smoothing literature."
+          },
+          {
+            "title": "Fast and Scalable Bayesian Deep Learning by Weight-Perturbation in Adam (VOGN/Vadam)",
+            "venue_or_source": "ICML",
+            "year": "2018",
+            "similarity_summary": "Introduces variational inference algorithms (VOGN, Vadam) that replace pointwise gradients with expected gradients under a Gaussian q — the very quantity the present paper rewrites as a label-noise term.",
+            "key_difference": "Khan et al. interpret the noise as weight perturbation / Bayesian regularization, not as adaptive label smoothing; no closed-form ε_{i|t} expression in label space and no comparison to LS/OLS."
+          },
+          {
+            "title": "The Bayesian Learning Rule",
+            "venue_or_source": "JMLR",
+            "year": "2023",
+            "similarity_summary": "Unifies many learning algorithms (including Newton/VON) as cases of a Bayesian update, providing the surrogate-minimization view of VON used in App. A.1.",
+            "key_difference": "Khan & Rue provide the general framework but do not specifically extract the induced label noise or contrast variational learning with the label-smoothing literature."
+          },
+          {
+            "title": "Regularizing Neural Networks by Penalizing Confident Output Distributions",
+            "venue_or_source": "ICLR Workshop / arXiv:1701.06548",
+            "year": "2017",
+            "similarity_summary": "Motivates label smoothing / confidence penalties using Bayesian error rate, implicitly using a posterior over labels.",
+            "key_difference": "Posterior is over labels y, not over parameters θ; no variational training algorithm and no closed-form adaptive noise."
+          },
+          {
+            "title": "Learning Better Structured Representations Using Low-Rank Adaptive Label Smoothing",
+            "venue_or_source": "ICLR",
+            "year": "2021",
+            "similarity_summary": "Uses a PAC-Bayes argument to motivate adaptive label smoothing.",
+            "key_difference": "Adaptivity is parameterized by a learned low-rank matrix, not induced by a posterior over θ; not derived from a variational objective."
+          },
+          {
+            "title": "Variational Learning is Effective for Large Deep Networks (IVON)",
+            "venue_or_source": "ICML",
+            "year": "2024",
+            "similarity_summary": "Introduces IVON — the exact algorithm used in the present paper — and shows it competes with Adam/SGD on large models.",
+            "key_difference": "Shen et al. propose IVON as a general optimizer; they do not analyze it as an adaptive label smoother nor benchmark it under symmetric / pair-flip / data-dependent / Clothing1M label noise. The present paper inherits the algorithm and adds the LS interpretation and noisy-label experiments."
+          },
+          {
+            "title": "Delving Deep into Label Smoothing (Online Label Smoothing, OLS)",
+            "venue_or_source": "IEEE TIP",
+            "year": "2021",
+            "similarity_summary": "Adaptive LS strategy where smoothed targets are accumulated softmax predictions; the present paper claims IVON's induced labels look 'surprisingly similar' to OLS.",
+            "key_difference": "OLS is a hand-designed adaptive strategy with an explicit running-average update; the present paper recovers a qualitatively similar smoothing for free as a byproduct of variational learning."
+          },
+          {
+            "title": "A Gift from Label Smoothing: Robust Training with Adaptive Label Smoothing via Auxiliary Classifier under Label Noise",
+            "venue_or_source": "AAAI",
+            "year": "2023",
+            "similarity_summary": "Adaptive LS specifically targeted at label-noise robustness, using auxiliary-classifier predictions to adapt α per example.",
+            "key_difference": "Hand-designed adaptivity using a separate classifier; mentioned in the related-work but not compared empirically in the present paper, even though it directly addresses the same task (label-noise robustness)."
+          },
+          {
+            "title": "SAM as an Optimal Relaxation of Bayes",
+            "venue_or_source": "ICLR",
+            "year": "2023",
+            "similarity_summary": "Provides a variational/Bayesian interpretation of SAM, the very baseline this paper compares against.",
+            "key_difference": "Möllenhoff & Khan connect SAM to a Bayes-relaxation but do not extract a label-noise interpretation; the present paper notes a similar derivation for SAM is possible but does not pursue it."
+          },
+          {
+            "title": "Does Label Smoothing Mitigate Label Noise?",
+            "venue_or_source": "ICML",
+            "year": "2020",
+            "similarity_summary": "Analyzes LS as a regularizer under label-noise, finding mixed behavior; directly relevant to the noisy-label experiments here.",
+            "key_difference": "Lukasik et al. study static LS; the present paper extends to adaptive LS induced by variational learning but does not directly compare to or build on their analysis."
+          }
+        ],
+        "potential_missing_citations": [
+          "Specialized noisy-label-robust baselines that are routinely used on CIFAR-N/Clothing1M (Co-teaching, Han et al. NeurIPS 2018; DivideMix, Li et al. ICLR 2020; ELR / ELR+, Liu et al. NeurIPS 2020; GCE, Zhang & Sabuncu NeurIPS 2018; SOP, Liu et al. ICML 2022). Their omission means the empirical claims of robustness are evaluated only against LS and SAM, which understates the prior art on this benchmark.",
+          "Ko et al. 2023 (AAAI) is cited in related work as an adaptive LS method for label noise but is not compared empirically, even though it targets exactly the experimental setting of Sec. 4.3.",
+          "Mukhoti et al. 'Calibrating Deep Neural Networks using Focal Loss' (NeurIPS 2020) for the calibration / confidence-penalty side of the LS literature is not engaged with.",
+          "Wenzel et al. 'How Good is the Bayes Posterior in Deep Neural Networks Really?' (ICML 2020) on cold posteriors and the role of label noise in Bayesian DL — directly relevant to the interpretation that variational posteriors interact with label noise."
+        ],
+        "novelty_type": "conceptual",
+        "novelty_assessment": "moderate",
+        "novelty_risk_level": "medium",
+        "rationale": "The paper's strongest novelty is conceptual: explicitly reframing variational learning's expected-gradient update as an adaptive label-smoothing scheme with a closed-form per-example noise (Eq. 10/16/20), and connecting two largely separate literatures (Bayesian DL and adaptive LS). This framing — together with the observation that the induced noise qualitatively matches Online Label Smoothing — is, to the best of my knowledge, new. However, the underlying algebra is essentially a restatement of facts that have been implicit in the variational-DL literature for years (Zhang et al. 2018 noisy natural gradient; Khan et al. 2018 VOGN/Vadam; Khan & Rue 2023 Bayesian learning rule), so the *theoretical* contribution is incremental rather than fundamentally new — once one writes E_q[∇ℓ_i(θ)] for a GLM, adding and subtracting σ(f_i(θ_t)) to get a 'noisy label' immediately follows. The method itself is IVON used as-is (Shen et al. 2024). The empirical results are directionally consistent and include a striking 51% gap under data-dependent noise, but the comparison set is restricted to LS and SAM, omitting both the specialized adaptive-LS competitors mentioned in related work (Ko et al. 2023; Lee et al. 2022; Park et al. 2023) and the standard noisy-label-robust baselines (DivideMix, ELR, Co-teaching, GCE, SOP), so the empirical novelty is also incremental. Risk of being preempted is medium — pieces of the argument exist across the Bayesian DL literature, but no prior paper appears to package it as 'variational learning = adaptive label smoothing' with explicit equations and head-to-head comparisons against OLS/LS/SAM under label noise. Overall: a moderately novel conceptual reframing with incremental theoretical and empirical novelty.",
+        "source_of_judgment": "model_knowledge"
+      },
+      "usage": {
+        "input_tokens": 9562,
+        "output_tokens": 6994,
+        "cache_creation_input_tokens": 55334,
+        "cache_read_input_tokens": 99980
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_5": {
+      "parsed": {
+        "perspectives": {
+          "domain_expert": {
+            "add_to_field": "Provides a conceptual bridge between Bayesian/variational learning and the adaptive label smoothing literature, showing that variational gradients on a Gaussian posterior implicitly produce per-example label noise of a form similar to existing hand-designed adaptive LS schemes (notably OLS).",
+            "beneficiaries": "Researchers working on label smoothing, learning with noisy labels, calibration, and Bayesian deep learning; practitioners looking for hyperparameter-light alternatives to LS/SAM.",
+            "importance": "The problem of ad-hoc adaptive LS strategies is real and recognized in the field, and unifying these under a Bayesian lens is a useful conceptual contribution, even if not transformative.",
+            "improvement_meaningful": "The reframing is meaningful: it gives a principled derivation for why predictions-based adaptive smoothing works, and connects two largely separate literatures.",
+            "future_influence": "Likely to motivate further analyses linking variational/PAC-Bayes objectives to specific regularization effects (label noise, weight noise, feature noise) and to spur Bayesian-style baselines in noisy-label benchmarks."
+          },
+          "methodology_expert": {
+            "add_to_field": "A clean derivation for logistic regression and GLMs showing that variational GD equals GD on a noisy-label objective, plus a VON/Newton extension where the covariance is learned and contributes to adaptivity. The neural-network case is handled via single-sample MC + first-order Taylor approximation.",
+            "beneficiaries": "Theoreticians and algorithm designers interested in variational inference, second-order optimization, and the regularization effects induced by posterior expectations.",
+            "importance": "The GLM result is a clear, exact statement; the NN extension is more heuristic. The methodological contribution is moderate rather than deep—the derivations are short and rely on standard manipulations.",
+            "improvement_meaningful": "Yes for GLMs (exact equivalence is a useful viewpoint). For NNs, the Taylor argument is a plausibility argument rather than a tight characterization, and other induced noises (on features, Hessian) are acknowledged but not analyzed.",
+            "future_influence": "Could inspire more rigorous analyses of which noise components dominate in variational training of deep networks, and tighter connections to loss-correction and PAC-Bayes bounds for noisy labels."
+          },
+          "empirical_evaluation_expert": {
+            "add_to_field": "Empirical evidence across MNIST visualizations, CIFAR-10/100 with symmetric, pair-flip, and data-dependent noise, plus Clothing1M, comparing IVON against tuned LS and SAM. Includes ablations on fixed vs. learned Σ_t and Hessian init sensitivity.",
+            "beneficiaries": "Practitioners evaluating robust training methods on noisy benchmarks; authors of future label-noise papers who may add IVON as a baseline.",
+            "importance": "Demonstrates consistent and sometimes large gains (up to ~51% on data-dependent noise, 9% on pair-flip), supporting the practical relevance of the connection.",
+            "improvement_meaningful": "Gains over LS are sizable and the data-dependent noise result is striking. However, comparison to dedicated noisy-label methods (e.g., Co-teaching, DivideMix, loss correction) is absent, and Clothing1M gains over LS are modest (~1%) with parity to SAM.",
+            "future_influence": "May encourage including variational methods as standard baselines in label-noise benchmarks; the data-dependent noise setup itself is a useful diagnostic."
+          },
+          "skeptical_reviewer": {
+            "add_to_field": "An interesting reinterpretation, but much of the 'adaptive label smoothing' framing is one of multiple possible decompositions of the variational gradient; the same expectation could be re-described as weight noise, feature noise, or output smoothing.",
+            "beneficiaries": "Mainly readers already sympathetic to Bayesian framings; the practical takeaway largely reduces to 'use IVON instead of SAM/LS for noisy labels.'",
+            "importance": "The connection is intuitive but somewhat known in spirit (expected loss under posterior softens predictions). The exact equivalence is only for GLMs with identity covariance; the NN case requires approximations and ignores other induced noises.",
+            "improvement_meaningful": "Empirical wins are real but the comparison set is narrow (LS, SAM). No comparison against OLS or other adaptive LS methods on the noisy-label benchmarks, despite OLS being the central conceptual analogue. Clothing1M gains are within noise of SAM.",
+            "future_influence": "Modest. Without deeper theory tying the induced noise to specific generalization or calibration guarantees, the contribution may be cited as motivation rather than as a foundational result."
+          },
+          "practical_impact_expert": {
+            "add_to_field": "Argues IVON is an effective, near-hyperparameter-free drop-in replacement for LS/SAM under label noise, with the bonus of providing posterior uncertainty.",
+            "beneficiaries": "Practitioners training on noisy/web-scraped data (e.g., Clothing1M-like scenarios) who want robustness without tuning smoothing rates or perturbation radii.",
+            "importance": "Hyperparameter robustness is genuinely valuable; the Fig. 10 sensitivity ablation supports this claim relative to SAM's ρ sensitivity.",
+            "improvement_meaningful": "Yes for small-to-mid-scale benchmarks; less clear at the scale of modern foundation models, which are not evaluated. The data-dependent noise gains are practically compelling.",
+            "future_influence": "Could nudge practitioners to adopt variational optimizers (IVON) more broadly, especially as Bayesian deep learning toolchains mature."
+          }
+        },
+        "consensus": [
+          "The conceptual link between variational learning and adaptive label smoothing is clean and intuitive, and the GLM derivation is correct and clear.",
+          "Empirical results consistently favor IVON over tuned LS on noisy-label benchmarks, with notable gains under pair-flip and data-dependent noise.",
+          "Reduced hyperparameter sensitivity (vs. SAM's ρ) is a practical advantage.",
+          "The NN-level theory is approximate (single-sample MC + first-order Taylor) and only characterizes one of several noise sources induced by variational training."
+        ],
+        "disagreement": [
+          "Whether the theoretical contribution is substantive (methodology/domain experts: meaningful unification) or largely a reinterpretation of known facts about expected-loss optimization (skeptic).",
+          "Whether empirical comparisons are sufficient: practical-impact and empirical experts see strong evidence, while the skeptic notes the absence of comparisons to OLS and dedicated noisy-label methods on the robustness benchmarks.",
+          "Whether the work will be foundational or mainly motivational for future research."
+        ],
+        "significance_score_1_to_10": 6,
+        "impact_assessment": "moderate"
+      },
+      "usage": {
+        "input_tokens": 3020,
+        "output_tokens": 2462,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 38635
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_6": {
+      "parsed": {
+        "problem_and_solution_formulation": {
+          "definitions_clear": [
+            "Label smoothing and its adaptive variants are clearly defined (Eqs. 1, 2, 5).",
+            "Variational objective and Gaussian posterior family are explicitly specified (Eq. 7, q_t = N(θ_t, I) or N(θ_t, Σ_t)).",
+            "GLM loss and induced label noise formulas are clearly stated (Eqs. 8, 10, 15, 16)."
+          ],
+          "assumptions_clear": [
+            "Gaussian posterior assumption is stated explicitly.",
+            "Quadratic regularizer R_0(θ)=‖θ‖²/2 is stated for the logistic regression derivation.",
+            "ρ_t=1 is explicitly used to recover Newton-like updates."
+          ],
+          "derivations_algorithms_clear": [
+            "Theorem 1 derivation is clear and short.",
+            "IVON pseudo-code provided in Alg. 1.",
+            "Appendix A.1 provides the surrogate derivation for VON via prior work (Khan et al. 2019; Nickl et al. 2024)."
+          ],
+          "suggested_improvements_for_formulation": [
+            "Clarify that ε_{i|t} is not zero-mean noise and is not constrained to keep y_i + ε_{i|t} in [0,1], so the mapping to 'label smoothing' is conceptual rather than literal.",
+            "State regularity conditions for swapping ∇ and E_q in Eq. 11.",
+            "Explicitly note that Theorem 1 uses a fixed identity covariance (not the standard 'variational learning' which also learns covariance), and how this restricts the claim's scope.",
+            "For the NN case (Eq. 20), make explicit which assumptions are needed for the Taylor approximation and the interpretation of the resulting random ε as label noise versus weight/feature noise.",
+            "Explain the puzzling claim that the Taylor approximation in Eq. 14 'does not get better for larger number of samples' and what its practical role is.",
+            "Provide an explicit analog of the smoothing strength α in the induced noise so practitioners can control magnitude."
+          ]
+        },
+        "theoretical_support": {
+          "correct": [
+            "Theorem 1: for q=N(θ_t, I) and the specified loss, expected gradient equals gradient with label noise ε_{i|t}=σ(f_i(θ_t)) − E_q[σ(f_i(θ))].",
+            "Extension to GLMs via A'(·) (Eq. 16) follows directly from the log-partition structure.",
+            "VON-as-Newton derivation via Khan et al. (2019) surrogate at ρ_t=1 is standard and sound."
+          ],
+          "partially_correct": [
+            "Theorem 2 (Appendix A.1): the surrogate equivalence is correct, but the claimed identification of ε_{i|t} with 'label noise' presumes the same gradient manipulation as Theorem 1; the proof is omitted with the claim it is 'identical', which is acceptable but should be made explicit for the full-covariance case.",
+            "NN-case noise expression (Eq. 20): an approximation requiring single-sample MC and first-order Taylor expansion, with second-order terms dropped. This is a heuristic derivation, not a rigorous result; the paper itself notes the Taylor approximation does not improve with more samples.",
+            "Claim that second-order methods yield 'more adaptive' label noise: argued informally; not made quantitative."
+          ],
+          "suggested_improvements_for_theoretical_support": [
+            "Include a complete proof of Theorem 2 rather than asserting it is identical to Theorem 1.",
+            "Provide error bounds on the Taylor approximation used to derive Eq. 20 for the NN case, or empirically validate that Eq. 20 matches the actual difference Eq_t[∇ℓ] − ∇ℓ(θ_t) induced by IVON during training.",
+            "Discuss whether the 'label noise' decomposition is unique or whether some of ε_{i|t} should be attributed to feature/weight noise.",
+            "Make precise the regularity conditions allowing exchange of expectation and gradient."
+          ]
+        },
+        "experimental_support": {
+          "supported": [
+            "IVON outperforms tuned LS on symmetric/pair-flip noise across CIFAR-10/100, with consistent direction across noise levels and 5 seeds (Figs. 5, 8).",
+            "Learned Σ_t outperforms fixed Σ_t on CIFAR-100 across three noise settings (Fig. 6).",
+            "IVON is comparable to best-tuned SAM in synthetic noise settings, with SAM showing high sensitivity to ρ (Figs. 5, 8)."
+          ],
+          "partially_supported": [
+            "IVON's induced label noise is 'similar' to OLS (Fig. 4): comparison is purely visual on log-scale histograms for selected classes; no quantitative similarity metric (KL, correlation, rank correlation) is provided.",
+            "Variational learning assigns higher noise to atypical examples (Fig. 3): qualitative MNIST visualization only on a small CNN; no quantitative atypicality measure.",
+            "Clothing1M improvement over LS (~1%): the LS baseline accuracy appears low relative to literature, weakening the comparison.",
+            "'~51% gain' on data-dependent noise: occurs only at high κ where both baselines collapse to ~10%; framing as a general gain is overstated."
+          ],
+          "unsupported_or_overstated": [
+            "Claim that IVON 'does not need to tune any hyperparameters' is contradicted by Table 1 (per-setting tuning of lr, Hessian init, weight decay) and Fig. 10 (pair-flip 20% accuracy drops to ~20% at h_0=0.05).",
+            "Claim in Fig. 10 caption that IVON varies by 'up to 10%' is inaccurate; the pair-flip 20% curve spans roughly 50 percentage points across h_0 values.",
+            "Introduction motivates calibration, OOD detection, and distribution shift, but experiments only address labeling errors; no calibration (ECE/NLL) or OOD evaluation is shown.",
+            "OLS is claimed as the most relevant baseline (similarity comparison) but is omitted from the noisy-label accuracy benchmarks, leaving the practical comparison with the conceptually closest method missing."
+          ],
+          "suggested_improvements_for_claim_support": [
+            "Add a quantitative similarity metric (KL divergence, correlation, rank agreement) between IVON's induced label distributions and OLS across all classes.",
+            "Include OLS (and other adaptive LS methods: Ko et al. 2023, Lee et al. 2022, Park et al. 2023) in the accuracy benchmarks under labeling errors.",
+            "Add noise-robust baselines such as GCE, SCE, ELR, Co-teaching, DivideMix, especially on Clothing1M where these are standard.",
+            "Report ECE, NLL, and other calibration metrics to support the overconfidence framing in the introduction.",
+            "Empirically validate that Eq. 20 actually approximates the realized noise IVON induces in NN training.",
+            "Quantify 'atypicality' (e.g., via predictive entropy under a held-out model, human ratings, or distance to class mean) and correlate with IVON noise magnitude.",
+            "Test calibration and OOD detection benefits if those motivations are to be retained in the introduction.",
+            "Investigate whether stacking LS on top of IVON helps or hurts."
+          ]
+        },
+        "experimental_rigor": {
+          "baseline_quality": "Limited. Only LS and SAM are used as performance baselines under labeling errors; the most conceptually related baseline (OLS) is included only for visual similarity, not accuracy. No comparison to standard noise-robust methods on Clothing1M (where literature accuracy is typically ~70–76%).",
+          "missing_baselines": [
+            "Online Label Smoothing (Zhang et al., 2021) in accuracy experiments.",
+            "Other adaptive LS methods (Ko et al. 2023, Lee et al. 2022 ACLS, Park et al. 2023).",
+            "Noise-robust learning baselines: GCE, SCE, ELR, Co-teaching, DivideMix, mixup, bootstrap.",
+            "Deep ensembles or other Bayesian baselines (MC-Dropout, Laplace approximation) to isolate the contribution of variational learning specifically."
+          ],
+          "dataset_quality": "Standard benchmarks (MNIST, CIFAR-10/100, Clothing1M). Clothing1M provides natural noise. The pair-flip class ordering in CIFAR-10 is unusual (sequential class index rather than semantically similar pairs), and the data-dependent noise construction is somewhat arbitrary.",
+          "better_datasets": [
+            "CIFAR-10N/CIFAR-100N (real human label noise) for more realistic noise comparisons.",
+            "WebVision or ANIMAL-10N for further natural-noise evaluation.",
+            "OOD/calibration benchmarks (CIFAR-10-C, ImageNet-C/R) to support overconfidence claims."
+          ],
+          "metric_appropriateness": "Accuracy is appropriate for noisy-label classification but insufficient given the paper's overconfidence/calibration framing.",
+          "better_metric": [
+            "Expected Calibration Error (ECE).",
+            "Negative log-likelihood / Brier score.",
+            "Quantitative similarity metrics (KL, JSD, rank correlation) for the OLS comparison.",
+            "Correlation between IVON label noise magnitude and a quantitative atypicality measure."
+          ],
+          "missing_ablations": [
+            "Comparison between variational GD (fixed identity covariance) and IVON on the same NN tasks to directly test the 'second-order yields more adaptive noise' claim.",
+            "Multi-sample MC ablation versus single-sample for the noise estimate in IVON.",
+            "Ablation on number of MC samples used per gradient step.",
+            "IVON + LS combination to test orthogonality of effects.",
+            "Sensitivity to other IVON hyperparameters (β_2, λ, weight decay) beyond Hessian init."
+          ],
+          "statistical_significance": "5 seeds reported in most plots but no standard deviations, confidence intervals, or significance tests are shown. Improvement margins are stated as point estimates only.",
+          "better_significance_test_or_confidence_interval": [
+            "Report mean ± standard deviation or 95% confidence intervals in figures.",
+            "Conduct paired statistical tests (e.g., Wilcoxon signed-rank across seeds) for headline comparisons.",
+            "Report per-seed accuracy tables in the appendix."
+          ],
+          "hyperparameter_clarity": "Hyperparameters are listed in Appendix C and Table 1, but per-setting tuning of lr, Hessian init, and weight decay contradicts the main-text claim of tuning-free behavior. Sweep ranges for LS (α grid) and SAM (ρ grid) are coarse.",
+          "negative_results_discussed": "no",
+          "possible_confounders": [
+            "Hyperparameters were tuned differently per noise setting for IVON but not necessarily for LS/SAM, which can bias comparisons.",
+            "Choice of pair-flip ordering (sequential index) may not match the convention of literature, affecting comparability of pair-flip results.",
+            "Clothing1M LS baseline accuracy seems low compared to literature, suggesting suboptimal training setup that may inflate relative gains.",
+            "Single-sample MC estimates of IVON gradients add stochastic noise that may itself act as regularization, beyond the 'adaptive label smoothing' mechanism."
+          ],
+          "confounder_reduction_alternatives": [
+            "Use the same hyperparameter tuning protocol (budget, search space, validation) for all methods.",
+            "Adopt a standard pair-flip ordering (semantically similar class pairs) as used in prior noisy-label papers.",
+            "Compare against published Clothing1M baselines or replicate stronger LS/SAM settings.",
+            "Disentangle MC sampling noise from the analytic label-noise mechanism with ablations on sample counts and deterministic mean updates."
+          ],
+          "reproducibility_score_1_to_10": 5,
+          "suggestions_for_improving_reproducibility": [
+            "Release code and configurations.",
+            "Provide per-seed numerical results in appendix tables.",
+            "Document hyperparameter search protocol explicitly (budget, validation set, selection criterion).",
+            "Provide exact training scripts and dataset preparation (especially for synthetic noise generation and pair-flip ordering)."
+          ]
+        }
+      },
+      "usage": {
+        "input_tokens": 10113,
+        "output_tokens": 4430,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 38635
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_7": {
+      "parsed": {
+        "strengths": [
+          "Clean and intuitive conceptual contribution: framing the expected gradient under a Gaussian variational posterior as inducing per-example adaptive label noise unifies two largely separate literatures (Bayesian deep learning and adaptive label smoothing).",
+          "Theorem 1 and its GLM extension (Eqs. 10, 16) are correct, clearly derived, and provide an exact closed-form expression for the induced label noise in the linear/GLM case.",
+          "Extension to VON/Newton (Theorem 2, App. A.1) elegantly shows that learning the covariance Σ_t makes the induced noise adaptive in both location and spread, with empirical support from the fixed-vs-learned Σ ablation (Fig. 6).",
+          "Empirical results are consistent in direction across multiple noise types (symmetric, pair-flip, data-dependent, natural) and two datasets (CIFAR-10/100, Clothing1M), with IVON outperforming tuned LS and matching tuned SAM, run over 5 seeds.",
+          "The data-dependent noise experiment (Fig. 7) is a useful diagnostic and shows striking robustness of IVON in high-noise regimes where LS and SAM collapse.",
+          "Hyperparameter sensitivity comparison (Fig. 10 vs SAM's ρ sweeps in Figs. 5, 8, 9) supports the practical claim that IVON is less sensitive to its main tuning knob than SAM."
+        ],
+        "weaknesses": [
+          "The most conceptually relevant baseline, Online Label Smoothing (Zhang et al., 2021), is included only for a visual similarity comparison (Fig. 4) but is absent from all accuracy benchmarks. Other adaptive LS methods (Ko et al. 2023, Lee et al. 2022, Park et al. 2023) and standard noise-robust methods (GCE, SCE, ELR, Co-teaching, DivideMix) are not compared at all, despite being natural baselines, especially on Clothing1M.",
+          "The neural-network derivation (Eq. 20) relies on single-sample MC plus a first-order Taylor expansion with second-order terms dropped, and is never empirically validated. There is no check that the analytic formula approximates the actual realized noise induced by IVON, and the decomposition into 'label noise' (versus feature/weight noise) is non-unique.",
+          "The 'no hyperparameter tuning' claim (Sec. 3.4, 4.3.1) is contradicted by Table 1, which shows per-setting tuning of learning rate, Hessian init, and weight decay. Fig. 10 also shows IVON's accuracy can vary substantially with Hessian init (e.g., pair-flip 20% collapses near h_0=0.05), contrary to its caption.",
+          "The introduction motivates miscalibration, OOD detection, and distribution shift, but experiments cover only labeling errors. No calibration metrics (ECE, NLL, Brier) or OOD evaluations are reported despite the overconfidence framing.",
+          "Quantitative similarity between IVON's and OLS's smoothed labels (Fig. 4) is shown only via log-scale bar plots for selected classes; no KL/correlation/rank-agreement metric is reported, making the 'surprisingly similar' claim subjective.",
+          "Statistical reporting is weak: figures show mean accuracy over 5 seeds but no error bars or confidence intervals, and no paired significance tests for the headline gains.",
+          "The 'up to ~51%' gain on data-dependent noise occurs in a regime where baselines collapse to near-chance; framing this as a general benefit is misleading.",
+          "Clothing1M LS baseline accuracy (~65–67%) appears low relative to literature, and the gain over LS is only ~1%, suggesting suboptimal baseline tuning may inflate relative improvements."
+        ],
+        "fatal_flaws": [],
+        "minor_issues": [
+          "Theorem 2 proof is asserted to be 'identical' to Theorem 1's; a complete proof for the full-covariance case would be clearer.",
+          "Regularity conditions for exchanging expectation and gradient (Eq. 11) are not stated.",
+          "Comment that the Taylor approximation 'does not get better for larger number of samples' (after Eq. 14) is confusing and deserves clarification.",
+          "Pair-flip class ordering in CIFAR-10 follows class index rather than semantic similarity (the more common convention), which may affect comparability with prior work.",
+          "Reproducibility would be substantially improved by releasing code and providing per-seed numerical results.",
+          "Several captions describe accuracy variations imprecisely (e.g., Fig. 10).",
+          "Typos: 'naturally' → 'natural' in 'variational method natural yields'; 'mislabling'; 'neworks'; 'Pereyra et al. (2017a)' duplicated as (2017b)."
+        ],
+        "questions_for_authors": [
+          "Why is OLS, the conceptually closest method, omitted from the accuracy benchmarks in Sec. 4.3? Can you add it (and other adaptive LS variants such as ACLS and Ko et al. 2023) to all noisy-label experiments?",
+          "Can you empirically verify that Eq. 20 approximates the actual difference E_q[∇ℓ_i] − ∇ℓ_i(θ_t) that IVON induces during NN training, e.g., by comparing realized 'label noise' magnitudes to the analytic prediction?",
+          "Given that hyperparameters (lr, Hessian init, weight decay) are tuned per setting in Table 1, how do you reconcile the claim that IVON 'does not require hyperparameter tuning'? Would the LS/SAM gains shrink with comparable per-setting tuning?",
+          "Can you report ECE/NLL for IVON, LS, and SAM to substantiate the overconfidence framing?",
+          "How sensitive are the smoothed-label-similarity conclusions (Fig. 4) to a quantitative metric such as KL divergence between IVON, OLS, and LS distributions over all classes?",
+          "On Clothing1M, why is the LS baseline lower than commonly reported in the noisy-label literature, and how does IVON compare to standard noise-robust baselines (GCE, SCE, ELR, DivideMix)?",
+          "Do you have a direct ablation between variational GD (fixed identity covariance) and IVON in the NN setting to support the claim that second-order variational methods are more adaptive?",
+          "Does combining LS or OLS with IVON yield further gains, or are the effects redundant?"
+        ],
+        "recommendation": "weak_accept",
+        "recommendation_rationale": "The paper makes a clean and useful conceptual connection between variational learning and adaptive label smoothing, with a correct GLM-level derivation and a reasonable (though approximate) extension to neural networks. The empirical results consistently support the practical claim that IVON outperforms tuned LS and matches tuned SAM under various forms of label noise, with the data-dependent noise diagnostic being particularly compelling. However, the contribution is more reframing than fundamentally new theory, the NN-level analysis is heuristic and not empirically validated, the experimental section omits the most relevant adaptive-LS baseline (OLS) and standard noise-robust methods, and several claims (hyperparameter-freedom, calibration/OOD motivations, ~51% gains, OLS similarity) are overstated. These issues are addressable in revision and do not undermine the core contribution. Overall, this is a modest but useful workshop/short-paper-style contribution with above-threshold value for the community.",
+        "confidence_1_to_5": 4
+      },
+      "usage": {
+        "input_tokens": 13092,
+        "output_tokens": 2628,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 38635
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_8": {
+      "parsed": {
+        "summary_of_paper": "The paper draws an explicit connection between variational learning with Gaussian posteriors and adaptive label smoothing. The authors prove that variational GD on logistic regression with q = N(θ_t, I) is exactly equivalent to standard GD with per-example label noise ε_{i|t} = σ(f_i(θ_t)) − E_{q_t}[σ(f_i(θ))] (Theorem 1), extend the result to general GLM losses by replacing σ with the log-partition derivative A' (Eq. 16), and to Newton/VON updates with learned full covariance Σ_t (Theorem 2, App. A.1). For neural networks, they derive an approximate form (Eq. 20) using a single-sample Monte Carlo and first-order Taylor expansion. The induced noise grows for atypical examples whose predictions sit near the decision boundary and have high predictive variance.\n\nEmpirically, the authors show that (i) IVON assigns higher label noise to atypical MNIST digits (Fig. 3), (ii) its per-class smoothed-label distributions on CIFAR-10/100 visually resemble Online Label Smoothing (Fig. 4), and (iii) IVON consistently outperforms best-tuned LS and matches/beats best-tuned SAM on CIFAR-10/100 (symmetric, pair-flip, data-dependent noise) and Clothing1M. Ablations show learned Σ_t outperforms a fixed diagonal Σ_t (Fig. 6), and IVON appears less sensitive to its Hessian initialization than SAM is to its perturbation radius (Fig. 10).",
+        "main_strengths": [
+          "Clean conceptual contribution that unifies two largely separate literatures (Bayesian deep learning and adaptive label smoothing) by reinterpreting the expected gradient under a Gaussian posterior as adaptive per-example label noise.",
+          "Theorem 1 and the GLM extension (Eqs. 10, 16) are correct, clearly derived, and yield exact closed-form expressions for the induced label noise in linear/GLM settings.",
+          "The Newton/VON extension (Theorem 2, App. A.1) elegantly shows that learning Σ_t makes the induced noise adaptive in both location and spread, with empirical support from the fixed-vs-learned Σ ablation (Fig. 6).",
+          "Empirical results are consistent in direction across multiple noise types (symmetric, pair-flip, data-dependent, natural) and datasets (CIFAR-10/100, Clothing1M), with comparisons against best-tuned LS and SAM and reporting over 5 seeds.",
+          "The data-dependent noise diagnostic (Fig. 7) is a useful experiment showing striking robustness of IVON in high-noise regimes where LS and SAM collapse to near-chance.",
+          "The hyperparameter-sensitivity comparison (Fig. 10 vs. SAM's ρ sweeps in Figs. 5, 8, 9) supports the practical claim that IVON is less brittle to its main tuning knob than SAM."
+        ],
+        "main_weaknesses": [
+          "The most conceptually relevant baseline, Online Label Smoothing (Zhang et al., 2021), is only included for a visual similarity check (Fig. 4) and absent from all accuracy benchmarks. Other adaptive LS methods (Ko et al. 2023; Lee et al. 2022; Park et al. 2023) and standard noise-robust methods (GCE, SCE, ELR, Co-teaching, DivideMix) are not compared, despite being natural baselines, especially on Clothing1M.",
+          "The neural-network derivation (Eq. 20) relies on single-sample MC plus a first-order Taylor expansion with second-order terms dropped, and is never empirically validated. There is no check that the analytic formula approximates the realized noise induced by IVON, and the decomposition into 'label noise' vs. feature/weight noise is non-unique.",
+          "The 'no hyperparameter tuning' framing (Sec. 3.4, 4.3.1) is contradicted by Table 1, which shows per-setting tuning of learning rate, Hessian init, and weight decay. Fig. 10 also shows IVON's accuracy varies substantially with Hessian init in some settings (e.g., pair-flip 20% collapses near h_0=0.05), partially contradicting the caption.",
+          "The introduction motivates miscalibration, OOD detection, and distribution shift, but the experiments cover only labeling errors. No calibration metrics (ECE, NLL, Brier) or OOD evaluations are reported despite the overconfidence framing.",
+          "The 'surprisingly similar' OLS-IVON claim (Fig. 4) is based on log-scale bar plots for selected classes only; no quantitative similarity measure (KL divergence, rank agreement) is provided.",
+          "Statistical reporting is weak: figures show mean accuracy over 5 seeds with no error bars, confidence intervals, or significance tests.",
+          "The headline '~51%' improvement on data-dependent noise occurs in a regime where baselines collapse to ~10% (near chance); presenting this as a general benefit overstates the practical gain.",
+          "The Clothing1M LS baseline (~65–67%) is low relative to the noisy-label literature, and the IVON gain over LS is only ~1%, suggesting suboptimal baseline tuning may inflate relative improvements."
+        ],
+        "detailed_comments": [
+          "Sec. 3.1: The proof of Theorem 1 is clean, but the regularity conditions for swapping expectation and gradient in Eq. 11 are left implicit. Stating them (e.g., differentiability and dominated convergence) would improve rigor.",
+          "Sec. 3.3 / App. A.1: Theorem 2's proof is asserted to be 'identical' to Theorem 1's. Given that Σ_t is now learned and full, a complete derivation (even brief) would make the result self-contained.",
+          "Sec. 3.4: The comment after Eq. 14 that the Taylor approximation 'does not get better for larger number of samples' is confusing as stated and deserves clarification—presumably it refers to bias not vanishing rather than variance reduction.",
+          "Sec. 4.1, Fig. 3: The MNIST visualization is illustrative but anecdotal. A quantitative measure (e.g., correlation between noise magnitude and predictive entropy, or model confidence on a separately validated 'atypicality' score) would strengthen the claim.",
+          "Sec. 4.2, Fig. 4: The OLS-IVON similarity claim would be far more convincing with a quantitative aggregate metric (e.g., mean KL divergence between per-class smoothed-label distributions across all classes, not just selected ones).",
+          "Sec. 4.3.1: Pair-flip class ordering in CIFAR-10 appears to follow class index rather than semantic similarity (a more common convention in the noisy-label literature). This may affect comparability with prior work; clarifying this choice is important.",
+          "Sec. 4.3.2 / Fig. 7: The construction of P with κ + βi for i ∈ [1, K] means class K-1 has noise level κ + β(K-1), which for κ=0.4 and β=0.05 on CIFAR-10 exceeds 0.85, i.e., the last class is essentially unlearnable. The framing should distinguish gains in moderately noisy regimes from gains in essentially-random-label regimes.",
+          "Sec. 4.3.3 / Fig. 9: A ~1% improvement on Clothing1M, where LS appears weakly tuned, is a modest result. Reporting standard noise-robust baselines (e.g., GCE, ELR, DivideMix) would contextualize this.",
+          "Fig. 6: The ablation is valuable, but the fixed-Σ baseline could also be shown across multiple variance scales chosen by validation, and the figure would benefit from clarifying which axes correspond to which dataset.",
+          "App. B.1: Fig. 10's claim that variation is bounded by 10% is contradicted by the pair-flip 20% curve, which collapses at h_0=0.05. The caption should be revised.",
+          "Reproducibility: No code release is mentioned. Per-seed numerical results, code, and exact hyperparameters for all experiments (not just Table 1) would substantially improve reproducibility.",
+          "Minor typos: 'variational method natural yields' (should be 'naturally yields'); 'mislabling'; 'neworks'; duplicated Pereyra et al. (2017a/b)."
+        ],
+        "questions_for_authors": [
+          "Why is Online Label Smoothing—the conceptually closest method—omitted from the accuracy benchmarks in Sec. 4.3? Can you add OLS (and other adaptive LS variants like ACLS and Ko et al. 2023) to all noisy-label experiments?",
+          "Can you empirically verify that Eq. 20 approximates the actual difference E_q[∇ℓ_i] − ∇ℓ_i(θ_t) that IVON induces during NN training, e.g., by comparing realized label-noise magnitudes to the analytic prediction across training?",
+          "Given the per-setting tuning of learning rate, Hessian init, and weight decay in Table 1, how do you reconcile the claim that IVON 'does not require hyperparameter tuning'? Would the gains over LS/SAM shrink under comparable per-setting tuning of those baselines?",
+          "Can you report ECE/NLL/Brier scores for IVON, LS, and SAM to substantiate the overconfidence/calibration framing in the introduction?",
+          "How sensitive are the OLS-IVON similarity conclusions (Fig. 4) to quantitative metrics such as mean KL divergence between smoothed-label distributions over all classes?",
+          "On Clothing1M, why is the LS baseline lower than commonly reported in the noisy-label literature, and how does IVON compare to standard noise-robust baselines (GCE, SCE, ELR, DivideMix)?",
+          "Do you have a direct ablation between variational GD (fixed identity covariance) and IVON in the NN setting to support the claim that second-order variational methods are more adaptive than first-order ones?",
+          "Does combining LS or OLS with IVON yield further gains, or are the effects redundant?",
+          "What is the rationale for using the class-index-based pair-flip ordering in CIFAR-10 rather than the semantically-motivated pairs used in much prior work?"
+        ],
+        "suggestions_for_improvement": [
+          "Add accuracy comparisons against OLS and at least one other adaptive LS method (ACLS or Ko et al. 2023) across all noisy-label settings; also include standard noise-robust baselines on Clothing1M.",
+          "Empirically validate Eq. 20 by measuring the realized noise during IVON training and comparing it to the analytic prediction; this would substantiate the NN-level theoretical claim.",
+          "Soften or qualify the 'no hyperparameter tuning' framing, and clearly disclose tuned hyperparameters (Table 1) in the main text rather than only in the appendix.",
+          "Report calibration (ECE, NLL) and—if feasible—an OOD experiment, to back the overconfidence motivation in the introduction.",
+          "Replace or supplement Fig. 4 with a quantitative aggregate similarity metric (e.g., KL or correlation) between IVON and OLS smoothed-label distributions across all classes.",
+          "Add error bars / confidence intervals and at least one paired significance test for headline gains; report per-seed numbers in the appendix.",
+          "Reframe the data-dependent noise result by distinguishing high-noise regimes where baselines reach chance from regimes where they are competitive; consider intermediate κ to show transitions.",
+          "Provide a complete proof of Theorem 2 (rather than appealing to Theorem 1) and state the regularity conditions used in Eq. 11.",
+          "Release code and exact training configurations to enable reproduction.",
+          "Fix typos and the Fig. 10 caption, which currently overstates IVON's robustness in the pair-flip 20% setting."
+        ],
+        "overall_recommendation": "weak accept",
+        "reviewer_confidence_1_to_5": 4,
+        "score_card": {
+          "soundness_1_to_4": 3,
+          "presentation_1_to_4": 3,
+          "contribution_1_to_4": 2,
+          "overall_1_to_10": 6
+        }
+      },
+      "usage": {
+        "input_tokens": 5565,
+        "output_tokens": 4278,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 38635
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_9": {
+      "parsed": {
+        "hallucinated_comments": [],
+        "misrepresentations": [
+          "The draft says 'figures show mean accuracy over 5 seeds with no error bars'—the paper does not clearly state whether error bars are shown; some figures may include shading. This should be softened to 'error bars/CIs are not clearly visible or reported numerically' rather than asserted as absent.",
+          "The critique that the Clothing1M LS baseline is 'low relative to the noisy-label literature' is plausible but not directly verified against numbers in the paper; the wording should be hedged.",
+          "The claim that Fig. 10's caption is 'contradicted' by the pair-flip curve overstates: the caption says variation can be up to ~10% when Hessian is bigger than 0.05, and the pair-flip collapse occurs precisely at h_0=0.05, so the caption is technically consistent though misleading. Should be reworded to 'the caption's hedge ‘bigger than 0.05’ obscures a sharp collapse at the boundary'."
+        ],
+        "missed_strengths": [
+          "The paper provides a pseudo-code for IVON (Alg. 1) and explicitly identifies which terms in the variational gradient correspond to label noise vs. other noises, aiding interpretability.",
+          "The framework unifies multiple prior heuristic adaptive-LS schemes under a single principled objective, which has pedagogical value."
+        ],
+        "missed_weaknesses": [
+          "The novelty is somewhat limited: the observation that variational/Bayesian methods produce expected-gradient terms equivalent to soft labels is implicit in prior work on Bayesian deep learning and PAC-Bayes; the paper's framing as 'adaptive label smoothing' is a reinterpretation rather than a new algorithm.",
+          "No theoretical analysis of when the induced adaptivity is provably beneficial (e.g., generalization bounds, noise-robustness guarantees)."
+        ],
+        "too_strong_claims": [
+          "Calling the contribution 'weak accept' with overall=6 while listing many substantive weaknesses (missing key baselines, unvalidated NN derivation, no calibration experiments despite framing) may be slightly generous; however, the conceptual contribution justifies borderline. Consider whether 'borderline' or 5 is more accurate—but 6/weak accept is defensible."
+        ],
+        "non_actionable_criticisms": [],
+        "tone_issues": [],
+        "consistency_between_summary_weaknesses_and_recommendation": "consistent",
+        "external_novelty_claims_supported": "partial",
+        "corrections_needed": [
+          "Soften the statement about absent error bars to acknowledge uncertainty about what is shown in figures.",
+          "Hedge the Clothing1M baseline-strength claim ('appears low relative to commonly reported numbers' rather than asserting it).",
+          "Reword the Fig. 10 caption critique to note that the caption's qualifier 'bigger than 0.05' technically holds, but is misleading because the collapse occurs at the threshold.",
+          "Add a brief note that the novelty is primarily a reinterpretation/unification, not a new algorithm, in the weaknesses.",
+          "Consider adding a missed weakness about lack of formal generalization/robustness guarantees."
+        ]
+      },
+      "usage": {
+        "input_tokens": 4608,
+        "output_tokens": 1120,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 38635
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_10": {
+      "parsed": {
+        "final_review": {
+          "summary_of_paper": "The paper draws an explicit connection between variational learning with Gaussian posteriors and adaptive label smoothing. The authors prove that variational GD on logistic regression with q = N(θ_t, I) is exactly equivalent to standard GD with per-example label noise ε_{i|t} = σ(f_i(θ_t)) − E_{q_t}[σ(f_i(θ))] (Theorem 1), extend the result to general GLM losses by replacing σ with the log-partition derivative A' (Eq. 16), and to Newton/VON updates with learned full covariance Σ_t (Theorem 2, App. A.1). For neural networks, they derive an approximate form (Eq. 20) using a single-sample Monte Carlo and first-order Taylor expansion. The induced noise grows for atypical examples whose predictions sit near the decision boundary and have high predictive variance. Empirically, the authors show that (i) IVON assigns higher label noise to atypical MNIST digits (Fig. 3), (ii) its per-class smoothed-label distributions on CIFAR-10/100 visually resemble Online Label Smoothing (Fig. 4), and (iii) IVON consistently outperforms best-tuned LS and matches/beats best-tuned SAM on CIFAR-10/100 (symmetric, pair-flip, data-dependent noise) and Clothing1M. Ablations show learned Σ_t outperforms a fixed diagonal Σ_t (Fig. 6), and IVON appears less sensitive to its Hessian initialization than SAM is to its perturbation radius (Fig. 10).",
+          "main_strengths": [
+            "Clean conceptual contribution that unifies two largely separate literatures (Bayesian deep learning and adaptive label smoothing) by reinterpreting the expected gradient under a Gaussian posterior as adaptive per-example label noise, with pedagogical value in subsuming several prior heuristic adaptive-LS schemes under a single principled objective.",
+            "Theorem 1 and the GLM extension (Eqs. 10, 16) are correct, clearly derived, and yield exact closed-form expressions for the induced label noise in linear/GLM settings.",
+            "The Newton/VON extension (Theorem 2, App. A.1) elegantly shows that learning Σ_t makes the induced noise adaptive in both location and spread, with empirical support from the fixed-vs-learned Σ ablation (Fig. 6).",
+            "Empirical results are consistent in direction across multiple noise types (symmetric, pair-flip, data-dependent, natural) and datasets (CIFAR-10/100, Clothing1M), with comparisons against best-tuned LS and SAM and reporting over 5 seeds.",
+            "The data-dependent noise diagnostic (Fig. 7) is a useful experiment showing striking robustness of IVON in high-noise regimes where LS and SAM collapse to near-chance.",
+            "The hyperparameter-sensitivity comparison (Fig. 10 vs. SAM's ρ sweeps in Figs. 5, 8, 9) supports the practical claim that IVON is less brittle to its main tuning knob than SAM, and the included IVON pseudo-code (Alg. 1) plus an explicit separation of label vs. other induced noises aids interpretability."
+          ],
+          "main_weaknesses": [
+            "The most conceptually relevant baseline, Online Label Smoothing (Zhang et al., 2021), is only included for a visual similarity check (Fig. 4) and absent from all accuracy benchmarks. Other adaptive LS methods (Ko et al. 2023; Lee et al. 2022; Park et al. 2023) and standard noise-robust methods (GCE, SCE, ELR, Co-teaching, DivideMix) are not compared, despite being natural baselines, especially on Clothing1M.",
+            "The neural-network derivation (Eq. 20) relies on single-sample MC plus a first-order Taylor expansion with second-order terms dropped, and is never empirically validated. There is no check that the analytic formula approximates the realized noise induced by IVON, and the decomposition into 'label noise' vs. feature/weight noise is non-unique.",
+            "The 'no hyperparameter tuning' framing (Sec. 3.4, 4.3.1) is in tension with Table 1, which shows per-setting tuning of learning rate, Hessian init, and weight decay for IVON. Fig. 10 also shows IVON's accuracy varies substantially with Hessian init in some settings (e.g., pair-flip 20% collapses near h_0=0.05); the caption's hedge ('bigger than 0.05') is technically consistent but understates this sensitivity at the boundary.",
+            "The introduction motivates miscalibration, OOD detection, and distribution shift, but the experiments cover only labeling errors. No calibration metrics (ECE, NLL, Brier) or OOD evaluations are reported despite the overconfidence framing.",
+            "The 'surprisingly similar' OLS-IVON claim (Fig. 4) is based on log-scale bar plots for selected classes only; no quantitative similarity measure (KL divergence, rank agreement) is provided across all classes.",
+            "Statistical reporting is limited: figures report mean accuracy over 5 seeds but error bars/confidence intervals and significance tests are not clearly visible or reported numerically.",
+            "The headline '~51%' improvement on data-dependent noise occurs in a regime where baselines collapse to ~10% (near chance); presenting this as a general benefit may overstate the practical gain in moderately noisy regimes.",
+            "On Clothing1M, the IVON gain over LS is only ~1%, and the LS baseline appears low relative to commonly reported numbers in the noisy-label literature, which may inflate the relative improvement.",
+            "The novelty is primarily a reinterpretation/unification rather than a new algorithm: that variational/Bayesian objectives induce expected-gradient terms equivalent to soft labels is implicit in prior Bayesian deep learning and PAC-Bayes work. There is also no formal generalization or noise-robustness guarantee establishing when the induced adaptivity is provably beneficial."
+          ],
+          "detailed_comments": [
+            "Sec. 3.1: The proof of Theorem 1 is clean, but the regularity conditions for swapping expectation and gradient in Eq. 11 are left implicit. Stating them (e.g., differentiability and dominated convergence) would improve rigor.",
+            "Sec. 3.3 / App. A.1: Theorem 2's proof is asserted to be 'identical' to Theorem 1's. Given that Σ_t is now learned and full, a complete derivation (even brief) would make the result self-contained.",
+            "Sec. 3.4: The comment after Eq. 14 that the Taylor approximation 'does not get better for larger number of samples' is confusing and deserves clarification—presumably it refers to bias not vanishing with more MC samples rather than variance reduction.",
+            "Sec. 4.1, Fig. 3: The MNIST visualization is illustrative but anecdotal. A quantitative measure (e.g., correlation between noise magnitude and predictive entropy, or model confidence on a separately validated 'atypicality' score) would strengthen the claim.",
+            "Sec. 4.2, Fig. 4: The OLS-IVON similarity claim would be far more convincing with a quantitative aggregate metric (e.g., mean KL divergence between per-class smoothed-label distributions across all classes, not just selected ones).",
+            "Sec. 4.3.1: Pair-flip class ordering in CIFAR-10 appears to follow class index rather than semantic similarity (a more common convention in the noisy-label literature). This may affect comparability with prior work; clarifying this choice is important.",
+            "Sec. 4.3.2 / Fig. 7: The construction of P with κ + βi for i ∈ [1, K] means class K-1 has noise level κ + β(K-1), which for κ=0.4 and β=0.05 on CIFAR-10 exceeds 0.85, i.e., the last class is essentially unlearnable. The framing should distinguish gains in moderately noisy regimes from gains in essentially-random-label regimes.",
+            "Sec. 4.3.3 / Fig. 9: A ~1% improvement on Clothing1M is a modest result. Reporting standard noise-robust baselines (e.g., GCE, ELR, DivideMix) would contextualize this.",
+            "Fig. 6: The ablation is valuable, but the fixed-Σ baseline could also be shown across multiple variance scales chosen by validation, and the figure would benefit from clarifying which axes correspond to which dataset.",
+            "App. B.1: Fig. 10's caption that variation is bounded by ~10% holds only when h_0 > 0.05; the sharp collapse at h_0=0.05 in the pair-flip curve should be acknowledged explicitly.",
+            "Reproducibility: No code release is mentioned. Per-seed numerical results, code, and exact hyperparameters for all experiments (not just Table 1) would substantially improve reproducibility.",
+            "Minor typos: 'variational method natural yields' (should be 'naturally yields'); 'mislabling'; 'neworks'; duplicated Pereyra et al. (2017a/b)."
+          ],
+          "questions_for_authors": [
+            "Why is Online Label Smoothing—the conceptually closest method—omitted from the accuracy benchmarks in Sec. 4.3? Can you add OLS (and other adaptive LS variants like ACLS and Ko et al. 2023) to all noisy-label experiments?",
+            "Can you empirically verify that Eq. 20 approximates the actual difference E_q[∇ℓ_i] − ∇ℓ_i(θ_t) that IVON induces during NN training, e.g., by comparing realized label-noise magnitudes to the analytic prediction across training?",
+            "Given the per-setting tuning of learning rate, Hessian init, and weight decay in Table 1, how do you reconcile the claim that IVON 'does not require hyperparameter tuning'? Would the gains over LS/SAM shrink under comparable per-setting tuning of those baselines?",
+            "Can you report ECE/NLL/Brier scores for IVON, LS, and SAM to substantiate the overconfidence/calibration framing in the introduction?",
+            "How sensitive are the OLS-IVON similarity conclusions (Fig. 4) to quantitative metrics such as mean KL divergence between smoothed-label distributions over all classes?",
+            "On Clothing1M, how does IVON compare to standard noise-robust baselines (GCE, SCE, ELR, DivideMix), and what was the tuning protocol for the LS baseline?",
+            "Do you have a direct ablation between variational GD (fixed identity covariance) and IVON in the NN setting to support the claim that second-order variational methods are more adaptive than first-order ones?",
+            "Does combining LS or OLS with IVON yield further gains, or are the effects redundant?",
+            "What is the rationale for using the class-index-based pair-flip ordering in CIFAR-10 rather than the semantically-motivated pairs used in much prior work?"
+          ],
+          "suggestions_for_improvement": [
+            "Add accuracy comparisons against OLS and at least one other adaptive LS method (ACLS or Ko et al. 2023) across all noisy-label settings; also include standard noise-robust baselines on Clothing1M.",
+            "Empirically validate Eq. 20 by measuring the realized noise during IVON training and comparing it to the analytic prediction; this would substantiate the NN-level theoretical claim.",
+            "Soften or qualify the 'no hyperparameter tuning' framing, and clearly disclose tuned hyperparameters (Table 1) in the main text rather than only in the appendix.",
+            "Report calibration (ECE, NLL) and—if feasible—an OOD experiment, to back the overconfidence motivation in the introduction.",
+            "Replace or supplement Fig. 4 with a quantitative aggregate similarity metric (e.g., KL or correlation) between IVON and OLS smoothed-label distributions across all classes.",
+            "Add error bars / confidence intervals and at least one paired significance test for headline gains; report per-seed numbers in the appendix.",
+            "Reframe the data-dependent noise result by distinguishing high-noise regimes where baselines reach chance from regimes where they are competitive; consider intermediate κ to show transitions.",
+            "Provide a complete proof of Theorem 2 (rather than appealing to Theorem 1) and state the regularity conditions used in Eq. 11.",
+            "Consider adding a formal result (e.g., generalization or noise-robustness bound) characterizing when variational-induced adaptive smoothing is provably beneficial.",
+            "Release code and exact training configurations to enable reproduction.",
+            "Fix typos and clarify the Fig. 10 caption about behavior at the h_0=0.05 boundary."
+          ],
+          "overall_recommendation": "weak accept",
+          "reviewer_confidence_1_to_5": 4,
+          "score_card": {
+            "soundness_1_to_4": 3,
+            "presentation_1_to_4": 3,
+            "contribution_1_to_4": 2,
+            "overall_1_to_10": 6
+          }
+        },
+        "author_facing_improvement_checklist": [
+          "Add OLS and at least one other adaptive LS baseline (ACLS, Ko et al. 2023) to all accuracy benchmarks in Sec. 4.3.",
+          "Add standard noise-robust baselines (GCE, SCE, ELR, DivideMix) on Clothing1M and re-tune the LS baseline.",
+          "Empirically validate the NN-level label-noise expression in Eq. 20 against realized noise during IVON training.",
+          "Soften the 'no hyperparameter tuning' framing and surface Table 1 hyperparameters in the main text.",
+          "Report calibration metrics (ECE, NLL, Brier) and, if possible, an OOD experiment.",
+          "Replace selected-class log-scale Fig. 4 with a quantitative similarity metric (e.g., mean KL) between OLS and IVON smoothed labels across all classes.",
+          "Add error bars/confidence intervals across 5 seeds and significance tests for headline claims; provide per-seed numbers in the appendix.",
+          "Reframe the ~51% data-dependent noise improvement in context of baseline collapse to near chance; include intermediate κ to show transitions.",
+          "Provide a self-contained proof of Theorem 2 and state regularity conditions used in Eq. 11.",
+          "Add ablation: variational GD with identity covariance vs. IVON in the NN setting.",
+          "Clarify the pair-flip class ordering choice and its relation to prior conventions.",
+          "Release code and full training configurations for all experiments.",
+          "Fix typos ('naturally yields', 'mislabeling', 'networks', duplicated Pereyra refs) and clarify Fig. 10 caption regarding behavior at h_0=0.05."
+        ],
+        "changes_from_draft": [
+          "Softened the assertion about absent error bars to acknowledge it is unclear from figures alone.",
+          "Hedged the Clothing1M LS-baseline-strength claim to 'appears low relative to commonly reported numbers'.",
+          "Reworded the Fig. 10 critique to note the caption's qualifier 'bigger than 0.05' is technically consistent but understates the sharp collapse at the boundary.",
+          "Added a weakness noting the contribution is primarily a reinterpretation/unification rather than a new algorithm.",
+          "Added a weakness about the absence of formal generalization or noise-robustness guarantees.",
+          "Added strengths recognizing the included IVON pseudo-code and the explicit decomposition of induced noises, and the unifying value across heuristic adaptive-LS schemes.",
+          "Added a suggestion about providing a formal theoretical guarantee characterizing when induced adaptivity helps.",
+          "Minor wording adjustments to questions and checklist for consistency with softened claims."
+        ]
+      },
+      "usage": {
+        "input_tokens": 5769,
+        "output_tokens": 5556,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 38635
+      },
+      "stop_reason": "end_turn"
+    }
+  },
+  "total_usage": {
+    "input_tokens": 63898,
+    "output_tokens": 43560,
+    "cache_creation_input_tokens": 93969,
+    "cache_read_input_tokens": 447695
+  }
+}
