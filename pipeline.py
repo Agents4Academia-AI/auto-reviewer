@@ -107,8 +107,13 @@ class ReviewerPipeline:
         # Stage 4 — web search if enabled
         self._run(
             "stage_4",
-            _fill(STAGE_4_NOVELTY, stage_3=_dump(self._parsed("stage_3"))),
+            _fill(
+                STAGE_4_NOVELTY,
+                stage_0=_dump(self._parsed("stage_0")),
+                stage_3=_dump(self._parsed("stage_3")),
+            ),
             use_web_search=True,
+            max_tokens=self.llm.cfg.max_tokens_long,
         )
 
         # Stage 5
