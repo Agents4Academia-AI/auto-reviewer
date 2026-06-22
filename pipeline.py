@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import time
+from datetime import UTC, datetime
 from typing import Any, Callable
 
 from llm_client import ReviewerLLM
@@ -40,6 +41,10 @@ def _fill(template: str, **subs: str) -> str:
     return result
 
 
+def _review_date() -> str:
+    return datetime.now(UTC).date().isoformat()
+
+
 class ReviewerPipeline:
     def __init__(
         self,
@@ -68,6 +73,24 @@ class ReviewerPipeline:
             use_web_search=use_web_search,
             max_tokens=max_tokens,
         )
+        parsed = result.get("parsed")
+        if parsed is None or (isinstance(parsed, dict) and parsed.get("_parse_error")):
+            raise ValueError(
+                f"{key} did not return valid JSON. "
+                "Stopping instead of passing malformed context to later stages."
+            )
+        if (
+            key == "stage_4"
+            and use_web_search
+            and getattr(self.llm.cfg, "enable_web_search", True)
+            and isinstance(parsed, dict)
+            and parsed.get("source_of_judgment") != "web_search"
+        ):
+            raise ValueError(
+                "stage_4 was run with web search enabled but did not cite "
+                "web_search as source_of_judgment. Stopping so novelty claims "
+                "are not based on unverified model knowledge."
+            )
         dt = time.time() - t0
         u = result["usage"]
         self.log(
@@ -111,6 +134,7 @@ class ReviewerPipeline:
                 STAGE_4_NOVELTY,
                 stage_0=_dump(self._parsed("stage_0")),
                 stage_3=_dump(self._parsed("stage_3")),
+                review_date=_review_date(),
             ),
             use_web_search=True,
             max_tokens=self.llm.cfg.max_tokens_long,
