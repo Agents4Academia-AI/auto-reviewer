@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+
+.conda-env/
+__pycache__/
+*.py[cod]
+
+*.pdf

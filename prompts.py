@@ -22,6 +22,7 @@ Return JSON with this schema:
   "title": "...",
   "authors": ["..."] or [],
   "venue_hint": "guessed venue / category, or null",
+  "paper_date": "submission / arXiv / publication date if stated, otherwise null",
   "field": "subfield of deep learning",
   "abstract": "...",
   "sections": {
@@ -119,21 +120,43 @@ STAGE_4_NOVELTY = """Stage 4 — Novelty check.
 
 Judge whether the work is genuinely new compared with prior work in deep learning.
 
-If you have access to a web search tool, use it to look up the most relevant prior work on arXiv, OpenReview, Papers With Code, and venue proceedings. Compare against the closest matches.
+Review date: {review_date}.
+
+First infer the paper's own date from the attached PDF or prior context: use a
+submission date, arXiv first-posted date, camera-ready/publication date, or
+version date if one is stated. If no paper date is inferable, use the review
+date above as the cutoff and say so.
+
+Novelty must be judged against work available on or before the cutoff date.
+Do not penalize the paper's novelty for papers, blog posts, code releases, or
+benchmarks that appeared after the cutoff. Put post-cutoff or clearly
+concurrent work in a separate context list and use it only to calibrate
+importance, adoption, or how the field evolved. If a related work is concurrent
+or has uncertain timing, mark it explicitly as "concurrent_or_uncertain" and do
+not treat it as definitive prior art.
+
+If you have access to a web search tool, use it to look up the most relevant
+prior work on arXiv, OpenReview, Papers With Code, and venue proceedings.
+Prefer sources with dates and URLs. Compare against the closest matches.
 
 If no search tool is available, rely on your own knowledge but mark conclusions as "from-model-knowledge" so reviewers can verify.
 
 Return JSON:
 {
+  "cutoff_date": "YYYY-MM-DD or best-effort date string",
+  "cutoff_basis": "paper_submission | arxiv_first_posted | publication | paper_version | review_date_fallback | uncertain",
   "similar_prior_work": [
-    {"title": "...", "venue_or_source": "...", "year": "...", "similarity_summary": "...", "key_difference": "..."}
+    {"title": "...", "venue_or_source": "...", "year": "...", "date_relation_to_cutoff": "before_cutoff | after_cutoff | concurrent_or_uncertain", "similarity_summary": "...", "key_difference": "..."}
+  ],
+  "post_cutoff_or_concurrent_context": [
+    {"title": "...", "venue_or_source": "...", "year": "...", "date_relation_to_cutoff": "after_cutoff | concurrent_or_uncertain", "why_not_used_as_prior_art": "..."}
   ],
   "potential_missing_citations": ["..."],
   "novelty_type": "conceptual | technical | empirical | theoretical | application_driven | none",
   "novelty_assessment": "strong | moderate | incremental | derivative",
   "novelty_risk_level": "low | medium | high",
   "incrementality_judgment": "...",
-  "rationale": "...",
+  "rationale": "Explain the novelty judgment using only before-cutoff prior work; separately mention any post-cutoff/concurrent context without penalizing the paper.",
   "source_of_judgment": "web_search | model_knowledge"
 }
 
@@ -159,6 +182,13 @@ For each persona, address:
 3. Does it solve an important problem?
 4. Is the improvement meaningful?
 5. Could the idea influence future work?
+
+Separate effect size from evidence certainty. If reported improvements are
+large or practically important, say so directly even when there are limitations
+such as missing seeds, imperfect baselines, or restricted settings. Criticize
+the strength of evidence separately from the magnitude of the claimed gains.
+Do not describe substantial empirical gains as "marginal" merely because the
+paper needs more ablations, variance reporting, or baseline coverage.
 
 Return JSON:
 {
@@ -188,6 +218,15 @@ Evaluate four dimensions:
 (C) Experimental support: if experimental support is provided, for each major claim, decide if it is supported, partially supported, or unsupported by the experiments. Consider experimental procedures, hidden assumptions, possible failure cases, reproducibility.
 (D) Experimental rigor: if experimental support is provided, check the rigor in the use of baselines, datasets, metrics, ablations, statistical significance / uncertainty, hyperparameters, negative results, confounders.
 
+When judging experiments, keep these concepts separate:
+- effect magnitude: how large, consistent, or practically meaningful the reported gains are;
+- evidence strength: whether the experimental design, baselines, seeds, and statistics justify the claim;
+- claim scope: the conditions under which the result is valid.
+
+Do not collapse a large conditional improvement into "marginal" because of
+missing error bars or incomplete baselines. Instead say "large but currently
+conditioned on ..." or "substantial effect with limited statistical support".
+
 Return JSON:
 {
   "problem_and_solution_formulation": {
@@ -205,6 +244,7 @@ Return JSON:
     "supported": ["..."],
     "partially_supported": ["..."],
     "unsupported_or_overstated": ["..."],
+    "effect_size_assessment": ["large/substantial/modest/marginal effect, with the conditions under which that label is justified"],
     "suggested_improvements_for_claim_support": ["..."] or [],
   } or null,
   "experimental_rigor": {
@@ -239,6 +279,14 @@ STAGE_7_PLAN = """Stage 7 — Review planning.
 
 Synthesize a coherent reviewer perspective from all prior stages.
 
+Recommendation calibration:
+- Reward substantial, well-supported, practically meaningful results even when
+  the paper has fixable rigor gaps.
+- Penalize overclaiming by narrowing the claim scope, not by pretending large
+  reported effects are small.
+- Separate "result is strong under stated conditions" from "evidence is not yet
+  complete enough for a stronger recommendation".
+
 Return JSON:
 {
   "strengths": ["..."],
@@ -262,6 +310,9 @@ Stage 6: {stage_6}
 STAGE_8_DRAFT = """Stage 8 — Draft review (author-facing).
 
 Generate a structured peer review for the authors. Be specific and evidence-based. Avoid vague criticism. Separate factual issues from subjective judgments. Be constructive and respectful. Mention both positive and negative aspects.
+When discussing experiments, distinguish effect size from evidence certainty:
+large conditional gains should be described as large conditional gains, with
+limitations stated separately.
 
 Return JSON:
 {
@@ -313,6 +364,9 @@ Prior context (Stage 8 draft):
 STAGE_10_FINAL = """Stage 10 — Finalization.
 
 Apply the corrections from the self-critique. Remove unsupported criticism, clarify vague comments, strengthen evidence-based reasoning, and ensure consistency between summary, weaknesses, score, and recommendation.
+Before finalizing, check that the review does not call substantial empirical
+effects "marginal" merely because the evidence has limitations. If a result is
+large but conditionally supported, say exactly that and scope the claim.
 
 Return JSON:
 {
@@ -340,5 +394,4 @@ Prior context:
 Stage 8 draft: {stage_8}
 Stage 9 critique: {stage_9}
 """
-
 
