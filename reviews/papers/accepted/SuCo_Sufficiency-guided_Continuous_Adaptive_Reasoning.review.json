@@ -1,0 +1,1220 @@
+{
+  "paper": {
+    "filename": "SuCo_Sufficiency-guided_Continuous_Adaptive_Reasoning.pdf",
+    "path": "papers/accepted/SuCo_Sufficiency-guided_Continuous_Adaptive_Reasoning.pdf",
+    "num_bytes": 3763808,
+    "input_mode": "pdf_document"
+  },
+  "config": {
+    "model": "claude-opus-4-7",
+    "effort": "high",
+    "web_search": true
+  },
+  "stages": {
+    "stage_0": {
+      "parsed": {
+        "title": "SuCo: Sufficiency-guided Continuous Adaptive Reasoning",
+        "authors": [
+          "Jiahao Wang",
+          "Bingyu Liang",
+          "Chenhao Hu",
+          "Longhui Zhang",
+          "Xuebo Liu",
+          "Min Zhang",
+          "Jing Li",
+          "Xuelong Li"
+        ],
+        "venue_hint": "ICML 2026 (claimed in header)",
+        "field": "Efficient reasoning / Large Reasoning Models (LLM reasoning)",
+        "abstract": "The paper introduces Minimal Sufficient CoT (MSC), defined as the shortest prefix of a CoT trajectory adequate to produce the correct answer. The authors empirically show MSC reduces tokens while improving accuracy. They propose SuCo, a two-stage training framework: Stage I (MSC-Aligned Fine-Tuning, MFT) constructs MSC data with problem-adaptive sufficiency thresholds and fine-tunes the model; Stage II (Sufficiency-Aware Policy Optimization, SAPO) uses RL with a dynamic complexity pool and sufficiency-aware rewards that penalize over- and under-thinking. Experiments on math, code, and science benchmarks show improvements in both accuracy and reasoning efficiency.",
+        "sections": {
+          "introduction": "LRMs like DeepSeek-R1 and o1 achieve strong reasoning via CoT but suffer from redundant reasoning, generating long chains even for simple queries. Existing Adaptive LRMs (ALRMs) use discrete modes (user-controlled switches or model-driven binary/multi-mode selection) and lack a principled criterion for sufficiency. The authors pose: can models do better with less reasoning? They answer yes by introducing MSC, the shortest reasoning prefix that suffices for correct answers, and show on MATH that MSC outperforms full CoT across all difficulty levels with far fewer tokens. They propose SuCo for continuous reasoning control via MFT + SAPO.",
+          "related_work": "Reviews LRMs (DeepSeek-R1, o1, Qwen3) and ALRMs grouped into binary triggering (AdaCoT, AdaptThink, LHRMs), multi-mode reasoning (SABER, ThinkDial), and fine-grained control (ThinkPrune, CyclicReflex, AlphaOne). Notes existing ALRMs rely on discrete modes and coarse supervision. SuCo differs by introducing a continuous sufficiency-grounded criterion (MSC).",
+          "method": "Defines reasoning sufficiency as the geometric mean of per-token probabilities of the ground-truth answer given (x, z). A trajectory is delta-sufficient if sufficiency >= delta. MSC is the shortest sentence-level prefix that is delta-sufficient. Uses a problem-adaptive threshold delta(x) = delta_0 + alpha * C(x) where C(x) is a percentile-based complexity proxy (rank of reasoning length). Stage I (MFT): generates full CoT with an LRM, computes per-sample thresholds and finds shortest sufficient prefix, refines via a refinement model for coherence, then SFT on (x, MSC, answer). Empty MSCs allowed if prefix too short. Stage II (SAPO): GRPO-based RL. Maintains an EMA-updated dynamic complexity pool tracking trajectory lengths to recompute adaptive thresholds online. Reward = correctness + format + beta * sufficiency reward, where sufficiency reward penalizes over-thinking (length > t* + epsilon) and under-thinking (length < t* and answer wrong).",
+          "theory": null,
+          "experiments": "Trained on Qwen2.5-Math-Base 1.5B and 7B. Training data: 270,011 samples curated from Llama-Nemotron, Mixture-of-Thoughts, OpenR1-Math-220k, OpenCodeReasoning, s1K-1.1. Refinement and quality assessment with Qwen3-Next-80B-A3B-Instruct. Evaluated on GSM8K, MATH-500, AMC23, AIME25, MBPP, LiveCodeBench-V6, MMLU-STEM, GPQA-Diamond. Baselines: Qwen2.5-Math-Base/Instruct, DeepSeek-R1-Distill-Qwen, AdaCoT, AdaptThink, S-GRPO, LHRMs. Ablations on threshold, complexity estimation, refinement, DCP, sufficiency reward, L_min, EMA rate, tolerance epsilon, sufficiency metric, intra/cross-domain percentile. Additional analysis on difficulty-conditioned length, OOD generalization (StrategyQA, CSQA, AlpacaEval), cross-model robustness, and empty CoT rates.",
+          "results": "SuCo achieves average accuracy 53.1% (1.5B) and 72.1% (7B), beating DeepSeek-R1-Distill-Qwen by ~17.5%/14.1% relative and LHRMs by ~5.1%. Reduces tokens by 74.1% (1.5B) and 75.8% (7B) vs. R1-Distill. On AIME25 7B: +24.1% accuracy with 75.3% fewer tokens. Ablations show MFT alone beats full CoT SFT (45.7% vs 38.4%). SAPO further refines allocation: shrinks length on easy benchmarks, expands on hard ones. OOD: SuCo outperforms baselines on StrategyQA, CSQA, AlpacaEval. Calibrator-agnostic: MSC supervision transfers across model families.",
+          "limitations": "MSC construction requires ground-truth answers (limits open-ended tasks). MFT depends on data distilled from strong LRMs and uses an 80B refinement model.",
+          "conclusion": "SuCo, based on MSC, enables continuous adaptive reasoning calibrated to problem difficulty without discrete modes or external controllers. Achieves higher accuracy with fewer tokens across math, code, and science. Future work: open-ended sufficiency estimation and agentic settings."
+        },
+        "main_claims": [
+          "Minimal Sufficient CoT (MSC) — the shortest sufficient reasoning prefix — yields higher accuracy than full CoT across difficulty levels.",
+          "A geometric-mean sufficiency score with a problem-adaptive threshold provides a principled criterion for when reasoning is sufficient.",
+          "Two-stage training (MFT + SAPO) enables continuous, autonomous reasoning effort allocation without discrete modes.",
+          "Dynamic complexity pool with EMA updates and sufficiency-aware rewards (penalizing over- and under-thinking) stabilize and improve RL training.",
+          "SuCo outperforms full-CoT baselines (R1-Distill) and adaptive baselines (AdaCoT, AdaptThink, S-GRPO, LHRMs) in both accuracy and token efficiency.",
+          "Adaptive reasoning learned by SuCo generalizes to OOD tasks (StrategyQA, CSQA, AlpacaEval) and is robust across calibrator models."
+        ],
+        "key_contributions": [
+          "Formalization of Minimal Sufficient CoT (MSC) with a geometric-mean sufficiency criterion and problem-adaptive threshold.",
+          "SuCo two-stage training framework (MFT + SAPO) for continuous adaptive reasoning.",
+          "Dynamic complexity pool with EMA and sufficiency-aware reward shaping for online RL.",
+          "Comprehensive empirical validation across math, code, science, OOD tasks, and calibrator models."
+        ],
+        "experimental_results": [
+          "On MATH difficulty levels, MSC achieves higher accuracy with substantially fewer tokens than full CoT (Figure 1).",
+          "SuCo 1.5B reaches 53.1% avg accuracy vs LHRMs 50.5% and R1-Distill 45.2%; SuCo 7B reaches 72.1% vs LHRMs 68.6% and R1-Distill 63.2%.",
+          "SuCo reduces avg response tokens by ~74-76% vs R1-Distill; on AIME25 7B: 61.7% accuracy with 2,679 tokens vs R1-Distill 49.7% with 10,833.",
+          "MFT alone (45.7%) outperforms full CoT SFT (38.4%) with only ~26% of the tokens.",
+          "Ablation: removing DCP (52.9%) or sufficiency reward (52.7%) degrades SAPO performance (53.1%).",
+          "Geometric mean sufficiency metric outperforms joint probability (40.1%) and arithmetic mean (43.1%); ours: 45.7%.",
+          "OOD: SuCo beats R1-Distill on StrategyQA (55.7 vs 53.3), CSQA (49.3 vs 45.0), AlpacaEval (LC-WR 2.4 vs 1.05), with fewer or comparable tokens.",
+          "Cross-calibrator robustness: MSC data from Qwen3-4B, Qwen3-14B, and DS-R1-Distill-7B all outperform full CoT SFT on Qwen2.5-1.5B and Llama-3.2-3B targets.",
+          "Empty CoT rate decreases with problem difficulty (L1>L5) and is higher for 7B than 1.5B (Figure 7)."
+        ],
+        "assumptions_and_limitations": [
+          "MSC requires ground-truth answers to compute sufficiency, limiting application to open-ended tasks.",
+          "Reasoning length is used as a proxy for problem complexity; assumed monotonic with difficulty.",
+          "Sufficiency is computed under the policy's own probability, which may shift during training (addressed partially via DCP).",
+          "MFT relies on distillation data from strong LRMs and uses Qwen3-Next-80B-A3B-Instruct for MSC refinement and quality filtering.",
+          "Sentence-level segmentation assumed to align with atomic reasoning steps.",
+          "Experiments limited to Qwen2.5-Math-Base 1.5B/7B; no scaling beyond 7B or other foundation families in main results."
+        ],
+        "figures_tables": [
+          "Figure 1: Token/accuracy comparison of MSC vs Full CoT across MATH L1-L5 on Qwen3-8B, motivating MSC.",
+          "Figure 2: Illustration of sufficiency score across CoT positions, showing decay after threshold reached.",
+          "Figure 3: Token length distributions of full CoT vs MSC across training data (69.9% reduction).",
+          "Figure 4: Average CoT lengths under different MSC variants (thresholds, complexity, refinement).",
+          "Figure 5: Per-benchmark accuracy and length comparison between MFT and SAPO.",
+          "Figure 6: Response length distributions across MATH difficulty levels for SuCo-1.5B vs R1-Distill-1.5B.",
+          "Figure 7: Empty CoT rates across difficulty levels and domains for SuCo-1.5B and 7B.",
+          "Table 1: Main accuracy and token-length results across 8 benchmarks vs 6 baselines at 1.5B and 7B scales.",
+          "Table 2: MFT ablations (overall, threshold, complexity, refinement).",
+          "Table 3: SAPO ablations (DCP, sufficiency reward).",
+          "Table 4: OOD generalization on StrategyQA, CSQA, AlpacaEval.",
+          "Table 5: Cross-model calibrator robustness.",
+          "Tables 6-9 (appendix): EMA rate, tolerance epsilon, sufficiency metric, cross- vs intra-domain percentile.",
+          "Table 10 (appendix): Training dataset statistics by source and domain."
+        ],
+        "equations_algorithms": [
+          "Eq. 1: Sufficiency S_theta(z|x,y*) = (prod_i pi_theta(y*_i|x,z,y*_<i))^(1/|y*|), geometric mean of token probabilities.",
+          "Eq. 2: delta-MSC definition requiring sufficiency at t* and minimality for all t < t*.",
+          "Eq. 3: Problem-adaptive threshold delta(x) = delta_0 + alpha * C(x).",
+          "Eq. 4: Percentile-based complexity C(x_i) = (1/N) sum_j 1[||z_j|| <= ||z_i||].",
+          "Eq. 8: SFT loss over MSC dataset (NLL on MSC and answer tokens).",
+          "Eq. 9: EMA update of dynamic complexity pool ||z^avg_i||.",
+          "Eq. 10-11: Total reward = correctness + format + beta * sufficiency, with sufficiency penalizing over-thinking (Lz > t*+epsilon) and under-thinking (Lz < t* and y != y*).",
+          "Algorithm 1: MSC dataset construction (full CoT generation, threshold computation, prefix scan, refinement)."
+        ]
+      },
+      "usage": {
+        "input_tokens": 354,
+        "output_tokens": 4548,
+        "cache_creation_input_tokens": 56176,
+        "cache_read_input_tokens": 0
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_1": {
+      "parsed": {
+        "field_and_subfield": "Efficient reasoning for Large Reasoning Models (LRMs); adaptive Chain-of-Thought control in LLMs",
+        "problem_addressed": "Large Reasoning Models generate excessively long Chain-of-Thought trajectories even for simple queries, inflating compute and latency. Existing Adaptive LRMs rely on discrete reasoning modes or fixed budget tiers without a principled criterion for when reasoning is sufficient.",
+        "research_question": "Can a principled, continuous criterion of reasoning sufficiency be defined and operationalized so that models autonomously calibrate reasoning effort to problem difficulty, achieving higher accuracy with fewer tokens than full CoT and discrete-mode adaptive baselines?",
+        "one_paragraph_summary": "The paper introduces Minimal Sufficient CoT (MSC), defined as the shortest sentence-level prefix of a CoT trajectory whose geometric-mean per-token probability of the ground-truth answer exceeds a problem-adaptive threshold δ(x) = δ0 + α·C(x), where C(x) is a percentile rank of reasoning length used as a complexity proxy. Building on MSC, the authors propose SuCo, a two-stage training framework: (i) MSC-Aligned Fine-Tuning (MFT) constructs an MSC dataset from full CoT trajectories (with LLM-based refinement) and performs SFT; (ii) Sufficiency-Aware Policy Optimization (SAPO) extends GRPO with a dynamic complexity pool (EMA-updated trajectory lengths) and a sufficiency-aware reward that penalizes both over- and under-thinking. Experiments on Qwen2.5-Math-Base 1.5B/7B across 8 math/code/science benchmarks show SuCo outperforms DeepSeek-R1-Distill and adaptive baselines (AdaCoT, AdaptThink, S-GRPO, LHRMs) in both accuracy and token efficiency, with additional OOD and cross-calibrator robustness results.",
+        "problem_statement": "Given a question x with ground-truth answer y*, find the shortest reasoning prefix z_<t* such that the policy assigns sufficient probability mass to y* conditioned on (x, z_<t*), and train a model to autonomously produce such minimal sufficient reasoning along a continuous (rather than discrete-mode) spectrum.",
+        "main_contributions": [
+          "Formalization of Minimal Sufficient CoT (MSC) using a geometric-mean per-token sufficiency score and a problem-adaptive threshold tied to a percentile-based complexity proxy.",
+          "A two-stage training framework (SuCo) combining MSC-aligned SFT (MFT) and Sufficiency-Aware Policy Optimization (SAPO), the latter introducing a dynamic complexity pool via EMA and a reward shaping scheme penalizing both over- and under-thinking.",
+          "Empirical demonstration across math, code, and science benchmarks (at 1.5B/7B scales) that SuCo improves accuracy while substantially reducing reasoning tokens compared to full-CoT and discrete-mode adaptive baselines.",
+          "Auxiliary analyses showing OOD generalization (StrategyQA, CSQA, AlpacaEval), cross-calibrator robustness of constructed MSC data, and difficulty-conditioned length allocation."
+        ],
+        "claim_evidence_map": [
+          {
+            "claim": "MSC achieves higher accuracy than full CoT with far fewer tokens across difficulty levels.",
+            "evidence_in_paper": "Figure 1 (Qwen3-8B on MATH L1–L5) shows MSC bars/lines have lower token counts and higher accuracy than full CoT at every difficulty level."
+          },
+          {
+            "claim": "The geometric-mean sufficiency formulation is superior to joint probability and arithmetic mean.",
+            "evidence_in_paper": "Appendix Table 8: geometric mean reaches 45.7% accuracy at 1,344 inference tokens vs 40.1%/2,573 (joint) and 43.1%/1,578 (arithmetic)."
+          },
+          {
+            "claim": "Problem-adaptive thresholds outperform static thresholds.",
+            "evidence_in_paper": "Table 2 (Threshold section): adaptive MFT achieves 45.7% avg accuracy at 1,344 tokens, surpassing all static δ ∈ {0.5,...,0.9} configurations (best static δ=0.7 at 44.0%)."
+          },
+          {
+            "claim": "SuCo outperforms full-CoT and adaptive baselines on accuracy and tokens.",
+            "evidence_in_paper": "Table 1: SuCo-1.5B avg 53.1% acc / 1,483 tokens vs LHRMs 50.5/2,055 and R1-Distill 45.2/5,736; SuCo-7B avg 72.1/1,267 vs LHRMs 68.6/1,891 and R1-Distill 63.2/5,239."
+          },
+          {
+            "claim": "Dynamic Complexity Pool and Sufficiency-Aware Reward each contribute to SAPO performance.",
+            "evidence_in_paper": "Table 3: w/o DCP drops to 52.9% / 1,642 tokens, w/o R_suff to 52.7%/2,053 tokens, vs full SAPO 53.1%/1,483."
+          },
+          {
+            "claim": "SAPO allocates more tokens on hard benchmarks and fewer on easy ones (adaptive allocation rather than uniform compression).",
+            "evidence_in_paper": "Figure 5: MFT→SAPO reduces tokens on GSM8K (382→304) and MATH500 (884→538) while increasing on AMC23, AIME25, Live-V6 with accuracy gains."
+          },
+          {
+            "claim": "SuCo generalizes to out-of-domain tasks.",
+            "evidence_in_paper": "Table 4: SuCo achieves 55.7/49.3/2.4 on StrategyQA/CSQA/AlpacaEval, outperforming R1-Distill (53.3/45.0/1.05) with fewer or comparable tokens."
+          },
+          {
+            "claim": "MSC supervision is robust across calibrator models.",
+            "evidence_in_paper": "Table 5: MSC data from Qwen3-4B, Qwen3-14B, and DS-R1-Distill-7B all outperform Full CoT SFT on Qwen2.5-1.5B and Llama-3.2-3B target models (44.x vs 37–38%)."
+          },
+          {
+            "claim": "SuCo shows stronger difficulty-conditioned length scaling than the base LRM.",
+            "evidence_in_paper": "Figure 6 caption/text: L5/L1 mean token ratio ≈ 5.5× for SuCo vs ≈ 3.1× for DeepSeek-R1-Distill-1.5B; Level 1 uses 89% fewer tokens than base LRM."
+          },
+          {
+            "claim": "MFT alone surpasses Full CoT SFT.",
+            "evidence_in_paper": "Table 2 Overall: MFT 45.7% / 1,344 tokens vs Full 38.4% / 5,082 tokens (only ~26% of full CoT tokens)."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4758,
+        "output_tokens": 2552,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 56176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_2": {
+      "parsed": {
+        "sections": [
+          {
+            "name": "Abstract",
+            "summary": "Introduces MSC as the shortest CoT prefix sufficient to produce the correct answer and SuCo, a two-stage framework (MFT + SAPO) for continuous adaptive reasoning. Claims accuracy and efficiency gains across math, code, and science.",
+            "key_claims": [
+              "MSC reduces tokens and improves accuracy across difficulty levels.",
+              "SuCo enables continuous reasoning control without discrete modes.",
+              "SAPO's sufficiency-aware rewards penalize both over- and under-thinking."
+            ],
+            "supporting_evidence": [
+              "Forward references to Figure 1 (MATH difficulty levels) and main experiments."
+            ],
+            "issues": [
+              "Abstract states 'better with less reasoning' without specifying that MSC is computed using ground-truth answers, which may mislead readers about the practical accuracy advantage."
+            ],
+            "missing_information": [
+              "No quantitative summary of gains in abstract.",
+              "No mention that MSC requires ground-truth answers for construction (a key limitation)."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that MSC 'improves accuracy across difficulty levels' is shown only on MATH with one model (Qwen3-8B in Fig.1); the abstract overgeneralizes."
+            ]
+          },
+          {
+            "name": "Introduction",
+            "summary": "Motivates MSC as a principled sufficiency criterion countering test-time scaling intuition. Argues prior ALRMs rely on discrete modes and lack a sufficiency notion. Previews SuCo and contributions.",
+            "key_claims": [
+              "Existing ALRMs use discrete mode selection only.",
+              "Models can achieve better performance with less reasoning.",
+              "SuCo provides continuous, autonomous reasoning control."
+            ],
+            "supporting_evidence": [
+              "Figure 1 showing MSC outperforms full CoT on MATH L1-L5 with Qwen3-8B."
+            ],
+            "issues": [
+              "Figure 1 is computed with knowledge of the ground-truth answer (since MSC requires y*); this makes the 'MSC > Full CoT' comparison an oracle setup, but this caveat is not explicit in the intro.",
+              "The dichotomy 'discrete vs continuous' is somewhat overstated: ThinkPrune, AlphaOne, S-GRPO arguably operate on continuous lengths too.",
+              "The framing 'Can models actually perform better with less reasoning?' conflates two effects (truncation revealing high-confidence intermediate answers vs. actually improving reasoning), which is not disentangled."
+            ],
+            "missing_information": [
+              "No discussion that MSC accuracy in Figure 1 is computed by conditioning on the optimal prefix selected using y*; whether this generalizes when y* is unknown is not addressed until training."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that prior ALRMs 'lack a principled criterion of when reasoning is sufficient' — partly true, but constrained-optimization formulations (e.g., AdaptThink) do provide some criterion."
+            ]
+          },
+          {
+            "name": "Related Work",
+            "summary": "Surveys LRMs and ALRMs, categorizing prior efficient-reasoning methods into binary triggering, multi-mode, and fine-grained control, all sharing the limitation of discrete supervision.",
+            "key_claims": [
+              "Existing ALRMs regulate reasoning through discrete specified modes.",
+              "SuCo introduces continuous adaptive reasoning grounded in MSC."
+            ],
+            "supporting_evidence": [
+              "Citations to AdaCoT, AdaptThink, LHRMs, SABER, ThinkDial, ThinkPrune, CyclicReflex, AlphaOne."
+            ],
+            "issues": [
+              "ThinkPrune and S-GRPO are length-based RL methods that also produce continuous-length outputs; the contrast with SuCo as the unique 'continuous' approach is overstated.",
+              "Does not discuss closely related work on early-exit and confidence-based truncation in LLM inference."
+            ],
+            "missing_information": [
+              "No comparison to recent work on calibration/confidence-based stopping criteria for CoT.",
+              "No mention of speculative thinking, self-consistency, or confidence-based termination methods that share a similar sufficiency intuition."
+            ],
+            "ambiguous_or_unsupported": [
+              "Characterization that S-GRPO uses 'decaying rewards' is correct but underexplains the similarity to SAPO's sufficiency reward."
+            ]
+          },
+          {
+            "name": "Method",
+            "summary": "Defines reasoning sufficiency as geometric mean of per-token probabilities of y*, defines delta-MSC, problem-adaptive threshold delta(x)=delta_0 + alpha*C(x), percentile-based complexity, and the two stages MFT (SFT on MSC data) and SAPO (GRPO with dynamic complexity pool and sufficiency-aware reward).",
+            "key_claims": [
+              "Geometric mean normalizes joint probability and is robust across answer lengths.",
+              "Adaptive threshold scales sufficiency demand with problem difficulty.",
+              "Dynamic complexity pool (EMA-updated) tracks policy evolution for stable RL signals.",
+              "Sufficiency reward penalizes over- and under-thinking."
+            ],
+            "supporting_evidence": [
+              "Eqs. 1-11, Algorithm 1, Figure 2 illustration.",
+              "Appendix A.4 ablates the geometric mean choice."
+            ],
+            "issues": [
+              "Sufficiency S_theta(z|x,y*) depends on theta, but it is unclear which model computes sufficiency during MSC construction — the source LRM M_LRM, the base model πθ, or the refinement model? The text uses πθ in Eq.1 but Algorithm 1 references πθ without specifying which checkpoint. This is a non-trivial ambiguity since sufficiency is policy-dependent.",
+              "The problem-adaptive threshold ties complexity to reasoning length, but Figure 1 only shows reasoning length correlates with MATH difficulty on Qwen3-8B; the assumption may not hold uniformly (e.g., code).",
+              "Minimality is defined as 'no shorter prefix is sufficient', but if no prefix reaches delta(x), Eq.6 selects the most sufficient prefix — this breaks the formal definition of delta-MSC, yet the resulting trajectory is still labeled MSC in the dataset.",
+              "Sentence-level boundary detection is stated as 'natural atomic reasoning steps' but no segmentation procedure is specified (e.g., punctuation, newlines, special tokens).",
+              "SAPO reward Eq.11 uses 1[Lz > t*+epsilon] but t* in inference is unknown without y*; the text says t* is identified via Eq.5 using y*, meaning the reward requires ground-truth answer access during RL — consistent with verifiable RL but should be explicit.",
+              "When t* = infinity (no sufficient prefix), the over-thinking indicator 1[Lz > t*+epsilon] is always 0 and the under-thinking penalty triggers only if y is wrong; the resulting incentive structure for hard problems where no prefix is sufficient is unclear.",
+              "The refinement step uses a much larger model (Qwen3-Next-80B-A3B-Instruct), introducing a strong teacher signal that may confound the contribution attributed to MSC selection."
+            ],
+            "missing_information": [
+              "No formal justification for why geometric mean is the 'correct' normalization (only empirical comparison in Appendix A.4).",
+              "How sentence boundaries are detected.",
+              "Whether sufficiency is computed under πθ before/after MFT, and which model's probabilities are used at evaluation time.",
+              "The exact form of R_format and R_cor (binary? continuous?).",
+              "Sensitivity to alpha and delta_0 hyperparameters beyond a single setting (0.5, 0.4)."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that sentence-level segmentation 'avoids fragmentary truncation that may distort logical structure' is asserted without empirical comparison to token-level truncation.",
+              "Claim that percentile rank is 'robust to outliers and yields values uniformly distributed in [0,1]' — uniform distribution depends on no ties in lengths and is asserted as a generic property."
+            ]
+          },
+          {
+            "name": "Experiments",
+            "summary": "Trains SuCo on Qwen2.5-Math-1.5B/7B-Base over ~270K curated samples. Compares against base/instruct/R1-Distill and four ALRMs (AdaCoT, AdaptThink, S-GRPO, LHRMs) on 8 benchmarks across math, code, science.",
+            "key_claims": [
+              "SuCo achieves the highest or near-highest accuracy at both scales.",
+              "SuCo reduces tokens by 74-76% vs R1-Distill while improving accuracy.",
+              "Ablations confirm contributions of MFT components, DCP, and sufficiency reward."
+            ],
+            "supporting_evidence": [
+              "Tables 1-5; Figures 4-7; Appendix tables 6-9."
+            ],
+            "issues": [
+              "Baseline fairness: SuCo is trained on a large curated corpus (270K MSC samples) refined by Qwen3-Next-80B-A3B-Instruct; AdaCoT and LHRMs are reportedly trained on the same source data but it is unclear whether they receive the same refined supervision or only raw CoTs — this could substantially impact accuracy comparisons.",
+              "AdaptThink and S-GRPO are initialized from a different base model (R1-Distill-Qwen) rather than Qwen2.5-Math-Base; this confounds the comparison.",
+              "Base model choice (Qwen2.5-Math-Base) is math-specialized; comparing to baselines on code and science benchmarks may be biased.",
+              "The 'Math-Base' row reports 22.6% on MATH500, surprisingly low for Qwen2.5-Math-Base — raises questions about evaluation protocol (e.g., chat template, decoding).",
+              "Figure 1 used Qwen3-8B (not the training base), but the experiments use Qwen2.5-Math. The motivating evidence is on a different model than the trained one.",
+              "Per-benchmark variance: only AIME25 (30 problems) and AMC23 (40 problems) are averaged over 10 runs; other small/variable benchmarks lack confidence intervals.",
+              "OOD AlpacaEval result: 'Full CoT SFT' achieves LC-WR 0.3 which is extremely low compared to DeepSeek-R1-Distill's 1.05; the meaning of these LC-WR values is unclear (they look like absolute LC-win rates, much lower than typical).",
+              "OOD evaluation 'Full CoT SFT' baseline performs dramatically worse than R1-Distill across all OOD tasks (e.g., 22.6 vs 53.3 on StrategyQA), suggesting the comparison may be unfair or the SFT baseline is degenerate.",
+              "Cross-model robustness Table 5 only tests Qwen2.5-1.5B and Llama-3.2-3B as targets and uses calibrators of similar capability — no test of whether weak calibrators (e.g., 1.5B) generate useful MSC.",
+              "Token reduction percentages are computed against R1-Distill (a particularly verbose baseline) rather than against best efficient baseline; some efficiency gains over LHRMs are modest (e.g., 7B avg: 1267 vs 1891)."
+            ],
+            "missing_information": [
+              "No statistical significance testing on benchmark differences.",
+              "No mention of decoding parameters (temperature, max tokens) for evaluation, especially for length comparisons.",
+              "No wall-clock or FLOPs measurement to validate efficiency claims.",
+              "No breakdown of accuracy on problems with empty MSC vs non-empty MSC.",
+              "No comparison against simpler baselines like truncation at fixed length or self-consistency early stopping.",
+              "MBPP and LiveCodeBench evaluations lack details on test execution protocol."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that SAPO 'intelligently allocates additional reasoning budget' on hard problems based on Figure 5 is plausible but only shows aggregate numbers; no analysis of within-benchmark difficulty conditioning for SAPO over MFT.",
+              "Claim that MSC is 'not merely compressed reasoning but a more effective form that filters noise' (Ablation discussion) is interpretive — there is no causal evidence that MSC removes noise rather than just shortening."
+            ]
+          },
+          {
+            "name": "Results",
+            "summary": "Reports accuracy and length gains across benchmarks, ablation results decomposing MFT and SAPO contributions, OOD generalization, calibrator robustness, and empty-CoT analysis.",
+            "key_claims": [
+              "1.5B SuCo: 53.1% avg accuracy, 7B SuCo: 72.1% — best among all baselines.",
+              "Empty CoT rate decreases with difficulty and is higher for 7B.",
+              "MSC supervision transfers across calibrator models."
+            ],
+            "supporting_evidence": [
+              "Tables 1, 4, 5; Figures 5, 6, 7."
+            ],
+            "issues": [
+              "On MATH-500, SuCo-1.5B uses 538 tokens — markedly lower than LHRMs (1252); but on AMC23 the gap shrinks (1687 vs 2477). Some efficiency advantages are uneven and not analyzed.",
+              "Figure 6: comparing SuCo-1.5B (trained on MSC) to R1-Distill-1.5B (a different base) measures combined effects of base model and method.",
+              "Empty CoT analysis (Figure 7) shows ~30-37% empty rates which is high; whether this rate is appropriate or harmful is not validated against per-instance correctness.",
+              "Cross-model robustness (Table 5): Llama-3.2-3B target with Qwen3-14B calibrator (43.2%) underperforms Qwen3-4B calibrator (44.2%) — small inversion not explained."
+            ],
+            "missing_information": [
+              "No analysis of failure cases or where SuCo underperforms (e.g., AMC23 7B: 90.3 vs S-GRPO 90.5 — SuCo is not best).",
+              "No per-difficulty breakdown of accuracy improvements (only length).",
+              "No analysis of what makes the model decide to emit empty CoT for a given problem (other than aggregated rates)."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that '7B's higher empty rate reflects stronger capabilities that reduce reliance on intermediate reasoning' is plausible but not directly tested (could also reflect different reward dynamics)."
+            ]
+          },
+          {
+            "name": "Limitations",
+            "summary": "Acknowledges that MSC needs ground-truth answers (open-ended limitation) and that MFT depends on distilled data and a large refinement model.",
+            "key_claims": [
+              "MSC construction is restricted to verifiable-answer tasks.",
+              "Removing the 80B refinement still yields competitive results."
+            ],
+            "supporting_evidence": [
+              "Table 2 'w/o refine' row: 43.5% avg accuracy."
+            ],
+            "issues": [
+              "Does not acknowledge the dependency on a strong source LRM (DeepSeek-R1 distilled data) for full CoT generation.",
+              "Does not discuss potential bias from problem-adaptive threshold using length as difficulty proxy.",
+              "No discussion of robustness to noisy answers or partially correct answers."
+            ],
+            "missing_information": [
+              "No discussion of compute cost of MSC construction (running sentence-level scoring of 270K trajectories).",
+              "No discussion of why scaling to >7B or other base families was not attempted."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that 'once trained, the model internalizes adaptive reasoning as a general capability' is plausible but not directly tested in adversarial OOD settings."
+            ]
+          },
+          {
+            "name": "Conclusion",
+            "summary": "Recaps MSC and SuCo as a continuous adaptive reasoning solution achieving better accuracy and efficiency. Points to open-ended and agentic future work.",
+            "key_claims": [
+              "Models can perform better with less reasoning.",
+              "SuCo learns to calibrate effort without external controllers."
+            ],
+            "supporting_evidence": [
+              "Refers back to main experiments and ablations."
+            ],
+            "issues": [
+              "Generalization claim ('better with less reasoning') is supported only on verifiable-answer benchmarks where MSC can be defined."
+            ],
+            "missing_information": [
+              "No reflection on when the approach may fail (e.g., problems where ground-truth answer is short and trivially predictable from prompt)."
+            ],
+            "ambiguous_or_unsupported": []
+          },
+          {
+            "name": "Supplementary",
+            "summary": "Provides ablations on L_min, EMA rate, tolerance epsilon, sufficiency metric (geometric vs joint vs arithmetic mean), cross- vs intra-domain percentile, dataset statistics, sources, preprocessing, MSC construction, refinement prompt, and refinement examples.",
+            "key_claims": [
+              "L_min=5, EMA=0.1, epsilon=2 are optimal.",
+              "Geometric mean outperforms joint and arithmetic mean sufficiency.",
+              "Cross-domain percentile is robust to domain-specific length distributions.",
+              "MSC refinement bridges logical gaps without distorting reasoning."
+            ],
+            "supporting_evidence": [
+              "Tables 6-10; Figures 8-11."
+            ],
+            "issues": [
+              "Appendix A.4 (sufficiency metric ablation) shows Full CoT SFT at 38.4% but Joint Probability variant at 40.1% — only marginally above. The relative gains of geometric mean (45.7%) could partially be due to length distribution effects from threshold satisfaction patterns, not just metric properties.",
+              "Filtering criterion (5) 'non-English content' is mentioned but no analysis of what was removed.",
+              "LLM-based quality assessment for MSC filtering risks circularity since the same family of models is used for both refinement and judging.",
+              "MinHash deduplication parameters not specified.",
+              "Refinement examples (Figs 10-11) show the refined version sometimes adds substantial new reasoning (Fig 10) — this contradicts the claim that refinement does not modify reasoning content."
+            ],
+            "missing_information": [
+              "No information on training compute budget for MFT and SAPO stages.",
+              "No ablation on alpha and delta_0 jointly; only single setting (0.5, 0.4) is justified post-hoc.",
+              "No analysis of MSC quality variation across source datasets.",
+              "No reporting of refinement model's failure modes or quality of refined samples."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim in Appendix A.4 that geometric mean is 'equally sensitive to all answer tokens' is mathematically true but the link from that property to better MSC selection is asserted, not demonstrated.",
+              "Claim that intra-domain vs cross-domain percentile yields 'nearly identical performance' could be because the dataset mix already makes both equivalent in practice; not tested under heavily imbalanced mixes."
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4817,
+        "output_tokens": 6867,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 56176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_3": {
+      "parsed": {
+        "claims": [
+          {
+            "claim": "MSC (Minimal Sufficient CoT) achieves higher accuracy than full CoT with substantially fewer tokens across all MATH difficulty levels.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 1 shows MSC outperforms full CoT in accuracy at every difficulty level L1–L5 on Qwen3-8B with substantially fewer reasoning tokens.",
+            "evidence_strength": "weak",
+            "notes": "Figure 1 is computed on Qwen3-8B (not the model used in main experiments) and uses oracle access to ground truth y* to construct MSC — this is not a fair test-time comparison; it shows MSC exists, not that a model can generate it without oracle info."
+          },
+          {
+            "claim": "Geometric-mean sufficiency formulation is superior to joint probability and arithmetic mean baselines.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Appendix Table 8: geometric mean 45.7% / 1,344 tokens vs joint 40.1% / 2,573 and arithmetic 43.1% / 1,578.",
+            "evidence_strength": "strong",
+            "notes": "Single ablation on Qwen2.5-Math-1.5B; the relative gap is clear, justification of choice is empirical rather than theoretical."
+          },
+          {
+            "claim": "Problem-adaptive thresholds outperform any single static threshold.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Table 2 Threshold rows: MFT (adaptive) 45.7%/1,344 tokens vs best static δ=0.7 at 44.0%/1,346.",
+            "evidence_strength": "strong",
+            "notes": "Improvement over best static is modest (~1.7 pts) but consistent at comparable token budget."
+          },
+          {
+            "claim": "SuCo outperforms full-CoT and adaptive baselines (AdaCoT, AdaptThink, S-GRPO, LHRMs) on both accuracy and token usage across 8 benchmarks at 1.5B and 7B scales.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 1: SuCo-1.5B avg 53.1%/1,483 vs LHRMs 50.5%/2,055 and R1-Distill 45.2%/5,736; SuCo-7B avg 72.1%/1,267 vs LHRMs 68.6%/1,891 and R1-Distill 63.2%/5,239.",
+            "evidence_strength": "strong",
+            "notes": "Comparison fairness is partly addressed (AdaCoT/LHRMs re-trained on same data), but AdaptThink/S-GRPO use a different base (DeepSeek-R1-Distill) — confounds attribution. No statistical significance reported; small benchmarks (AMC23 n=40, AIME25 n=30) averaged over 10 runs but no variance/std."
+          },
+          {
+            "claim": "Both Dynamic Complexity Pool (DCP) and Sufficiency-Aware Reward (R_suff) contribute to SAPO performance.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Table 3: full SAPO 53.1%/1,483 vs w/o DCP 52.9%/1,642 and w/o R_suff 52.7%/2,053.",
+            "evidence_strength": "weak",
+            "notes": "Accuracy differences are very small (~0.2–0.4 pts) and likely within noise; the components mainly affect token efficiency rather than accuracy. No significance test."
+          },
+          {
+            "claim": "SAPO performs adaptive allocation (less reasoning on easy tasks, more on hard) rather than uniform compression.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 5: MFT→SAPO reduces tokens on GSM8K (382→304) and MATH500 (884→538) but increases on AMC23/AIME25/Live-V6 with corresponding accuracy gains.",
+            "evidence_strength": "strong",
+            "notes": "Per-benchmark trade-off pattern is consistent with claim."
+          },
+          {
+            "claim": "SuCo generalizes to out-of-domain tasks (StrategyQA, CSQA, AlpacaEval).",
+            "category": "generalization",
+            "evidence_in_paper": "Table 4: SuCo 55.7/49.3/2.4 outperforming R1-Distill 53.3/45.0/1.05.",
+            "evidence_strength": "weak",
+            "notes": "Only three OOD tasks; Full CoT SFT baseline performs surprisingly poorly (22.6%/19.4%/0.3 LC-WR) — suggesting catastrophic forgetting from math/code SFT rather than that SuCo specifically transfers reasoning well. AlpacaEval LC-WR of 2.4 is very low in absolute terms."
+          },
+          {
+            "claim": "MSC construction is robust across calibrator models (Qwen3-4B/14B, DS-R1-Distill-7B).",
+            "category": "generalization",
+            "evidence_in_paper": "Table 5: all three calibrators yield ~44% accuracy on Qwen2.5-1.5B/Llama-3.2-3B vs Full CoT SFT 37–38%.",
+            "evidence_strength": "strong",
+            "notes": "Reasonable evidence of robustness within the tested calibrator family; all are Qwen/DeepSeek-derived models."
+          },
+          {
+            "claim": "SuCo exhibits stronger difficulty-conditioned scaling than base LRM (5.5× vs 3.1× L5/L1 token ratio).",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 6 and text: SuCo L1 mean 302, L5 mean 1,665; DS-R1-Distill L1 2,745, L5 8,465.",
+            "evidence_strength": "strong",
+            "notes": "Numbers in figure support the claim; interpretation as 'genuine difficulty-conditioned allocation' is reasonable though not directly verified."
+          },
+          {
+            "claim": "MFT alone surpasses Full CoT SFT with ~26% of the tokens.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 2 Overall: MFT 45.7%/1,344 vs Full 38.4%/5,082.",
+            "evidence_strength": "strong",
+            "notes": "Note that 'Full CoT SFT' starts from Qwen2.5-Math-Base which is small; R1-Distill (a different distillation pipeline) achieves 45.2%, comparable to MFT. So MFT's strong improvement over Full CoT SFT may partly reflect base-model SFT inefficiency, not just MSC superiority."
+          },
+          {
+            "claim": "MSC provides a principled sufficiency criterion enabling continuous rather than discrete reasoning control.",
+            "category": "novelty",
+            "evidence_in_paper": "Section 3.2 formalization with adaptive threshold δ(x) = δ0 + α·C(x); contrast with related work (Section 2).",
+            "evidence_strength": "weak",
+            "notes": "Conceptual framing is novel relative to discrete-mode baselines, but 'continuous' control is somewhat overstated: at inference, the model still produces a single trajectory; continuity is in the training threshold, not in user-controllable behavior."
+          },
+          {
+            "claim": "Reasoning length is a valid proxy for problem complexity.",
+            "category": "theoretical",
+            "evidence_in_paper": "Section 3.2 cites Figure 1 ('reasoning length serves as a practical proxy for problem complexity, as empirically supported in Figure 1').",
+            "evidence_strength": "weak",
+            "notes": "Figure 1 only shows average length increases with MATH difficulty level; this is a correlational, not causal, justification. The proxy may conflate verbosity with hardness — e.g., easy problems with formal derivations may be long."
+          },
+          {
+            "claim": "The percentile-based complexity estimation is robust to outliers and outperforms Min-Max and Log-Scaled alternatives.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Table 2 Complexity rows: percentile (via MFT) 45.7%/1,344 vs Min-Max 38.6%/1,160, Log-Scaled 44.5%/1,399.",
+            "evidence_strength": "strong",
+            "notes": "Sizable gap especially over Min-Max."
+          },
+          {
+            "claim": "MSC refinement improves coherence and reduces length.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Table 2 Refinement: w/o refine 43.5%/2,189 vs MFT 45.7%/1,344.",
+            "evidence_strength": "weak",
+            "notes": "Improvement is real but conflates refinement with use of Qwen3-Next-80B teacher distillation — author acknowledges this in limitations. The refined MSC may inherit knowledge from a much larger model."
+          },
+          {
+            "claim": "SuCo enables 'autonomous' reasoning control without external intervention.",
+            "category": "novelty",
+            "evidence_in_paper": "Stated in introduction and contributions; SAPO trains the policy to internalize sufficiency.",
+            "evidence_strength": "weak",
+            "notes": "Training process uses oracle y* probabilities to define MSC; the deployed model is autonomous, but the framing implies a stronger novelty than the prior work LHRMs/AdaCoT, which also do not require runtime intervention."
+          }
+        ],
+        "unsupported_claims": [
+          "Models 'can achieve stronger performance with less reasoning' as a general principle — Figure 1 evidence uses oracle ground truth to select MSC prefixes, which is not what a deployed model does; the actual deployed SuCo improves accuracy but the causal mechanism (less reasoning → higher accuracy) is not isolated from confounders like training data refinement by an 80B teacher.",
+          "Claim of 'continuous' reasoning spectrum control — the methodology produces a single policy and a single trajectory at inference; the continuity is in training-time threshold construction, not in a controllable inference-time knob.",
+          "Implicit claim that SuCo's gains are due to the sufficiency formulation rather than the additional teacher-refined training signal from Qwen3-Next-80B."
+        ],
+        "overstated_claims": [
+          "'SuCo consistently achieves improvements in both accuracy and reasoning efficiency' — true on average but on some benchmarks (e.g., AMC23 7B: 90.3 vs S-GRPO 90.5) accuracy is slightly lower; presented as uniformly best.",
+          "'Models can perform better with less reasoning' (Section 1 framing) — what is shown is that careful selection/refinement of a short CoT can outperform a verbose one, not that less reasoning per se is better.",
+          "'Without intervention' / 'autonomous' framing relative to LHRMs/AdaCoT — the distinction is more incremental than the abstract suggests.",
+          "Strong OOD generalization claim from only 3 tasks, with very low AlpacaEval LC-WR (2.4) in absolute terms."
+        ],
+        "claims_requiring_external_verification": [
+          "Baseline numbers for AdaCoT, AdaptThink, S-GRPO, LHRMs at matched model scales — these are re-implementations with mixed base models (some re-trained on SuCo's data, some not), and reported numbers should be checked against original papers.",
+          "DeepSeek-R1-Distill-Qwen-1.5B/7B reported accuracies on AIME25, MATH500, GPQA-D (Table 1) compared to official numbers.",
+          "Whether the geometric-mean sufficiency metric meaningfully differs from token-level perplexity-based confidence measures used in prior calibration literature (novelty positioning).",
+          "Whether the 'dynamic complexity pool' with EMA materially differs from prior length-based curriculum/reward shaping methods in RLHF literature.",
+          "Validity of using percentile rank of length as a complexity proxy — particularly whether it correlates with true problem difficulty independent of model verbosity."
+        ]
+      },
+      "usage": {
+        "input_tokens": 2796,
+        "output_tokens": 4260,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 56176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_4": {
+      "parsed": {
+        "novelty_axes": [
+          {
+            "axis": "problem",
+            "claimed_contribution": "Formalizing 'Minimal Sufficient CoT (MSC)' as the shortest reasoning prefix that suffices for a correct answer, and framing adaptive reasoning as continuous (vs. discrete-mode) calibration.",
+            "why_it_matters": "The paper's headline conceptual contribution. If prior work already defined a 'sufficient prefix' criterion or already cast adaptive reasoning along a continuous spectrum, the framing is largely repackaging.",
+            "search_keywords": [
+              "minimal sufficient chain of thought prefix",
+              "sufficient reasoning prefix LLM",
+              "shortest CoT correct answer",
+              "early exit reasoning confidence threshold",
+              "continuous adaptive reasoning length"
+            ],
+            "search_question": "Has prior work formalized a 'minimal sufficient' CoT prefix or used confidence-of-ground-truth-given-prefix as a stopping/sufficiency criterion?",
+            "closest_prior_work_ref": "DEER (Yang et al. 2025) [similar_prior_work #1]; Chain-of-Draft (Xu et al. 2025) [similar_prior_work #5]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "method",
+            "claimed_contribution": "(a) Geometric-mean of per-token ground-truth probabilities as a sufficiency signal; (b) problem-adaptive threshold δ(x)=δ0+α·C(x) with percentile-based length complexity; (c) two-stage MFT + SAPO with (d) EMA-updated dynamic complexity pool and (e) sufficiency-aware reward penalizing over- and under-thinking.",
+            "why_it_matters": "Most of the paper's machinery; novelty depends on whether existing efficient-reasoning methods already use (i) per-token confidence-based truncation, (ii) length/budget-conditioned reward shaping, and (iii) online complexity tracking.",
+            "search_keywords": [
+              "geometric mean token probability sufficient reasoning",
+              "confidence-based early exit CoT",
+              "length penalty reward GRPO reasoning",
+              "EMA dynamic length pool RL reasoning",
+              "over-thinking under-thinking reward shaping CoT"
+            ],
+            "search_question": "Do existing methods compute a confidence-of-correct-answer signal at intermediate CoT positions and use it to truncate/SFT, and do existing RL methods penalize both over- and under-thinking with adaptive per-problem budgets?",
+            "closest_prior_work_ref": "DEER [similar_prior_work #1]; S-GRPO [similar_prior_work #2]; ThinkPrune [similar_prior_work #3]; L1 [similar_prior_work #4]; Kimi K1.5 length penalty [similar_prior_work #6]; O1-Pruner [similar_prior_work #7]; DAST [similar_prior_work #8]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "training",
+            "claimed_contribution": "Two-stage pipeline: SFT on truncated-and-refined CoT (MFT), followed by GRPO with sufficiency-aware reward + DCP.",
+            "why_it_matters": "SFT-then-RL is the standard reasoning-model recipe; the contribution is the specific data construction and reward design.",
+            "search_keywords": [
+              "SFT distillation truncated CoT then GRPO",
+              "two-stage training efficient reasoning",
+              "MSC data construction CoT truncation refinement"
+            ],
+            "search_question": "Is the SFT-on-short-CoT followed by length-aware GRPO recipe already standard?",
+            "closest_prior_work_ref": "TokenSkip / O1-Pruner / DAST [similar_prior_work #7,#8,#9]; LHRMs [similar_prior_work #10]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "empirical",
+            "claimed_contribution": "Comprehensive demonstration that MSC training yields ~75% token reduction with consistent accuracy gains across math/code/science at 1.5B/7B, plus OOD transfer and cross-calibrator robustness.",
+            "why_it_matters": "If the empirical gap over close baselines (LHRMs, S-GRPO) is large and reproducible, the empirical contribution stands even if the method is composed of known parts.",
+            "search_keywords": [
+              "AIME25 MATH500 LiveCodeBench efficient reasoning state-of-the-art 7B",
+              "AdaCoT AdaptThink S-GRPO LHRMs benchmark comparison"
+            ],
+            "search_question": "Does any prior efficient-reasoning method achieve comparable accuracy/token trade-offs to those reported here?",
+            "closest_prior_work_ref": "LHRMs [similar_prior_work #10]; S-GRPO [similar_prior_work #2]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "theory",
+            "claimed_contribution": "Definition of δ-sufficiency and δ-MSC with minimality condition; informal justification that geometric mean is more stable than joint/arithmetic mean.",
+            "why_it_matters": "No formal results (bounds, guarantees) are proved; theory is purely definitional.",
+            "search_keywords": [
+              "geometric mean perplexity calibration LLM",
+              "length-normalized likelihood answer confidence"
+            ],
+            "search_question": "Is per-token geometric-mean likelihood a known calibration measure?",
+            "closest_prior_work_ref": "Length-normalized likelihood is standard in NMT/LM ranking (e.g., Wu et al. 2016 GNMT length normalization)",
+            "axis_verdict": "derivative"
+          }
+        ],
+        "novelty_axes_searched": [],
+        "similar_prior_work": [
+          {
+            "title": "DEER: Dynamic Early Exit in Reasoning Models",
+            "venue_or_source": "arXiv 2504 (Yang et al., 2025)",
+            "year": "2025",
+            "similarity_summary": "Proposes test-time early-exit for reasoning LLMs by monitoring answer confidence at intermediate CoT positions and stopping when confidence crosses a threshold. Conceptually almost identical motivation to MSC: the shortest prefix sufficient for a confident correct answer.",
+            "key_difference": "DEER is a test-time, training-free decoding strategy using on-the-fly answer probing; SuCo uses the same signal (probability of ground-truth answer conditioned on prefix) to construct training data and as an RL reward. SuCo trains the policy to internalize the behavior rather than probing at inference. The paper does NOT cite DEER, which is a notable omission since it is arguably the closest conceptual antecedent."
+          },
+          {
+            "title": "S-GRPO: Early Exit via Reinforcement Learning in Reasoning Models",
+            "venue_or_source": "NeurIPS 2025 (Dai, Yang, Si)",
+            "year": "2025",
+            "similarity_summary": "Trains a reasoning model to exit early via GRPO with decaying rewards over sampled early-exit positions. Directly tackles the same problem (concise yet correct reasoning) with RL and is a baseline in the paper.",
+            "key_difference": "S-GRPO learns early exits via reward decay over positions; SuCo defines a principled sufficiency threshold and tracks per-problem complexity online. SuCo also has an SFT stage on MSC-truncated data. Difference is methodological refinement, not a categorical shift."
+          },
+          {
+            "title": "ThinkPrune: Pruning Long Chain-of-Thought of LLMs via Reinforcement Learning",
+            "venue_or_source": "arXiv 2504.01296 (Hou et al., 2025)",
+            "year": "2025",
+            "similarity_summary": "Uses RL with length constraints to prune long CoT.",
+            "key_difference": "ThinkPrune uses heuristic length constraints; SuCo replaces the heuristic with a per-problem sufficiency-based target. Cited but not used as a baseline."
+          },
+          {
+            "title": "L1: Controlling How Long a Reasoning Model Thinks With Reinforcement Learning",
+            "venue_or_source": "COLM 2025 (Aggarwal & Welleck)",
+            "year": "2025",
+            "similarity_summary": "RL framework that lets users explicitly control reasoning length via a length budget specified in the prompt.",
+            "key_difference": "L1 is user-controlled (budget tier in prompt); SuCo is model-driven and continuous. Cited."
+          },
+          {
+            "title": "Chain of Draft: Thinking Faster by Writing Less",
+            "venue_or_source": "Xu et al., 2025 (arXiv)",
+            "year": "2025",
+            "similarity_summary": "Prompts/trains models to use minimal intermediate notes per step, drastically cutting CoT tokens while preserving accuracy. Same empirical phenomenon (less reasoning, equal-or-better accuracy).",
+            "key_difference": "CoD is a prompting paradigm reducing per-step token count uniformly; SuCo defines per-problem sufficiency and applies adaptive truncation through training. Not cited."
+          },
+          {
+            "title": "Kimi K1.5 Technical Report (length penalty in RL)",
+            "venue_or_source": "Moonshot AI, 2025",
+            "year": "2025",
+            "similarity_summary": "Uses length penalties during RL training to discourage over-long CoT.",
+            "key_difference": "K1.5 uses a fixed length penalty; SuCo's penalty is conditioned on a per-problem sufficiency target. Not cited."
+          },
+          {
+            "title": "O1-Pruner: Length-Harmonizing Fine-Tuning for o1-like Reasoning Pruning",
+            "venue_or_source": "arXiv 2501.12570 (Luo et al., 2025)",
+            "year": "2025",
+            "similarity_summary": "Length-harmonizing fine-tuning that compresses reasoning while preserving accuracy.",
+            "key_difference": "O1-Pruner uses sampling-based length targets per problem; SuCo derives the target from a probabilistic sufficiency criterion. Not cited."
+          },
+          {
+            "title": "DAST: Difficulty-Adaptive Slow-Thinking for Large Reasoning Models",
+            "venue_or_source": "arXiv 2503.04472 (Shen et al., 2025)",
+            "year": "2025",
+            "similarity_summary": "Adaptively scales reasoning length to difficulty using SFT + DPO with difficulty-aware length targets.",
+            "key_difference": "DAST estimates difficulty from sampled length statistics (similar to SuCo's percentile complexity) and adjusts targets accordingly. The percentile-based complexity proxy in SuCo is conceptually close. Not cited — this is the most surprising omission, given high similarity in approach."
+          },
+          {
+            "title": "TokenSkip: Controllable Chain-of-Thought Compression in LLMs",
+            "venue_or_source": "arXiv 2502.12067 (Xia et al., 2025)",
+            "year": "2025",
+            "similarity_summary": "Prunes low-importance tokens from CoT and fine-tunes on compressed traces.",
+            "key_difference": "Token-level rather than sentence/prefix-level; uses importance scores rather than sufficiency probability. Not cited."
+          },
+          {
+            "title": "Think Only When You Need with Large Hybrid-Reasoning Models (LHRMs)",
+            "venue_or_source": "NeurIPS 2025 (Jiang et al.)",
+            "year": "2025",
+            "similarity_summary": "Hybrid SFT + group policy optimization with reasoning on/off decision based on problem category. The strongest adaptive baseline in the paper.",
+            "key_difference": "LHRMs uses coarse domain-label supervision and a binary on/off decision; SuCo replaces this with a continuous, per-problem sufficiency criterion. Cited and compared."
+          },
+          {
+            "title": "Length normalization in beam search / sequence ranking (GNMT, Wu et al. 2016)",
+            "venue_or_source": "arXiv 1609.08144",
+            "year": "2016",
+            "similarity_summary": "Per-token geometric-mean likelihood (length normalization) for scoring decoded sequences. The sufficiency metric in this paper is mathematically a length-normalized likelihood of the ground-truth answer given a CoT prefix.",
+            "key_difference": "Standard scoring technique repurposed as a sufficiency signal over CoT prefixes. The application is new, but the formula is not. Not cited."
+          }
+        ],
+        "potential_missing_citations": [
+          "DEER (Yang et al., 2025) — conceptually the closest prior work: confidence-based early exit at inference using the same answer-probability signal. Its omission materially weakens the novelty claim of MSC.",
+          "DAST (Shen et al., 2025) — difficulty-adaptive slow-thinking with length-based difficulty estimation; very close to the percentile-based complexity + adaptive threshold idea.",
+          "O1-Pruner (Luo et al., 2025) — length-harmonizing fine-tuning with per-problem length targets; competing efficient-reasoning baseline.",
+          "Chain of Draft (Xu et al., 2025) — same empirical phenomenon ('less reasoning, equal/better accuracy') established earlier.",
+          "TokenSkip (Xia et al., 2025) — controllable CoT compression via SFT, a missing baseline class.",
+          "Kimi K1.5 length-penalty RL — earlier RL-with-length-penalty for reasoning models.",
+          "Length-normalized likelihood (Wu et al., 2016, GNMT) — the geometric-mean sufficiency formula is a direct application of length normalization."
+        ],
+        "novelty_type": "conceptual",
+        "novelty_assessment": "incremental",
+        "novelty_risk_level": "medium",
+        "rationale": "The paper's primary novelty is conceptual: formalizing 'Minimal Sufficient CoT' via a length-normalized ground-truth likelihood and using it both to construct SFT data and to shape an RL reward. This framing is cleanly stated and the resulting pipeline (MFT + SAPO with EMA-updated complexity pool and over/under-thinking penalties) is well-engineered. However, every individual ingredient has close antecedents: (i) the sufficiency signal is mathematically a length-normalized answer likelihood (GNMT-style length normalization) and is functionally equivalent to the confidence signal used in DEER for training-free early exit; (ii) difficulty-adaptive length targets are central to DAST and O1-Pruner; (iii) RL-with-length/over-thinking penalty appears in S-GRPO, ThinkPrune, L1 and Kimi K1.5; (iv) two-stage SFT-then-GRPO on compressed traces is now the standard recipe. The 'continuous' framing is also somewhat overstated — at inference the model still emits a single trajectory; the continuity lives in the training threshold. The empirical gains over the strongest in-paper adaptive baseline (LHRMs) are real but modest (~3 points avg accuracy at comparable or smaller token budget), and the comparison set notably omits DEER, DAST, O1-Pruner, and Chain-of-Draft. Genuinely novel axis: the specific combination of (length-percentile complexity → adaptive threshold → MSC truncation → refinement → SFT → GRPO with sufficiency reward + EMA complexity pool) as an integrated pipeline. Derivative axes: theory, training recipe. Overall this is a solid incremental contribution that synthesizes and refines prior efficient-reasoning ideas under a unifying 'sufficiency' lens; it is not a categorical advance.",
+        "source_of_judgment": "model_knowledge"
+      },
+      "usage": {
+        "input_tokens": 10742,
+        "output_tokens": 7850,
+        "cache_creation_input_tokens": 74291,
+        "cache_read_input_tokens": 136338
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_5": {
+      "parsed": {
+        "perspectives": {
+          "domain_expert": {
+            "add_to_field": "Introduces a principled, continuous sufficiency criterion (MSC) for CoT length control, moving beyond discrete-mode adaptive reasoning paradigms (binary on/off, predefined budget tiers, domain labels) that dominate current ALRMs. The geometric-mean per-token probability of the ground-truth answer as a sufficiency signal is a conceptually clean operationalization of 'how much reasoning is enough'.",
+            "beneficiaries": "Researchers working on efficient reasoning, CoT compression, and adaptive inference; practitioners deploying LRMs (DeepSeek-R1-style models) where inference cost is a bottleneck.",
+            "importance": "Yes—reasoning redundancy is a well-recognized and pressing problem in the LRM era, and a principled sufficiency notion fills a real conceptual gap in the literature.",
+            "improvement_meaningful": "The accuracy gains (~5 points avg over LHRMs) combined with ~70-75% token reduction over R1-Distill are substantively meaningful for the subfield.",
+            "future_influence": "The MSC concept and the sufficiency-score framing are likely to be reused/extended; the percentile-based complexity proxy and dynamic complexity pool offer reusable design patterns for sufficiency-aware RL."
+          },
+          "methodology_expert": {
+            "add_to_field": "Combines several useful methodological ideas: (1) geometric-mean sufficiency score that is length-invariant, (2) percentile-based complexity proxy that's robust to outliers, (3) EMA-tracked dynamic complexity pool to keep sufficiency targets aligned with the evolving policy during RL, and (4) asymmetric reward shaping penalizing both over- and under-thinking.",
+            "beneficiaries": "Researchers designing RL reward shaping for reasoning, those building two-stage SFT+RL pipelines, and those studying confidence-based or probability-based supervision signals.",
+            "importance": "Solves the methodological pitfall that offline complexity estimates become stale as the policy shifts during RL—this is a non-trivial issue many adaptive methods ignore.",
+            "improvement_meaningful": "Ablations (Table 3, Tables 6-9) are reasonably thorough and isolate the contribution of each component. However, the framework has many moving parts (δ0, α, Lmin, η, ϵ, λover, λunder, β) which raises concerns about hyperparameter sensitivity and reproducibility.",
+            "future_influence": "The dynamic complexity pool and sufficiency-aware reward shaping are likely transferable to other adaptive reasoning frameworks; the geometric mean sufficiency formulation could inspire confidence-based termination criteria in test-time scaling research."
+          },
+          "empirical_evaluation_expert": {
+            "add_to_field": "Provides a fairly comprehensive evaluation: 8 benchmarks across math/code/science, two model scales (1.5B/7B), comparisons against four ALRM baselines (AdaCoT, AdaptThink, S-GRPO, LHRMs), OOD evaluation on three different task types, and cross-calibrator robustness checks.",
+            "beneficiaries": "Empirical researchers comparing adaptive reasoning methods; practitioners interested in tradeoff curves between accuracy and token cost.",
+            "importance": "Demonstrates the value of the proposed approach with consistent gains across diverse tasks and scales, addressing the concern that efficient reasoning methods may sacrifice accuracy.",
+            "improvement_meaningful": "Yes—gains are consistent and non-trivial (e.g., AIME25 7B: +12 points and 75% fewer tokens vs R1-Distill). However, statistical significance is not reported for most benchmarks (only AMC23/AIME25 use 10-run averaging), no error bars or seeds disclosed. Baselines like AdaptThink and S-GRPO use a different base model (R1-Distill) than SuCo (Qwen2.5-Math-Base), which complicates a clean comparison.",
+            "future_influence": "The benchmark suite and adaptive baseline configurations could be adopted by follow-up work. The reported accuracy-token Pareto frontier sets a strong reference point."
+          },
+          "skeptical_reviewer": {
+            "add_to_field": "The core conceptual contribution is incremental in some ways: the idea that long CoTs contain redundancy and that early termination can preserve correctness is well-documented (ThinkPrune, S-GRPO, AdaptThink, CyclicReflex). MSC repackages this with a clean formalism but the practical algorithm requires access to ground-truth answers and a strong refinement LLM (Qwen3-Next-80B).",
+            "beneficiaries": "Mostly researchers; practical adoption may be limited by reliance on (a) ground-truth answers for MSC construction and (b) an 80B-parameter refinement model.",
+            "importance": "The problem is real, but the framing as 'continuous' vs 'discrete' may be overstated—SuCo's sufficiency threshold is still a hard cutoff with hyperparameters and the policy is still trained to a fixed target distribution. The 'principled sufficiency criterion' is essentially probability thresholding, which has been explored in confidence-based truncation literature.",
+            "improvement_meaningful": "Gains are real but the unfair baseline initialization (different base models for AdaptThink/S-GRPO vs SuCo) is concerning. The MFT-alone result already provides most of the gains; SAPO's marginal contribution over MFT is only +1.6% accuracy at the cost of more tokens (1,347→1,483), which is modest. The ablation on geometric mean (Table 8) doesn't show huge gaps either.",
+            "future_influence": "Moderate. The framework is somewhat heavy-handed (two-stage training, large refinement model, 270k samples), which may discourage adoption. Conceptual contributions may persist while exact algorithm may not."
+          },
+          "practical_impact_expert": {
+            "add_to_field": "Demonstrates a deployable recipe for substantially cheaper LRM inference: ~74-76% reduction in average response tokens at improved accuracy. For real-world LRM deployment, this directly translates to lower latency and cost.",
+            "beneficiaries": "Companies deploying reasoning models in cost/latency-sensitive applications (coding assistants, edge devices, agentic workflows); practitioners adapting open-source LRMs.",
+            "importance": "Very practical: token cost is a primary deployment concern for LRMs like R1, o1, GPT-OSS, and any improvement that halves or quarters reasoning length while preserving accuracy is materially valuable.",
+            "improvement_meaningful": "Yes—on AIME25 7B, getting +12 points accuracy AND 75% token reduction is a Pareto-dominant improvement, which is rare. The OOD results on AlpacaEval and CommonsenseQA suggest the model retains general capability.",
+            "future_influence": "If the released models/data transfer well to bigger scales (32B+), this could become a default recipe for efficient reasoning post-training. The dependence on ground-truth answers, however, limits applicability to verifiable domains."
+          }
+        },
+        "consensus": [
+          "The paper addresses a real and timely problem (LRM reasoning redundancy) and offers a principled, well-motivated sufficiency criterion.",
+          "Empirical gains on accuracy and token efficiency are substantial and consistent across math/code/science benchmarks at two model scales.",
+          "The framework offers reusable methodological ideas (geometric-mean sufficiency, percentile complexity, dynamic complexity pool, asymmetric reward shaping).",
+          "The MFT stage alone provides large gains over Full CoT SFT, suggesting MSC data construction is the most impactful contribution.",
+          "Reliance on ground-truth answers and a large refinement LLM limits direct applicability to open-ended/unverifiable settings."
+        ],
+        "disagreement": [
+          "Novelty: domain/methodology experts see MSC as a meaningful new framing; skeptical reviewer views it as a repackaging of confidence-based truncation ideas already present in prior work.",
+          "Marginal value of SAPO: practical/empirical experts see overall SuCo gains as strong, while skeptic notes SAPO adds only ~1.6 points over MFT while increasing tokens.",
+          "Fairness of baseline comparisons: empirical expert flags missing significance tests and inconsistent base models for some baselines; other personas treat the comparisons as adequate.",
+          "Likely influence: practical impact expert predicts wide adoption if models are released, while skeptic predicts limited adoption due to recipe complexity and 80B refinement dependency."
+        ],
+        "significance_score_1_to_10": 7,
+        "impact_assessment": "high"
+      },
+      "usage": {
+        "input_tokens": 2984,
+        "output_tokens": 3055,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 56176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_6": {
+      "parsed": {
+        "problem_and_solution_formulation": {
+          "definitions_clear": [
+            "MSC is defined formally via sufficiency (Eq.1) and minimality (Eq.2) with explicit sentence-level granularity.",
+            "Reasoning sufficiency S_theta is defined as geometric mean of per-token y* probabilities.",
+            "Problem-adaptive threshold delta(x) = delta_0 + alpha*C(x) is clearly specified."
+          ],
+          "assumptions_clear": [
+            "The reliance on ground-truth answers to compute sufficiency is implicit in Eq.1 and is acknowledged only in Limitations.",
+            "The assumption that reasoning length is a valid proxy for problem complexity is stated but justified only by reference to Figure 1 on one model/benchmark.",
+            "It is unclear which policy theta is used to compute sufficiency during MSC construction (source LRM, base policy, or refinement model)."
+          ],
+          "derivations_algorithms_clear": [
+            "Algorithm 1 provides a step-by-step MSC construction procedure.",
+            "Eq.9 specifies the EMA update for the dynamic complexity pool.",
+            "Sufficiency-aware reward Eq.11 is concretely specified but the behavior when t* = infinity (no sufficient prefix) is logically degenerate and not analyzed.",
+            "Minimality definition (Eq.2) is technically violated by the fallback rule (Eq.6), as the resulting prefix may not satisfy delta-sufficiency yet is still labeled MSC.",
+            "Sentence-boundary segmentation procedure is not specified."
+          ],
+          "suggested_improvements_for_formulation": [
+            "Explicitly state which model's probabilities are used in S_theta during MSC construction and during SAPO reward computation.",
+            "Clarify the sentence-segmentation procedure (regex, special tokens, or library).",
+            "Reconcile the minimality definition with the fallback case (Eq.6); explicitly relabel fallback outputs as 'pseudo-MSC' or expose them as a separate category.",
+            "Discuss how the reward behaves when no prefix is sufficient (t* = infinity) and whether such samples are excluded.",
+            "Provide a theoretical justification (not just empirical) for why geometric mean is the correct normalization."
+          ]
+        },
+        "theoretical_support": {
+          "correct": [
+            "The geometric-mean formulation correctly normalizes joint probability into length-invariant per-token confidence, as stated."
+          ],
+          "partially_correct": [
+            "Claim that percentile rank 'yields values uniformly distributed in [0,1]' holds in expectation only with no ties; with discrete sentence/token counts and frequent ties this is approximate.",
+            "Claim that reasoning length is a valid complexity proxy is empirically correlational (Figure 1) but not theoretically justified; it may conflate verbosity with hardness."
+          ],
+          "suggested_improvements_for_theoretical_support": [
+            "Provide a more formal argument or citation for the link between per-token average probability and 'sufficiency of reasoning context'.",
+            "Discuss correlation vs causation between reasoning length and difficulty, or replace length with a more direct difficulty signal (e.g., pass-rate)."
+          ]
+        },
+        "experimental_support": {
+          "supported": [
+            "MFT alone surpasses Full CoT SFT with substantially fewer tokens (Table 2: 45.7%/1,344 vs 38.4%/5,082).",
+            "Percentile-based complexity outperforms Min-Max and Log-Scaled variants (Table 2).",
+            "Geometric-mean sufficiency outperforms joint and arithmetic alternatives on the tested model (Table 8).",
+            "Per-benchmark adaptive allocation by SAPO (lower tokens on easy, higher on hard) is consistent with Figure 5.",
+            "Stronger difficulty-conditioned scaling in SuCo vs base LRM (5.5x vs 3.1x L5/L1 ratio) is supported by Figure 6."
+          ],
+          "partially_supported": [
+            "Claim that SuCo 'consistently' outperforms all baselines — on some benchmarks (e.g., AMC23 7B), SuCo is second-best with negligible difference.",
+            "Claim that DCP and R_suff each contribute — accuracy differences (~0.2-0.4 pts) are within likely noise; main effect is on token count.",
+            "OOD generalization — only three tasks; Full CoT SFT baseline performs implausibly poorly (LC-WR 0.3 on AlpacaEval), making the relative gain inflated.",
+            "Cross-model MSC robustness — all calibrators are similar-scale Qwen/DeepSeek-family; weak-calibrator regime is not tested.",
+            "Claim that MSC improves accuracy across difficulty levels — Figure 1 uses oracle y* to select prefixes on Qwen3-8B, which is not the trained model and not deployable test-time behavior."
+          ],
+          "unsupported_or_overstated": [
+            "Framing that 'models perform better with less reasoning' as a general principle — what is shown is that an oracle-selected/refined short CoT outperforms a verbose one, not that less reasoning per se is better.",
+            "'Continuous' reasoning control claim — at inference there is no user-facing continuous knob; continuity exists only in the training-time threshold.",
+            "Attribution of gains specifically to MSC sufficiency vs the strong teacher signal from Qwen3-Next-80B refinement is not isolated (no Full-CoT-refined-by-80B baseline).",
+            "Token reduction percentages (74-76%) are anchored to the most verbose baseline (R1-Distill); reduction over the strongest efficient baseline is much smaller."
+          ],
+          "suggested_improvements_for_claim_support": [
+            "Add an oracle ablation showing MSC quality when sufficiency is computed using the trained policy itself rather than via teacher distillation.",
+            "Add a baseline that applies the 80B refinement to full CoT (without MSC truncation) to disentangle refinement from sufficiency selection.",
+            "Report per-benchmark standard deviations and use significance tests on tight comparisons (AMC23, GSM8K).",
+            "Expand OOD evaluation beyond 3 tasks and include a non-degenerate full-CoT-SFT baseline.",
+            "Test MSC with substantially weaker calibrators (e.g., 1.5B) to verify robustness."
+          ]
+        },
+        "experimental_rigor": {
+          "baseline_quality": "Reasonable spread (LRM and four ALRMs) but fairness is uneven: AdaCoT and LHRMs are re-trained on SuCo's data while AdaptThink and S-GRPO use a different base model (R1-Distill-Qwen). The base model (Qwen2.5-Math-Base) is math-specialized but is evaluated across code/science. Also, Qwen2.5-Math-Base MATH500 accuracy of 22.6% appears anomalously low.",
+          "missing_baselines": [
+            "Full CoT SFT refined by Qwen3-Next-80B (to isolate refinement effect).",
+            "Fixed-length truncation or confidence-based early-exit baselines.",
+            "Self-consistency / majority voting with budget control.",
+            "ThinkPrune and AlphaOne, which are cited as related but not compared.",
+            "A 'no-RL' upper bound using the MFT-only model with different inference-time budgets."
+          ],
+          "dataset_quality": "Training data is large (~270K) and from reputable distilled sources; evaluation benchmarks span math, code, science. AMC23 (n=40) and AIME25 (n=30) are very small; OOD set is limited to 3 tasks.",
+          "better_datasets": [
+            "Add larger competition-math sets (AIME 2024, OlympiadBench) for less variance.",
+            "Add BBH or MMLU-Pro for broader OOD coverage.",
+            "Add SWE-bench Lite for agentic/code reasoning evaluation."
+          ],
+          "metric_appropriateness": "Accuracy and average response tokens are appropriate. However, length comparisons assume comparable decoding settings, which are not reported. AlpacaEval LC-WR values (0.3-2.4) appear abnormally low and may indicate measurement issues.",
+          "better_metric": [
+            "Report wall-clock latency or FLOPs.",
+            "Report accuracy-per-token (Pareto curves) rather than two separate tables.",
+            "Use standard AlpacaEval LC-WR reporting (typically in tens of percent) and clarify the scale used."
+          ],
+          "missing_ablations": [
+            "Joint sensitivity of delta_0 and alpha (only one combination is presented).",
+            "Effect of removing the 80B refinement teacher (referenced in Limitations but not shown as a controlled ablation).",
+            "Sentence-level vs token-level vs paragraph-level truncation granularity.",
+            "Per-difficulty breakdown of SAPO vs MFT (figure 5 is per-benchmark only).",
+            "Effect of removing Lmin filtering at varied scales."
+          ],
+          "statistical_significance": "Not reported. Only AMC23/AIME25 averaged over 10 runs; no standard deviations or significance tests on any benchmark. Many key comparisons (e.g., SuCo vs S-GRPO on AMC23 7B; ablations within 0.2-0.4 pts) lie within plausible noise.",
+          "better_significance_test_or_confidence_interval": [
+            "Report mean +/- std over multiple seeds for all benchmarks.",
+            "Use paired bootstrap or McNemar's test for accuracy comparisons.",
+            "Report 95% CIs for token lengths.",
+            "Report seed counts and decoding temperature/top-p."
+          ],
+          "hyperparameter_clarity": "Reasonable: delta_0=0.5, alpha=0.4, Lmin=5, eta=0.1, beta=1.0, lambda=0.5, epsilon=2, K=8, LR, batch sizes are all specified. However, decoding parameters at evaluation (temperature, top-p, max tokens) and format reward specifics are not given.",
+          "negative_results_discussed": "partial",
+          "possible_confounders": [
+            "Strong teacher (Qwen3-Next-80B) refines MSC training data — confounds method vs distillation.",
+            "Different base models for some baselines (R1-Distill vs Qwen2.5-Math-Base).",
+            "Length-based complexity proxy may confound difficulty with model verbosity.",
+            "Use of same Qwen model family for refinement, quality assessment, and student training can produce circularity in filtering.",
+            "Math-specialized base may inflate math improvements relative to baselines."
+          ],
+          "confounder_reduction_alternatives": [
+            "Run all baselines with identical training data including refinement to isolate method effect.",
+            "Use a non-Qwen LLM as quality judge to break circularity.",
+            "Replace length-based complexity with verified difficulty labels where available.",
+            "Standardize the base model across all compared methods."
+          ],
+          "reproducibility_score_1_to_10": 6,
+          "suggestions_for_improving_reproducibility": [
+            "Release MSC dataset and refinement prompts (prompt is provided; data release not stated).",
+            "Specify decoding configurations (temperature, top-p, max tokens) for all benchmarks.",
+            "Specify sentence segmentation method and tokenizer used for length counts.",
+            "Release training code and config for both MFT and SAPO stages.",
+            "Report random seeds and number of runs for each benchmark."
+          ]
+        }
+      },
+      "usage": {
+        "input_tokens": 11996,
+        "output_tokens": 4032,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 56176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_7": {
+      "parsed": {
+        "strengths": [
+          "Addresses a timely and well-motivated problem (reasoning redundancy in LRMs) with a clean conceptual framing (Minimal Sufficient CoT) that operationalizes 'how much reasoning is enough' via a length-invariant geometric-mean per-token probability of the ground-truth answer.",
+          "Two-stage framework integrates several reusable methodological ideas: percentile-based complexity proxy (robust to outliers), problem-adaptive sufficiency threshold, EMA-tracked dynamic complexity pool that keeps sufficiency targets aligned with the evolving policy during RL, and asymmetric reward shaping that explicitly penalizes both over- and under-thinking.",
+          "Empirical evaluation is reasonably comprehensive: 8 benchmarks across math/code/science, two model scales (1.5B/7B), four ALRM baselines (AdaCoT, AdaptThink, S-GRPO, LHRMs), OOD evaluation, cross-calibrator robustness, and difficulty-conditioned analysis.",
+          "Reported gains are substantial and largely Pareto-dominant: e.g., on AIME25 7B, +12 points accuracy with ~75% fewer tokens vs R1-Distill; consistent improvements over the strongest adaptive baseline (LHRMs).",
+          "Ablations isolate key design choices (geometric mean vs joint/arithmetic, percentile vs Min-Max/Log-Scaled, adaptive vs static thresholds, Lmin, epsilon, eta, DCP, R_suff), and Figure 5 demonstrates that SAPO genuinely reallocates rather than uniformly compresses reasoning.",
+          "Algorithm 1, hyperparameter values, and refinement prompts are documented in reasonable detail, aiding reproducibility."
+        ],
+        "weaknesses": [
+          "MSC construction relies on (a) ground-truth answers to compute the sufficiency score and (b) a very large Qwen3-Next-80B refinement model. There is no controlled ablation isolating the contribution of the 80B refinement signal from MSC truncation itself (e.g., no 'full CoT refined by Qwen3-Next-80B' baseline). Several gains may be partially attributable to teacher distillation rather than the sufficiency criterion.",
+          "Baseline comparison fairness is uneven: AdaCoT and LHRMs are re-trained on SuCo's data, but AdaptThink and S-GRPO are initialized from a different base model (R1-Distill-Qwen), confounding method-vs-base attribution. The Qwen2.5-Math-Base model is also math-specialized, which may inflate math gains relative to general-domain baselines.",
+          "Statistical rigor is weak: no standard deviations, seeds, or significance tests are reported except for 10-run averaging on AMC23/AIME25. Several headline ablations (Table 3: DCP and R_suff add only ~0.2–0.4 accuracy points; AMC23 7B SuCo vs S-GRPO differ by 0.2 points) lie within plausible noise.",
+          "The 'continuous adaptive reasoning' framing is overstated. At inference time, the model produces a single trajectory and exposes no user-facing continuous control knob; continuity exists only in the training-time threshold. The conceptual gap relative to discrete-mode ALRMs is more incremental than the abstract suggests.",
+          "The claim 'models can perform better with less reasoning' is supported in Figure 1 by oracle-selected MSC prefixes on Qwen3-8B (not the trained model), which is not deployable behavior; the figure shows that a short CoT exists, not that models can produce it without oracle information.",
+          "The minimality definition (Eq. 2) is technically violated by the fallback rule (Eq. 6), which returns a non-sufficient prefix and still labels it MSC. Edge cases (no sufficient prefix exists; t* = infinity in the reward) are not analyzed.",
+          "Use of reasoning length as a complexity proxy is correlational (Figure 1) and may conflate model verbosity with true problem hardness, especially across domains (e.g., code traces are systematically longer than math).",
+          "OOD generalization claims rely on only three tasks, and the AlpacaEval LC-WR values (0.3–2.4) are abnormally low in absolute terms—suggesting either degraded general capability or a non-standard reporting scale.",
+          "Several procedural details are underspecified: which model's probabilities are used to compute sufficiency during MSC construction and SAPO; how sentences are segmented; decoding configuration (temperature, top-p, max tokens) at evaluation; whether the same Qwen-family model serves both as quality judge and refinement teacher (risk of circularity)."
+        ],
+        "fatal_flaws": [],
+        "minor_issues": [
+          "Qwen2.5-Math-Base MATH500 accuracy of 22.6% in Table 1 looks anomalously low and should be checked against the official Qwen2.5-Math report.",
+          "AlpacaEval LC-WR scores (0.3, 1.05, 2.4) are reported on an unusual scale; please clarify and consider standard reporting in percent.",
+          "The 'percentile yields values uniformly distributed in [0,1]' claim is approximate under ties (common with sentence-count granularity).",
+          "Token-reduction percentages (74–76%) are anchored to the most verbose baseline (R1-Distill); reduction relative to the strongest efficient baseline (LHRMs) is much smaller and should be reported alongside.",
+          "Cited related works ThinkPrune and AlphaOne are not empirically compared.",
+          "Some tables would benefit from accuracy-per-token Pareto curves rather than two separate tables of accuracy and tokens.",
+          "The Stage I loss (Eq. 8) does not explicitly handle the empty-MSC case (where z^MSC_i is the empty string)—please clarify."
+        ],
+        "questions_for_authors": [
+          "Which model's policy is used to compute the sufficiency score S_theta during MSC dataset construction (the source LRM that produced the trajectory, the base policy being fine-tuned, or the refinement model)? Does this choice affect the resulting MSC?",
+          "Can you report a controlled ablation in which Full CoT data is refined by the same Qwen3-Next-80B model without MSC truncation? This is needed to disentangle the contribution of the refinement teacher from the sufficiency criterion.",
+          "Why are AdaptThink and S-GRPO evaluated from a different base model (R1-Distill) than SuCo? Can you provide a head-to-head comparison with all methods sharing both the same base model and the same training data?",
+          "Could you report standard deviations and significance tests for the close comparisons (e.g., Table 1 AMC23 7B SuCo vs S-GRPO; Table 3 DCP/R_suff ablations)?",
+          "How is the fallback case (no prefix satisfies delta(x), Eq. 6) handled in SAPO's reward (when t* = infinity)? Are such samples excluded, or does the reward degenerate?",
+          "How are sentence boundaries determined? Does the algorithm rely on punctuation, special tokens, or a separate segmenter, and how robust is MSC to this choice?",
+          "What decoding parameters (temperature, top-p, max tokens) are used at evaluation for each benchmark and each baseline?",
+          "Could you explain the AlpacaEval LC-WR values (0.3–2.4)? Are these on the standard percent scale? If so, even the SuCo result appears very weak in absolute terms.",
+          "Have you tested MSC robustness with substantially weaker or non-Qwen calibrators (e.g., a 1.5B or Llama-family model) to verify cross-family generality?",
+          "Does the same Qwen3-Next-80B model serve as both the MSC refinement model and the quality assessor? If so, how do you guard against circularity in filtering low-quality samples?"
+        ],
+        "recommendation": "weak_accept",
+        "recommendation_rationale": "The paper offers a clean, well-motivated formalization (MSC) of an important problem (LRM reasoning redundancy), backed by a coherent two-stage training framework with several reusable methodological components (geometric-mean sufficiency, percentile-based complexity, dynamic complexity pool with EMA, asymmetric over/under-thinking reward). Empirical results are substantial: consistent and largely Pareto-dominant accuracy/token gains over strong adaptive baselines across math, code, and science benchmarks at two scales, plus OOD and cross-calibrator robustness analyses. The contribution is meaningful for the efficient-reasoning subfield. However, several issues prevent stronger endorsement: (1) gains are not cleanly attributed to MSC versus the strong Qwen3-Next-80B refinement teacher; (2) baseline fairness is uneven, with AdaptThink/S-GRPO using a different base model; (3) statistical significance is not reported, and some close comparisons and ablations lie within plausible noise; (4) the 'continuous' framing is somewhat overstated and the central 'less reasoning is better' claim relies on oracle-selected prefixes in Figure 1; (5) the minimality definition is technically violated by the fallback rule. These are addressable but non-trivial concerns. On balance, the strength of the empirical signal and conceptual framing outweigh the weaknesses, supporting a borderline-to-weak-accept verdict.",
+        "confidence_1_to_5": 4
+      },
+      "usage": {
+        "input_tokens": 14135,
+        "output_tokens": 3264,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 56176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_8": {
+      "parsed": {
+        "summary_of_paper": "The paper tackles reasoning redundancy in Large Reasoning Models (LRMs) by introducing Minimal Sufficient CoT (MSC), defined as the shortest sentence-level CoT prefix whose geometric-mean per-token probability of the ground-truth answer exceeds a problem-adaptive threshold δ(x) = δ0 + α·C(x), where C(x) is a percentile-rank complexity proxy based on reasoning length. Building on MSC, the authors propose SuCo, a two-stage training framework: (i) MSC-Aligned Fine-Tuning (MFT) constructs an MSC dataset from full CoT trajectories (with LLM-based refinement via Qwen3-Next-80B) and performs SFT; (ii) Sufficiency-Aware Policy Optimization (SAPO) extends GRPO with an EMA-updated dynamic complexity pool and a reward shaping scheme that asymmetrically penalizes over- and under-thinking.\n\nExperiments on Qwen2.5-Math-Base 1.5B/7B across 8 math/code/science benchmarks show that SuCo improves accuracy while substantially reducing reasoning tokens relative to DeepSeek-R1-Distill and adaptive baselines (AdaCoT, AdaptThink, S-GRPO, LHRMs). Ablations isolate the sufficiency metric, threshold adaptivity, complexity estimator, DCP, and the sufficiency reward; auxiliary analyses cover OOD generalization (StrategyQA, CSQA, AlpacaEval), cross-calibrator robustness, difficulty-conditioned length allocation, and empty-CoT behavior.",
+        "main_strengths": [
+          "Clean, well-motivated conceptual framing: MSC operationalizes 'when is reasoning enough' via a length-invariant geometric-mean per-token sufficiency score, and Appendix Table 8 empirically justifies this choice over joint and arithmetic-mean alternatives.",
+          "Methodologically coherent two-stage pipeline combining several reusable ideas: percentile-based complexity proxy (robust to outliers), problem-adaptive threshold, EMA-tracked dynamic complexity pool that keeps sufficiency targets aligned with the evolving policy during RL, and asymmetric over/under-thinking rewards.",
+          "Empirical evaluation is broad: 8 benchmarks across math/code/science, two model scales, four ALRM baselines, OOD evaluation, cross-calibrator robustness, and difficulty-conditioned analysis. Reported gains are sizable and largely Pareto-dominant (e.g., AIME25 7B: +12 points accuracy with ~75% fewer tokens vs R1-Distill).",
+          "Ablations meaningfully isolate design choices, and Figure 5 demonstrates that SAPO genuinely reallocates rather than uniformly compresses reasoning, supporting the adaptive-allocation narrative.",
+          "Reproducibility is aided by Algorithm 1, hyperparameter values, refinement prompts in Appendix C, and dataset statistics in Appendix B."
+        ],
+        "main_weaknesses": [
+          "Attribution of gains is confounded by the Qwen3-Next-80B refinement teacher. The paper does not include a 'Full CoT refined by Qwen3-Next-80B (without MSC truncation)' baseline, so it is unclear how much of MFT's improvement over Full CoT SFT comes from sufficiency-based truncation versus distillation from a strong 80B teacher. The same model also serves as the quality assessor, raising a potential circularity concern.",
+          "Baseline-comparison fairness is uneven. AdaCoT and LHRMs are re-trained on SuCo's data from Qwen2.5-Math-Base, but AdaptThink and S-GRPO follow their original implementations from DeepSeek-R1-Distill-Qwen. This confounds method-vs-base attribution; additionally Qwen2.5-Math-Base is math-specialized, which may inflate math gains.",
+          "Statistical rigor is limited. Apart from 10-run averaging on AMC23/AIME25, no standard deviations, seeds, or significance tests are reported. Several ablation deltas (Table 3: DCP and R_suff contribute ~0.2–0.4 accuracy points) and head-to-head comparisons (Table 1 AMC23 7B SuCo vs S-GRPO: 90.3 vs 90.5) lie within plausible noise.",
+          "The 'continuous adaptive reasoning' framing is somewhat overstated. At inference time the model produces a single trajectory with no user-facing continuous control knob; continuity exists only in the training-time threshold. The conceptual delta vs discrete-mode ALRMs is more incremental than the abstract suggests.",
+          "The motivating claim 'models can perform better with less reasoning' (Figure 1) relies on oracle-selected MSC prefixes on Qwen3-8B using ground-truth answer probabilities — i.e., not deployable behavior. The figure shows that a short sufficient prefix exists, not that a model can produce it without oracle information.",
+          "The minimality definition (Eq. 2) is technically violated by the fallback rule (Eq. 6): when no prefix reaches δ(x), the argmax prefix is still labeled MSC despite being non-sufficient. The edge case t* = ∞ in the SAPO reward (Eq. 11) is also not analyzed.",
+          "Using reasoning length as a complexity proxy is correlational and may conflate model verbosity with intrinsic problem hardness, particularly across domains (code traces are systematically longer than math). The intra-domain ablation (Appendix A.5) addresses this only partially.",
+          "Several procedural details are underspecified: which model's probabilities are used to compute sufficiency during MSC construction and during SAPO; how sentence boundaries are determined; evaluation decoding configuration (temperature, top-p, max tokens); and whether the Qwen3-Next-80B refinement model is identical to the quality judge.",
+          "OOD claims rest on three tasks, and the AlpacaEval LC-WR values (0.3, 1.05, 2.4) appear on an unusual scale that is not explained — even SuCo's best score is very low in absolute terms if these are percentages."
+        ],
+        "detailed_comments": [
+          "Section 3.2 (MSC definition): Please reconcile the minimality formalism in Eq. 2 with the fallback in Eq. 6. As written, when no δ-sufficient prefix exists, the algorithm returns a non-sufficient prefix that still violates the sufficiency condition. Consider redefining MSC piecewise (sufficient case vs. saturated case) or excluding such samples from training.",
+          "Section 3.2 (complexity proxy): The argument that reasoning length is a proxy for difficulty is supported by Figure 1, but this is a model-specific verbosity measure. It would be informative to correlate C(x) with an external difficulty signal (e.g., MATH difficulty level, pass rate of a fixed reference model) to validate that the proxy captures intrinsic complexity rather than the teacher's style.",
+          "Section 3.4 (dynamic complexity pool): The EMA update in Eq. 9 uses average length per question, while the threshold is then derived from percentile ranks over the pool. Please clarify the temporal semantics: is the percentile recomputed at every step, every batch, or every epoch? How is rank computed when many samples share the same length (ties)?",
+          "Section 3.4 (reward shaping): The under-thinking penalty only applies to incorrect generations (Eq. 11), which couples it to R_cor. It would be useful to discuss why under-thinking on correct outputs should not be penalized (or rewarded), and whether the reward could be reduced to R_cor + over-thinking penalty without loss.",
+          "Section 4.1 (baselines): The mismatched base models for AdaptThink/S-GRPO vs SuCo, AdaCoT, and LHRMs make Table 1 hard to interpret as a controlled comparison. Re-running at least one of AdaptThink/S-GRPO from Qwen2.5-Math-Base, or running SuCo from R1-Distill-Qwen, would clarify what is attributable to the method versus the base model.",
+          "Section 4.2 (token-reduction framing): The 74–76% reduction figures are anchored to R1-Distill. Relative to the strongest efficient baseline (LHRMs), the reduction is much smaller (e.g., 1.5B: 1,483 vs 2,055 ≈ 28%). Both numbers should be reported in the main text.",
+          "Table 1: Qwen2.5-Math-Base MATH500 accuracy of 22.6% looks anomalously low relative to the official Qwen2.5-Math technical report. Please verify or explain (e.g., prompt template, no few-shot setting).",
+          "Table 3 (SAPO ablation): With DCP and R_suff contributing only 0.2–0.4 accuracy points, the case for SAPO as a necessary stage is empirically weak on average. The per-benchmark story in Figure 5 is more compelling — consider promoting per-benchmark deltas to the main ablation table and reporting variance.",
+          "Appendix A.4: The sufficiency metric ablation is one of the most important justifications of the design and should be moved (at least summarized) into the main paper.",
+          "Figure 1: Please clarify that MSC there is selected with oracle access to y*; otherwise readers may incorrectly infer that a deployed model produces these shorter trajectories at no cost.",
+          "OOD results (Table 4): The Full-CoT SFT baseline collapses on StrategyQA (22.6%) and CSQA (19.4%), well below the base R1-Distill (53.3/45.0). This suggests SFT on the math/code/science distillation data degrades general capability, which complicates interpretation of the SuCo OOD gains. A baseline that mixes general instruction data would be more convincing.",
+          "Appendix B.4 / C: Using the same Qwen3-Next-80B model for both MSC refinement and quality assessment is potentially circular (the judge prefers samples written in its own style). Please justify or use an independent judge."
+        ],
+        "questions_for_authors": [
+          "Which model's policy is used to compute the sufficiency score S_θ during MSC dataset construction — the source LRM that produced the trajectory, the base policy being fine-tuned, or the refinement model? How sensitive are MSC boundaries to this choice?",
+          "Can you provide a controlled ablation where Full CoT data is refined by Qwen3-Next-80B without sufficiency-based truncation, to isolate the contribution of the refinement teacher from the MSC criterion?",
+          "Why are AdaptThink and S-GRPO evaluated from a different base model (R1-Distill-Qwen) than SuCo, AdaCoT, and LHRMs? Can you provide a head-to-head comparison where all methods share the same base model and the same training data?",
+          "Could you report standard deviations / seed variability for close comparisons (e.g., Table 1 AMC23 7B SuCo vs S-GRPO; Table 3 DCP and R_suff ablations) and indicate which differences are statistically significant?",
+          "How is the fallback case (no prefix satisfies δ(x), t* = ∞ in Eq. 11) handled during SAPO? Are these samples excluded, or does the over-thinking penalty become trivially zero / the under-thinking penalty fire for any incorrect output?",
+          "How are sentence boundaries determined (punctuation rules, special tokens, or a separate segmenter)? How robust are MFT and SAPO to alternative segmentation choices?",
+          "What decoding parameters (temperature, top-p, max tokens) are used at evaluation, and are they matched across all baselines?",
+          "Could you clarify the AlpacaEval LC-WR scale (Table 4)? Values in the range 0.3–2.4 are not standard if these are percentages.",
+          "Does the same Qwen3-Next-80B model serve as both the MSC refinement model and the quality assessor in Appendix B.4? If so, how do you guard against circularity (the judge favoring its own style)?",
+          "Have you tested MSC robustness with weaker or non-Qwen calibrators (e.g., a 1.5B model, or a Llama-family calibrator) to verify cross-family generality beyond Qwen3-4B/14B and DS-R1-Distill-7B (which share lineage)?"
+        ],
+        "suggestions_for_improvement": [
+          "Add a 'Full CoT + 80B refinement (no truncation)' baseline to disentangle MSC from teacher distillation.",
+          "Unify the experimental protocol so that all adaptive baselines share both the same base model and training data, or provide both base-model variants for SuCo.",
+          "Report seed variance and statistical significance for headline numbers and close ablations.",
+          "Refine the MSC definition (Eq. 2) to handle the no-sufficient-prefix case cleanly, and analyze t* = ∞ behavior in Eq. 11.",
+          "Move the sufficiency-metric ablation (Appendix A.4) into the main paper, given its centrality to the contribution.",
+          "Clarify Figure 1 to indicate that MSC there uses oracle ground-truth probabilities and does not reflect deployable inference.",
+          "Tone down the 'continuous' framing or expose an inference-time continuous control knob (e.g., adjustable δ at test time) and evaluate the resulting accuracy–length trade-off curve.",
+          "Compare empirically against ThinkPrune and AlphaOne, which are cited but not benchmarked.",
+          "Report token-reduction percentages relative to the strongest efficient baseline (LHRMs) in addition to R1-Distill.",
+          "Validate the length-based complexity proxy against an external difficulty signal (e.g., MATH levels, reference-model pass rate) and report cross-domain calibration.",
+          "Use an independent judge for MSC quality filtering, or report results with and without filtering to quantify its effect.",
+          "Clarify reporting scale for AlpacaEval and consider strengthening the OOD section with a general-capability benchmark (e.g., MT-Bench) and a baseline that mixes general instruction data."
+        ],
+        "overall_recommendation": "Weak Accept",
+        "reviewer_confidence_1_to_5": 4,
+        "score_card": {
+          "soundness_1_to_4": 3,
+          "presentation_1_to_4": 3,
+          "contribution_1_to_4": 3,
+          "overall_1_to_10": 6
+        }
+      },
+      "usage": {
+        "input_tokens": 6165,
+        "output_tokens": 5026,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 56176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_9": {
+      "parsed": {
+        "hallucinated_comments": [
+          "The claim 'AIME25 7B: +12 points accuracy with ~75% fewer tokens vs R1-Distill' is slightly imprecise — the actual delta is 61.7 - 49.7 = 12.0 points, which is correct, but should be double-checked. The 75% token reduction is also correct (2,679 vs 10,833 ≈ 75.3%). No hallucination, but phrasing as '~75%' is fine."
+        ],
+        "misrepresentations": [
+          "The draft says 'The motivating claim relies on oracle-selected MSC prefixes on Qwen3-8B using ground-truth answer probabilities.' This is accurate per Eq. 1 (sufficiency depends on y*), but the review should be more precise that Figure 1's MSC selection requires y* — the paper does not hide this, but the framing of 'oracle' is the reviewer's inference, not a misrepresentation. OK."
+        ],
+        "missed_strengths": [
+          "The cross-model robustness experiment (Table 5) actually tests transfer to a Llama-3.2-3B target model, partially addressing cross-family generality on the target side, which the review's question #10 overlooks.",
+          "The paper provides an explicit limitations section acknowledging reliance on ground-truth answers and on strong LRM distillation data — worth noting as a strength of transparency."
+        ],
+        "missed_weaknesses": [
+          "The paper does not provide training compute/wall-clock comparisons against baselines, despite efficiency being a central theme (training-time cost of computing sufficiency scores via teacher forwards is non-trivial).",
+          "No discussion of whether the sufficiency score Sθ uses πθ or the source LRM's probabilities (this is raised as a question but is also a methodological gap worth flagging as a weakness).",
+          "The arXiv identifier '2606.17687' and conference reference 'ICML 2026 / PMLR 306' are anachronistic/suspect, but this is a meta-issue not a scientific weakness."
+        ],
+        "too_strong_claims": [
+          "'largely Pareto-dominant' in main strengths is somewhat strong — on AMC23 7B SuCo (90.3) is below S-GRPO (90.5) in accuracy though uses fewer tokens, so it is not strictly Pareto-dominant on every benchmark. Consider softening to 'frequently Pareto-dominant'.",
+          "'The conceptual delta vs discrete-mode ALRMs is more incremental than the abstract suggests' — this is a defensible critique but stated assertively; could be softened to 'the continuous-vs-discrete distinction at inference time is less clear-cut than the framing suggests'."
+        ],
+        "non_actionable_criticisms": [],
+        "tone_issues": [],
+        "consistency_between_summary_weaknesses_and_recommendation": "consistent",
+        "external_novelty_claims_supported": "partial",
+        "corrections_needed": [
+          "Soften 'largely Pareto-dominant' to 'frequently Pareto-dominant' or 'Pareto-dominant on most benchmarks', noting AMC23 7B as a counterexample.",
+          "Acknowledge in the cross-calibrator question that Table 5 already tests a Llama-3.2-3B target model; reframe the question to focus on calibrator (not target) diversity — specifically, whether non-Qwen calibrators (e.g., Llama-family) work.",
+          "Clarify that Figure 1's MSC selection requires ground-truth answer probabilities (the paper does state this implicitly via Eq. 1); frame this as a presentation/clarity issue rather than implying the paper hides it.",
+          "Add a weakness about lack of training-compute / wall-clock cost reporting, especially given the teacher-forward passes required to compute sufficiency scores.",
+          "Minor: verify the AMC23 7B comparison wording — SuCo 90.3 vs S-GRPO 90.5 — and note this as one specific within-noise case rather than 'several'."
+        ]
+      },
+      "usage": {
+        "input_tokens": 5356,
+        "output_tokens": 1377,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 56176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_10": {
+      "parsed": {
+        "final_review": {
+          "summary_of_paper": "The paper tackles reasoning redundancy in Large Reasoning Models (LRMs) by introducing Minimal Sufficient CoT (MSC), defined as the shortest sentence-level CoT prefix whose geometric-mean per-token probability of the ground-truth answer exceeds a problem-adaptive threshold δ(x) = δ0 + α·C(x), where C(x) is a percentile-rank complexity proxy based on reasoning length. Building on MSC, the authors propose SuCo, a two-stage training framework: (i) MSC-Aligned Fine-Tuning (MFT) constructs an MSC dataset from full CoT trajectories (with LLM-based refinement via Qwen3-Next-80B) and performs SFT; (ii) Sufficiency-Aware Policy Optimization (SAPO) extends GRPO with an EMA-updated dynamic complexity pool and a reward shaping scheme that asymmetrically penalizes over- and under-thinking. Experiments on Qwen2.5-Math-Base 1.5B/7B across 8 math/code/science benchmarks show that SuCo improves accuracy while substantially reducing reasoning tokens relative to DeepSeek-R1-Distill and adaptive baselines (AdaCoT, AdaptThink, S-GRPO, LHRMs). Ablations isolate the sufficiency metric, threshold adaptivity, complexity estimator, dynamic complexity pool (DCP), and the sufficiency reward; auxiliary analyses cover OOD generalization (StrategyQA, CSQA, AlpacaEval), cross-calibrator robustness, difficulty-conditioned length allocation, and empty-CoT behavior.",
+          "main_strengths": [
+            "Clean, well-motivated conceptual framing: MSC operationalizes 'when is reasoning enough' via a length-invariant geometric-mean per-token sufficiency score, and Appendix Table 8 empirically justifies this choice over joint-probability and arithmetic-mean alternatives.",
+            "Methodologically coherent two-stage pipeline combining several reusable ideas: percentile-based complexity proxy (robust to outliers), problem-adaptive threshold, EMA-tracked dynamic complexity pool that keeps sufficiency targets aligned with the evolving policy during RL, and asymmetric over/under-thinking rewards.",
+            "Empirical evaluation is broad: 8 benchmarks across math/code/science, two model scales, four ALRM baselines, OOD evaluation, cross-calibrator robustness, and difficulty-conditioned analysis. Reported gains are sizable and frequently Pareto-dominant (e.g., AIME25 7B: +12 points accuracy with ~75% fewer tokens vs R1-Distill).",
+            "Ablations meaningfully isolate design choices, and Figure 5 demonstrates that SAPO genuinely reallocates rather than uniformly compresses reasoning, supporting the adaptive-allocation narrative.",
+            "Reproducibility is aided by Algorithm 1, hyperparameter values, refinement prompts in Appendix C, and dataset statistics in Appendix B. The Limitations section is transparent about the reliance on ground-truth answers and on distillation from strong LRMs."
+          ],
+          "main_weaknesses": [
+            "Attribution of gains is confounded by the Qwen3-Next-80B refinement teacher. The paper does not include a 'Full CoT refined by Qwen3-Next-80B (without MSC truncation)' baseline, so it is unclear how much of MFT's improvement over Full CoT SFT comes from sufficiency-based truncation versus distillation from a strong 80B teacher. The same 80B model also serves as the quality assessor (Appendix B.4), raising a potential circularity concern.",
+            "Baseline-comparison fairness is uneven. AdaCoT and LHRMs are re-trained on SuCo's data from Qwen2.5-Math-Base, while AdaptThink and S-GRPO follow their original implementations from DeepSeek-R1-Distill-Qwen. This confounds method-vs-base attribution; additionally Qwen2.5-Math-Base is math-specialized, which may inflate math gains.",
+            "Statistical rigor is limited. Apart from 10-run averaging on AMC23/AIME25, no standard deviations, seeds, or significance tests are reported. Several ablation deltas (Table 3: DCP and R_suff contribute ~0.2–0.4 accuracy points) and at least one head-to-head comparison (Table 1 AMC23 7B: SuCo 90.3 vs S-GRPO 90.5) lie within plausible noise.",
+            "The 'continuous adaptive reasoning' framing is somewhat overstated. At inference time the model produces a single trajectory with no user-facing continuous control knob; continuity exists only in the training-time threshold. The continuous-vs-discrete distinction at inference time is less clear-cut than the framing suggests.",
+            "Figure 1's MSC selection requires access to ground-truth answer probabilities (per Eq. 1). The paper does not hide this, but the figure is presented as a motivation that 'models can perform better with less reasoning' without flagging that the short prefixes are oracle-selected. Readers may misread this as a deployable inference behavior.",
+            "The minimality definition (Eq. 2) is technically violated by the fallback rule (Eq. 6): when no prefix reaches δ(x), the argmax prefix is still labeled MSC despite being non-sufficient. The edge case t* = ∞ in the SAPO reward (Eq. 11) is also not analyzed.",
+            "Using reasoning length as a complexity proxy is correlational and may conflate model verbosity with intrinsic problem hardness, particularly across domains (code traces are systematically longer than math). The intra-domain ablation (Appendix A.5) addresses this only partially and does not validate against an external difficulty signal.",
+            "Several procedural details are underspecified: which model's probabilities are used to compute the sufficiency score (the source LRM, the base policy being fine-tuned, or πθ during SAPO), how sentence boundaries are determined, evaluation decoding configuration (temperature, top-p, max tokens), and whether the Qwen3-Next-80B refinement model is identical to the quality judge.",
+            "No training-compute or wall-clock cost is reported. Computing sufficiency scores requires teacher-forward passes over the full CoT trajectories, and the dynamic complexity pool requires periodic updates during RL; quantifying this overhead is important since efficiency is a central theme.",
+            "OOD claims rest on three tasks, and the AlpacaEval LC-WR values in Table 4 (0.3, 1.05, 2.4) appear on an unusual scale that is not explained — even SuCo's best score is very low in absolute terms if these are percentages."
+          ],
+          "detailed_comments": [
+            "Section 3.2 (MSC definition): Please reconcile the minimality formalism in Eq. 2 with the fallback in Eq. 6. As written, when no δ-sufficient prefix exists, the algorithm returns a non-sufficient prefix that still violates the sufficiency condition. Consider redefining MSC piecewise (sufficient case vs. saturated case) or excluding such samples from training.",
+            "Section 3.2 (complexity proxy): The argument that reasoning length is a proxy for difficulty is supported by Figure 1, but length is a model-specific verbosity measure. It would be informative to correlate C(x) with an external difficulty signal (e.g., MATH difficulty level, pass rate of a fixed reference model) to validate that the proxy captures intrinsic complexity rather than the teacher's style.",
+            "Section 3.4 (dynamic complexity pool): The EMA update in Eq. 9 uses average length per question, while the threshold is derived from percentile ranks over the pool. Please clarify the temporal semantics: is the percentile recomputed at every step, every batch, or every epoch? How are ties handled when many samples share the same length?",
+            "Section 3.4 (reward shaping): The under-thinking penalty only applies to incorrect generations (Eq. 11), which couples it to R_cor. Please discuss whether the reward could be reduced to R_cor + over-thinking penalty without loss, and whether under-thinking on correct outputs should be neutral or rewarded.",
+            "Section 4.1 (baselines): The mismatched base models for AdaptThink/S-GRPO vs SuCo, AdaCoT, and LHRMs make Table 1 hard to interpret as a controlled comparison. Re-running at least one of AdaptThink/S-GRPO from Qwen2.5-Math-Base, or running SuCo from R1-Distill-Qwen, would clarify what is attributable to the method versus the base model.",
+            "Section 4.2 (token-reduction framing): The 74–76% reduction figures are anchored to R1-Distill. Relative to the strongest efficient baseline (LHRMs), the reduction is much smaller (e.g., 1.5B: 1,483 vs 2,055 ≈ 28%). Both numbers should be reported in the main text.",
+            "Table 1: Qwen2.5-Math-Base MATH500 accuracy of 22.6% looks anomalously low relative to the official Qwen2.5-Math technical report. Please verify or explain (e.g., prompt template, no few-shot setting).",
+            "Table 3 (SAPO ablation): With DCP and R_suff contributing only 0.2–0.4 accuracy points, the case for SAPO as a necessary stage is empirically weak on average. The per-benchmark story in Figure 5 is more compelling — consider promoting per-benchmark deltas to the main ablation table and reporting variance.",
+            "Appendix A.4: The sufficiency metric ablation is one of the most important justifications of the design and should be summarized in the main paper.",
+            "Figure 1: Please state explicitly in the caption that MSC there is selected using ground-truth answer probabilities, so readers do not infer that a deployed model produces these shorter trajectories at no cost.",
+            "OOD results (Table 4): The Full-CoT SFT baseline collapses on StrategyQA (22.6%) and CSQA (19.4%), well below the base R1-Distill (53.3/45.0). This suggests SFT on the math/code/science distillation data degrades general capability, which complicates interpretation of the SuCo OOD gains. A baseline that mixes general instruction data would be more convincing.",
+            "Appendix B.4 / C: Using the same Qwen3-Next-80B model for both MSC refinement and quality assessment is potentially circular (the judge may prefer samples in its own style). Please justify or use an independent judge."
+          ],
+          "questions_for_authors": [
+            "Which model's policy is used to compute the sufficiency score S_θ during MSC dataset construction — the source LRM that produced the trajectory, the base policy being fine-tuned, or the refinement model? How sensitive are MSC boundaries to this choice, and is the sufficiency score recomputed under πθ during SAPO?",
+            "Can you provide a controlled ablation where Full CoT data is refined by Qwen3-Next-80B without sufficiency-based truncation, to isolate the contribution of the refinement teacher from the MSC criterion?",
+            "Why are AdaptThink and S-GRPO evaluated from a different base model (R1-Distill-Qwen) than SuCo, AdaCoT, and LHRMs? Can you provide a head-to-head comparison where all methods share the same base model and the same training data?",
+            "Could you report standard deviations / seed variability for close comparisons (e.g., Table 1 AMC23 7B SuCo 90.3 vs S-GRPO 90.5; Table 3 DCP and R_suff ablations) and indicate which differences are statistically significant?",
+            "How is the fallback case (no prefix satisfies δ(x), t* = ∞ in Eq. 11) handled during SAPO? Are these samples excluded, or does the over-thinking penalty become trivially zero / the under-thinking penalty fire for any incorrect output?",
+            "How are sentence boundaries determined (punctuation rules, special tokens, or a separate segmenter)? How robust are MFT and SAPO to alternative segmentation choices?",
+            "What decoding parameters (temperature, top-p, max tokens) are used at evaluation, and are they matched across all baselines?",
+            "Could you clarify the AlpacaEval LC-WR scale (Table 4)? Values in the range 0.3–2.4 are not standard if these are percentages.",
+            "Does the same Qwen3-Next-80B model serve as both the MSC refinement model and the quality assessor in Appendix B.4? If so, how do you guard against circularity (the judge favoring its own style)?",
+            "Table 5 demonstrates calibrator robustness across Qwen3-4B/14B and DS-R1-Distill-7B, all Qwen-lineage. Have you tested non-Qwen calibrators (e.g., a Llama-family calibrator) to verify cross-family generality on the calibrator side?",
+            "Could you report training compute (GPU-hours) or wall-clock for MFT and SAPO, including the teacher-forward overhead for sufficiency-score computation and pool updates, relative to vanilla SFT/GRPO?"
+          ],
+          "suggestions_for_improvement": [
+            "Add a 'Full CoT + 80B refinement (no truncation)' baseline to disentangle MSC from teacher distillation.",
+            "Unify the experimental protocol so that all adaptive baselines share both the same base model and training data, or provide both base-model variants for SuCo.",
+            "Report seed variance and statistical significance for headline numbers and close ablations.",
+            "Refine the MSC definition (Eq. 2) to handle the no-sufficient-prefix case cleanly, and analyze t* = ∞ behavior in Eq. 11.",
+            "Move the sufficiency-metric ablation (Appendix A.4) into the main paper, given its centrality to the contribution.",
+            "Clarify Figure 1's caption to indicate that MSC there uses ground-truth answer probabilities and does not reflect deployable inference.",
+            "Tone down the 'continuous' framing or expose an inference-time continuous control knob (e.g., adjustable δ at test time) and evaluate the resulting accuracy–length trade-off curve.",
+            "Compare empirically against ThinkPrune and AlphaOne, which are cited but not benchmarked.",
+            "Report token-reduction percentages relative to the strongest efficient baseline (LHRMs) in addition to R1-Distill.",
+            "Validate the length-based complexity proxy against an external difficulty signal (e.g., MATH levels, reference-model pass rate) and report cross-domain calibration.",
+            "Use an independent judge for MSC quality filtering, or report results with and without filtering to quantify its effect.",
+            "Clarify reporting scale for AlpacaEval and consider strengthening the OOD section with a general-capability benchmark (e.g., MT-Bench) and a baseline that mixes general instruction data.",
+            "Report training compute and overhead introduced by sufficiency-score computation and the dynamic complexity pool."
+          ],
+          "overall_recommendation": "Weak Accept",
+          "reviewer_confidence_1_to_5": 4,
+          "score_card": {
+            "soundness_1_to_4": 3,
+            "presentation_1_to_4": 3,
+            "contribution_1_to_4": 3,
+            "overall_1_to_10": 6
+          }
+        },
+        "author_facing_improvement_checklist": [
+          "Add a 'Full CoT refined by Qwen3-Next-80B (no MSC truncation)' baseline to isolate teacher-distillation effects from MSC truncation.",
+          "Either unify base models across all ALRM baselines or report SuCo trained from R1-Distill-Qwen so the comparison in Table 1 is controlled.",
+          "Report standard deviations / multiple seeds for headline numbers and SAPO ablations; mark within-noise comparisons (e.g., AMC23 7B vs S-GRPO).",
+          "Reformulate MSC (Eq. 2) and Eq. 11 to handle the no-sufficient-prefix / t* = ∞ case explicitly.",
+          "Clarify in Figure 1's caption that MSC selection uses ground-truth answer probabilities.",
+          "Specify which model's probabilities define Sθ at each stage (MSC construction and SAPO), the sentence-boundary procedure, and evaluation decoding parameters.",
+          "Report training compute and the overhead of sufficiency-score computation and dynamic complexity pool updates.",
+          "Use an independent judge for MSC quality assessment (currently the same 80B model as the refiner) or quantify the effect of filtering.",
+          "Validate the length-based complexity proxy C(x) against an external difficulty signal (e.g., MATH levels, reference-model pass rate).",
+          "Move the sufficiency-metric ablation (Appendix A.4) into the main text.",
+          "Clarify AlpacaEval LC-WR scale and consider adding a general-capability OOD benchmark with a mixed-data SFT baseline.",
+          "Soften the 'continuous adaptive reasoning' framing or expose an inference-time control knob and evaluate the trade-off curve.",
+          "Add empirical comparisons to ThinkPrune and AlphaOne.",
+          "Test a non-Qwen-lineage calibrator (e.g., Llama-family) to strengthen the cross-family robustness claim."
+        ],
+        "changes_from_draft": [
+          "Softened 'largely Pareto-dominant' to 'frequently Pareto-dominant' and noted AMC23 7B vs S-GRPO as a specific within-noise counterexample.",
+          "Reframed the cross-calibrator question to acknowledge that Table 5 already varies the target model (Llama-3.2-3B) and focus the open question on calibrator diversity.",
+          "Reframed the Figure 1 weakness as a presentation/clarity issue, noting Eq. 1 already implies ground-truth dependence rather than implying the paper hides it.",
+          "Added a new weakness and question on missing training-compute / wall-clock reporting, particularly the teacher-forward overhead for sufficiency-score computation.",
+          "Added the underspecification of which model's probabilities define Sθ (across construction and SAPO) as both a methodological gap (weakness) and a question.",
+          "Strengthened the strengths list to credit the explicit Limitations section.",
+          "Reduced 'several' close comparisons to a specific example (AMC23 7B) to avoid overstating the noise concern.",
+          "Made the 'continuous framing' criticism slightly less assertive."
+        ]
+      },
+      "usage": {
+        "input_tokens": 6774,
+        "output_tokens": 6471,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 56176
+      },
+      "stop_reason": "end_turn"
+    }
+  },
+  "total_usage": {
+    "input_tokens": 70877,
+    "output_tokens": 49302,
+    "cache_creation_input_tokens": 130467,
+    "cache_read_input_tokens": 641922
+  }
+}

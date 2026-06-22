@@ -1,0 +1,1161 @@
+{
+  "paper": {
+    "filename": "Boosting_Speculative_Decoding_with_Decoupled_Multi-Head_via_MoE.pdf",
+    "path": "papers/rejected/Boosting_Speculative_Decoding_with_Decoupled_Multi-Head_via_MoE.pdf",
+    "num_bytes": 851572,
+    "input_mode": "pdf_document"
+  },
+  "config": {
+    "model": "claude-opus-4-7",
+    "effort": "high",
+    "web_search": true
+  },
+  "stages": {
+    "stage_0": {
+      "parsed": {
+        "title": "Jakiro: Boosting Speculative Decoding with Decoupled Multi-Head via MoE",
+        "authors": [
+          "Haiduo Huang",
+          "Fuwei Yang",
+          "Zhenhua Liu",
+          "Yixing Xu",
+          "Jinze Li",
+          "Yang Liu",
+          "Xuanwu Yin",
+          "Dong Li",
+          "Pengju Ren",
+          "Emad Barsoum"
+        ],
+        "venue_hint": "arXiv preprint (under review, likely ICML/NeurIPS style)",
+        "field": "Efficient LLM inference / Speculative Decoding",
+        "abstract": "Jakiro accelerates LLM inference via speculative decoding by addressing the limited diversity of candidate tokens generated at the same tree-level in prior approaches (Medusa, Eagle). It uses a Mixture-of-Experts (MoE) draft head where independent experts produce decoupled predictions, combined with a hybrid inference strategy: autoregressive decoding for initial tokens and parallel decoding (with a feature-level contrastive mechanism between the top-2 expert outputs) for the last stage. The method achieves SOTA speedups on MT-bench, HumanEval, GSM8K, Alpaca, CNN/DM, and Natural Questions across Vicuna, LLaMA2-chat, and LLaMA3-Instruct models.",
+        "sections": {
+          "introduction": "LLM token-by-token decoding is slow; speculative decoding (SD) uses a small draft model to propose tokens verified in parallel by the target. Medusa uses multiple heads sharing the same final hidden state (intra-step coupling); Eagle autoregresses on features but top-k tokens in the same draft-tree layer remain coupled. Jakiro replaces a single MLP head with an MoE layer whose top-2 experts generate decoupled candidates for the same step, increasing diversity. A hybrid strategy uses autoregressive drafting for initial steps and parallel decoding (with a contrastive mechanism over the two expert outputs) for the last step.",
+          "related_work": "Reviews speculative decoding (Leviathan, Chen et al., SpecInfer, Medusa, Hydra, Eagle1/2), Mixture of Experts (GShard, Switch Transformer, Mixtral, StableMoE), and parallel decoding (Mask-Predict, multi-token prediction, PaSS). Positions Jakiro as combining MoE decoupling with contrastive decoding in the draft head.",
+          "method": "Draft model follows Eagle architecture (embedding, reduction FC, one decoder layer with attention) but replaces the MLP with an MoE layer of N experts, K=2 activated via top-k routing; LM head and embedding shared with target. The MoE produces two logits distributions (top-1 and top-2 expert outputs), forming the basis for a 'decoupled' intra-layer draft tree. For greedy (top-1) tasks, Jakiro additionally applies a contrastive mechanism on hidden features: f_const = β f^top1 - α f^top2 (β, α learnable), used for parallel decoding in the penultimate step, reducing one autoregressive draft step. Training uses Smooth L1 regression loss on features plus cross-entropy classification losses for both the MoE and contrastive outputs, combined with weights w_cls^moe=0.1 and w_cls^const=0.05.",
+          "theory": null,
+          "experiments": "Evaluated on Vicuna (7B/13B/33B), LLaMA2-chat (7B/13B/70B), LLaMA3-Instruct (8B/70B) across MT-bench, HumanEval, GSM8K, Alpaca, CNN/DM, and Natural Questions, in both greedy (T=0) and non-greedy (T=1) modes. Compared against SpS, Medusa, Hydra, Eagle1, Eagle2. Hardware: AMD MI250-64G, NVIDIA A40-45G, A100-40G; batch size 1. Training uses ShareGPT (68k dialogues), AdamW, lr 9e-5. Ablations on N-K MoE settings and on parallel decoding vs. contrastive mechanism components.",
+          "results": "Jakiro consistently beats Eagle2 in walltime speedup. Examples: Vicuna 7B MT-bench greedy 2.99x vs Eagle2 2.75x; HumanEval 3.43x vs 3.12x; non-greedy mean 2.84x vs 2.46x (15.4% improvement). On MT-bench non-greedy (A100), Jakiro reaches up to 3.86x (Vicuna 7B) and 3.45x (LLaMA2-chat 70B). Average acceptance length τ is comparable to or higher than Eagle2 (e.g., 5.68 vs 4.27 on Vicuna 7B MT-bench non-greedy). Ablations show smaller N gives higher speedup (N=K=2 best on Vicuna 7B); parallel decoding + contrastive each individually help and combine well.",
+          "limitations": "Authors note that increasing N improves acceptance length but raises compute; further hardware-aware optimization is future work. Parallel decoding currently limited to last 2 steps (K=2); generalization to last K steps left as future work. Strict top-1 greedy tasks (HumanEval, GSM8K) show smaller gains in acceptance length compared to Eagle2.",
+          "conclusion": "Jakiro introduces MoE-based decoupled multi-head drafting plus hybrid autoregressive/parallel decoding with feature contrastive mechanism, achieving new SOTA speedups in lossless speculative decoding across multiple LLMs, tasks, and hardware platforms."
+        },
+        "main_claims": [
+          "Candidates at the same draft-tree layer in prior SD methods are derived from the same representation, limiting diversity.",
+          "MoE-based decoupled multi-head drafting increases candidate diversity while preserving lossless verification.",
+          "A hybrid inference strategy (autoregressive then parallel decoding) plus a feature-level contrastive mechanism between two activated experts further improves speedup.",
+          "Jakiro achieves SOTA walltime speedups (e.g., up to 3.86x on MT-bench non-greedy) over Eagle2 and other baselines across diverse models, tasks, and GPUs."
+        ],
+        "key_contributions": [
+          "First to use MoE for dynamic intra-layer decoupling in speculative draft tree construction.",
+          "Hybrid inference strategy combining autoregressive and parallel decoding, with contrastive mechanism on features between top-2 experts.",
+          "Comprehensive benchmarking across Vicuna, LLaMA2-chat, LLaMA3-Instruct on multiple datasets, hardware (MI250, A40, A100), and temperatures, demonstrating SOTA results."
+        ],
+        "experimental_results": [
+          "Vicuna 7B greedy MT-bench: Jakiro 2.99x vs Eagle2 2.75x; HumanEval 3.43x vs 3.12x; mean across 6 datasets 2.88x vs 2.62x.",
+          "Vicuna 7B non-greedy (T=1) mean speedup: Jakiro* 2.84x vs Eagle2 2.27x (~15.4% gain) on MI250; up to 3.86x on MT-bench on A100.",
+          "LLaMA2-chat 70B non-greedy: Jakiro* mean 3.50x vs Eagle2 2.90x on MI250.",
+          "Average acceptance length τ on MT-bench non-greedy generally higher for Jakiro (e.g., 5.68 on Vicuna 7B vs 4.27 Eagle2).",
+          "Ablation: N=K=2 yields best speedup (2.92x MT-bench) vs N=5,K=2 (2.67x), although larger N gives slightly higher τ.",
+          "Ablation: Combining parallel decoding + contrastive mechanism gives best speedup (2.99x MT-bench Vicuna 7B greedy), with each component individually helping over MoE-alone baseline (2.92x).",
+          "Results consistent across MI250, A40, A100 hardware, demonstrating transferability."
+        ],
+        "assumptions_and_limitations": [
+          "Experiments use batch size 1, following prior SD work; throughput-oriented settings not evaluated.",
+          "Parallel decoding limited to last 2 steps in current work; extension to K>2 left as future work.",
+          "Strict lossless guarantee assumed for greedy and non-greedy via standard speculative sampling acceptance criterion.",
+          "Training requires preprocessing of ShareGPT data (68k dialogues); draft head adds 0.35B–1.87B parameters depending on target model.",
+          "Average acceptance length gains over Eagle2 are small or even slightly worse in greedy mode; gains come mainly from reduced number of draft steps.",
+          "Hardware-aware/algorithmic MoE cost mitigation not explored."
+        ],
+        "figures_tables": [
+          "Figure 1: Conceptual comparison of SD, Medusa, Eagle, and Jakiro decoding pipelines.",
+          "Figure 2: Bar chart of speedup ratios (Eagle1/Eagle2/Jakiro) across 7 models on MT-bench non-greedy on A100.",
+          "Figure 3: Architecture comparison of Eagle vs Jakiro draft models and resulting draft trees with token scores.",
+          "Figure 4: Construction of the tree attention mask for Jakiro's MoE draft tree.",
+          "Figure 5: Contrastive mechanism between top-1 and top-2 expert outputs through the LLM head.",
+          "Figure 6 (Appendix): Average acceptance length comparison on MT-bench non-greedy.",
+          "Figure 7 (Appendix): Vicuna 7B speedups across MI250, A40, A100.",
+          "Table 1: Main results on MI250: speedup and τ on 6 datasets, multiple models, both temperatures.",
+          "Table 2: Results for LLaMA3-Instruct 8B/70B, Vicuna 33B, LLaMA2-chat 70B (T=0).",
+          "Table 3: Ablation over N-K MoE settings on Vicuna 7B.",
+          "Table 4: Ablation isolating parallel decoding and contrastive mechanism contributions.",
+          "Tables 5–6 (Appendix): Replicated results on A40 and A100."
+        ],
+        "equations_algorithms": [
+          "Eqs. 1–5: MoE draft head computation — attention residual u_i, expert gating scores s_{j,i} via softmax of u_i·e_j, sparse top-K gating g_{j,i}, mixed output f_i, and two logits (left/right) from top-1 and top-2 experts.",
+          "Eqs. 6–8: Contrastive feature combination f_const = β f^top1 − α f^top2 with learnable α, β, fed through shared LM head along with f_moe.",
+          "Eqs. 9–14: Training loss combining Smooth-L1 feature regression (moe and const) and cross-entropy on next-token logits, weighted by w_cls^moe=0.1 and w_cls^const=0.05.",
+          "Implicit algorithm: Hybrid drafting — autoregressive MoE drafting for first γ−1 steps, parallel decoding at step γ−1 via contrastive head, followed by target-model verification on the MoE-built tree."
+        ]
+      },
+      "usage": {
+        "input_tokens": 354,
+        "output_tokens": 3927,
+        "cache_creation_input_tokens": 50176,
+        "cache_read_input_tokens": 0
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_1": {
+      "parsed": {
+        "field_and_subfield": "Efficient large language model inference; speculative decoding for autoregressive LLMs.",
+        "problem_addressed": "Existing speculative decoding methods (Medusa, Hydra, Eagle1/2) generate multiple candidate tokens at the same draft-tree layer from a single shared feature representation, which couples those candidates and limits prediction diversity and overall draft accuracy, capping achievable speedup.",
+        "research_question": "Can intra-layer decoupling of draft candidates via a Mixture-of-Experts head, combined with a hybrid autoregressive/parallel decoding strategy and a feature-level contrastive mechanism between activated experts, improve speculative decoding speedup while preserving the target model's output distribution?",
+        "one_paragraph_summary": "Jakiro is a speculative decoding method that replaces the single MLP in an Eagle-style draft model with an MoE layer whose top-2 experts produce two decoupled candidate logits distributions, used to construct a draft tree with intra-layer diversity. To reduce drafting cost, a hybrid strategy uses autoregressive drafting for the first γ−1 steps and parallel decoding at the penultimate step via a learned linear contrast (β f^top1 − α f^top2) over the two activated experts' hidden features, motivated by contrastive decoding. The draft head is trained on ShareGPT with combined Smooth-L1 feature regression and cross-entropy classification losses for both MoE and contrastive outputs. Across Vicuna (7B/13B/33B), LLaMA2-chat (7B/13B/70B), and LLaMA3-Instruct (8B/70B), on MT-bench, HumanEval, GSM8K, Alpaca, CNN/DM, and Natural Questions, and on MI250/A40/A100 GPUs with batch size 1, Jakiro reports walltime speedups exceeding Eagle2 (e.g., 2.99x vs 2.75x greedy MT-bench Vicuna 7B; up to 3.86x non-greedy on A100), with average acceptance lengths matching or exceeding Eagle2. Ablations isolate the contributions of MoE size, parallel decoding, and the contrastive mechanism.",
+        "problem_statement": "Speculative decoding accelerates LLM inference by drafting tokens with a small model and verifying in parallel with the target, using tree-based attention to expand candidates. However, when all candidates within a tree layer derive from the same hidden representation, their predictions are correlated, reducing the effective acceptance rate of multi-candidate trees, especially under non-greedy sampling. The challenge is to increase intra-layer candidate diversity and overall draft accuracy without inflating draft-model compute or violating lossless verification.",
+        "main_contributions": [
+          "Proposes MoE-based dynamic decoupling for draft-tree construction: top-2 experts produce two intra-layer logits distributions, increasing candidate diversity while keeping inference cost low via sparse gating (K=2 activated experts).",
+          "Introduces a hybrid inference strategy that drafts initial tokens autoregressively and uses parallel decoding at the penultimate step, with a feature-level contrastive mechanism (learnable β,α) between the top-2 expert hidden states fed through the shared LM head.",
+          "Provides a training recipe combining Smooth-L1 feature regression losses and cross-entropy classification losses for both MoE and contrastive heads, trained on ShareGPT and reusing target-model embedding and LM head.",
+          "Extensive empirical evaluation across 7 target models, 6 benchmarks, both greedy and non-greedy modes, and three GPU platforms (MI250, A40, A100), reporting consistent speedup improvements over Eagle1/Eagle2 and Medusa/Hydra/SpS baselines."
+        ],
+        "claim_evidence_map": [
+          {
+            "claim": "Intra-layer candidates in prior tree-based SD methods are coupled because they share the same feature representation.",
+            "evidence_in_paper": "Sections 1 and 2.3 argue Medusa heads share the last hidden state and Eagle's top-k tokens at the same draft-tree layer come from the same feature; Figure 1 contrasts these designs. No quantitative measurement of 'coupling' is provided beyond this qualitative argument."
+          },
+          {
+            "claim": "MoE-based decoupling increases candidate diversity and draft accuracy.",
+            "evidence_in_paper": "Eqs. 1–5 define top-K MoE gating that routes each token to two experts producing distinct logits. Empirically, Table 1 and Figure 6 show higher average acceptance length τ for Jakiro on non-greedy MT-bench (e.g., 5.68 vs 4.27 on Vicuna 7B). No direct measurement of inter-expert prediction diversity is reported."
+          },
+          {
+            "claim": "Hybrid autoregressive + parallel decoding with feature contrastive mechanism improves speedup without harming acceptance rate.",
+            "evidence_in_paper": "Eqs. 6–8 define f_const = β f^top1 − α f^top2 used for the penultimate parallel-decoded step. Ablation Table 4 (Vicuna 7B, T=0) shows w/o both 2.92x, w/o PD 2.98x, w/o Const 2.98x, full Jakiro 2.99x on MT-bench, with similar τ values."
+          },
+          {
+            "claim": "Jakiro achieves SOTA walltime speedups over Eagle2 and other baselines across models, tasks, and hardware.",
+            "evidence_in_paper": "Tables 1, 2, 5, 6 and Figures 2, 7 report mean speedups higher than Eagle2 (e.g., Vicuna 7B greedy mean 2.88x vs 2.62x on MI250; non-greedy mean 2.84x vs 2.27x with Jakiro*; A100 MT-bench up to 3.86x). Results 'averaged over four inference runs' but no standard deviations or significance tests are reported."
+          },
+          {
+            "claim": "Method preserves the target LLM's output distribution (lossless).",
+            "evidence_in_paper": "Section 2.1 reuses the standard speculative-sampling acceptance criterion min(1, p/q) and rejection resampling from Leviathan et al. (2023); Jakiro is described as using the same verification, so losslessness is inherited rather than re-proved. No new theoretical statement is given."
+          },
+          {
+            "claim": "Smaller N (number of candidate experts) yields better walltime speedup despite slightly lower τ.",
+            "evidence_in_paper": "Table 3 ablation on Vicuna 7B: N=2,K=2 gives 2.92x MT-bench, 3.36x HumanEval, the best speedups; larger N (5) gives marginally higher τ but lower speedup, indicating MoE compute overhead. Only one model (Vicuna 7B) is used for this ablation."
+          },
+          {
+            "claim": "Method generalizes across hardware platforms.",
+            "evidence_in_paper": "Figure 7 and Tables 5–6 show consistent ordering Jakiro > Eagle2 > Eagle1 on MI250, A40, and A100 for Vicuna 7B (and other models in A40/A100 tables). Absolute speedups vary by device (A100 generally higher)."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4166,
+        "output_tokens": 2539,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 50176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_2": {
+      "parsed": {
+        "sections": [
+          {
+            "name": "Abstract",
+            "summary": "Introduces Jakiro, which uses MoE-based decoupled multi-head drafting plus a hybrid autoregressive/parallel decoding strategy with feature-level contrastive mechanism, claiming SOTA speedups in speculative decoding.",
+            "key_claims": [
+              "Candidates at the same draft-tree step in prior SD are derived from the same representation, limiting diversity.",
+              "MoE-based decoupling improves prediction accuracy and overall speedup.",
+              "Hybrid autoregressive + parallel decoding with contrastive features further boosts performance."
+            ],
+            "supporting_evidence": [
+              "Forward references to experiments showing higher speedups (Figure 2)."
+            ],
+            "issues": [
+              "Abstract conflates 'prediction accuracy' with 'acceptance length'/'speedup' without distinguishing them; later results show acceptance length is sometimes lower than Eagle2 in greedy mode.",
+              "Claim of 'significantly boosts prediction accuracy' is not precisely defined."
+            ],
+            "missing_information": [
+              "No quantitative headline result in the abstract.",
+              "No mention of additional parameter cost (0.35B–1.87B) or training data scale."
+            ],
+            "ambiguous_or_unsupported": [
+              "'Effectively decoupling correlations among candidates' is asserted but the abstract does not quantify decoupling."
+            ]
+          },
+          {
+            "name": "Introduction",
+            "summary": "Motivates SD, reviews Medusa-style and Eagle-style limitations (shared hidden state / intra-layer top-k coupling), and proposes Jakiro's MoE decoupling and hybrid decoding strategy.",
+            "key_claims": [
+              "Medusa's heads share the same final hidden state, causing incomplete decoupling.",
+              "Eagle's top-k tokens within the same draft-tree layer remain coupled.",
+              "MoE-based decoupling can address these and improve speedup with minimal cost."
+            ],
+            "supporting_evidence": [
+              "Figure 1 illustrates the conceptual differences between methods.",
+              "Figure 2 shows speedup comparisons on MT-bench non-greedy."
+            ],
+            "issues": [
+              "The notion of 'coupling' between intra-layer candidates is described informally; no formal metric or measurement is provided.",
+              "Claim that MoE introduces 'minimal computational cost' is asserted but not quantified here (and tables show smaller N actually performs better in speedup, contradicting the framing).",
+              "Figure 2 shows Eagle1 numbers that contradict the original Eagle paper's reported numbers (e.g., LLaMA3-instruct 8B Eagle1 at only 1.67x); these are reproductions but the discrepancy is not discussed."
+            ],
+            "missing_information": [
+              "No discussion of why MoE specifically (vs. other diversity-inducing mechanisms like dropout or noise injection) is the right tool.",
+              "No description of how draft step count changes (γ vs γ−1) and how that compounds with tree size."
+            ],
+            "ambiguous_or_unsupported": [
+              "'Dynamic decoupling' is used as a marketing term without precise definition.",
+              "Contrastive mechanism is said to 'improve helpfulness of predictions' without defining 'helpfulness'."
+            ]
+          },
+          {
+            "name": "Related Work",
+            "summary": "Surveys speculative decoding (Stern, Sun, Leviathan, Chen, SpecInfer, Medusa, Hydra, Eagle1/2), MoE (Jacobs, Jordan, GShard, Switch, StableMoE, OpenMoE), and parallel decoding (Mask-Predict, multi-token, PaSS, SPACE).",
+            "key_claims": [
+              "Eagle decouples temporal but not intra-layer dependencies; Jakiro fills this gap.",
+              "MoE has been used for specialization but not for SD draft heads.",
+              "Parallel decoding for SD is under-explored and faces alignment issues."
+            ],
+            "supporting_evidence": [
+              "References to prior literature."
+            ],
+            "issues": [
+              "Does not engage with closely related multi-token prediction work (Gloeckle et al.) in detail beyond a single sentence — the relationship to Jakiro's parallel-decoded last step is not clarified.",
+              "Comparison to SCMoE (Shi et al., 2024) is only briefly mentioned in the introduction, not in related work.",
+              "No discussion of other draft-tree diversity methods (e.g., sampling-based variants)."
+            ],
+            "missing_information": [
+              "No quantitative positioning of Jakiro vs PaSS / SPACE / Hydra in terms of design space."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that prior parallel-decoding SD methods 'face challenges in achieving perfect alignment' is not substantiated with specific evidence."
+            ]
+          },
+          {
+            "name": "Method",
+            "summary": "Replaces the MLP in the Eagle draft decoder with an MoE layer (N experts, K=2 activated). Top-2 experts produce two logits distributions used as 'decoupled' siblings in the draft tree. For the penultimate step, a contrastive feature f_const = β f^top1 − α f^top2 is used for parallel decoding. Training uses Smooth-L1 regression + cross-entropy losses for both moe and const heads.",
+            "key_claims": [
+              "MoE heads dynamically allocate experts, decoupling token predictions across siblings while maintaining lossless verification.",
+              "Contrastive mechanism on hidden features (not logits) brings draft predictions closer to target top-1.",
+              "Same expert weights serve both non-greedy MoE mode and greedy contrastive mode."
+            ],
+            "supporting_evidence": [
+              "Equations 1–14 formalize the computation and training loss.",
+              "Figures 3, 4, 5 illustrate the draft model, tree mask, and contrastive mechanism."
+            ],
+            "issues": [
+              "Section 3.1.2 claim that 'expert with larger score is placed on the left, smaller on the right' makes the two siblings still deterministically derived from the same hidden state u_i and same router scores — the 'decoupling' is only at the expert MLP level. The paper does not measure how much this actually decouples predictions.",
+              "Equation (3) computes a single mixed feature f_i, but Equation (4) suggests two separate logits using s^top1 f_i and s^top2 f_i — the formulation is inconsistent: is f_i a single mixed feature or are there per-expert features f^top1, f^top2 (as in Eqs. 6–7)? Notation conflict between f_i and f^top1/f^top2.",
+              "The 'tree attention mask' description in Figure 4 references token IDs and rankings (0,1,2,3,4,5,7,8) but the construction algorithm is not fully described in text.",
+              "How greedy mode uses 'the same weights' but two different inference paths (MoE vs contrastive) is plausible but not rigorously justified — α, β are learned, raising the question of whether they are trained jointly under both modes.",
+              "Loss equation L^const_reg uses f^p_{i+2} as target, implying parallel decoding predicts two steps ahead from one feature, but how this preserves the lossless property under standard SD acceptance is not explained.",
+              "Claim that the contrastive mechanism 'introduces almost no additional latency' is asserted but not measured."
+            ],
+            "missing_information": [
+              "No description of router initialization or load-balancing loss for MoE, which typically affects MoE training stability.",
+              "No analysis of expert specialization (do different experts actually attend to different token patterns?).",
+              "No proof or argument that the MoE-tree construction preserves the lossless guarantee of speculative sampling — only inherited by analogy to Eagle.",
+              "No description of how K>2 would interact with the tree attention mask design.",
+              "No mention of parameter count of the MoE layer itself."
+            ],
+            "ambiguous_or_unsupported": [
+              "'Dynamic decoupling' remains underspecified — the routing is per-token and selects K=2 experts, but the two sibling candidates always come from the same router decision.",
+              "The phrase 'weighted decoupling' vs 'weighted non-decoupling' (used to distinguish Jakiro vs Jakiro*) is introduced only in table captions and never defined in the method section."
+            ]
+          },
+          {
+            "name": "Experiments",
+            "summary": "Benchmarks Jakiro on Vicuna 7B/13B/33B, LLaMA2-chat 7B/13B/70B, LLaMA3-Instruct 8B/70B across MT-bench, HumanEval, GSM8K, Alpaca, CNN/DM, Natural Questions, in T=0 and T=1 modes, on MI250/A40/A100. Ablations on N-K and on parallel decoding / contrastive components.",
+            "key_claims": [
+              "Jakiro consistently beats Eagle2 in walltime speedup across models and benchmarks.",
+              "Up to 15.4% improvement over Eagle2 on Vicuna 7B non-greedy.",
+              "Results are robust across hardware (MI250, A40, A100)."
+            ],
+            "supporting_evidence": [
+              "Tables 1, 2, 5, 6 with speedup and τ across many models and datasets.",
+              "Figures 2, 6, 7 with bar-chart summaries."
+            ],
+            "issues": [
+              "Reported Eagle1 numbers in some places diverge sharply from the original paper (e.g., LLaMA3-instruct 8B Eagle1 1.67x on A100), and the paper attributes this to 'reproduction' without further explanation or seed/variance discussion.",
+              "Only single-batch (bs=1) experiments — limits applicability to deployment scenarios with larger batch sizes, especially relevant for MoE which has well-known throughput tradeoffs.",
+              "Number of inference runs is stated as 'four', but no standard deviation, confidence intervals, or significance tests are reported, making small differences (e.g., 2.99x vs 2.98x in ablation) hard to interpret.",
+              "Tables 1 and 5/6 contain inconsistencies: e.g., for L2 7B greedy on A100 (Table 6), Jakiro mean τ=4.51 < Eagle2 τ=4.63 and speedup 3.05x < Eagle2 3.10x — i.e., Jakiro loses on this configuration, contradicting the 'consistently outperforms' narrative. This is not discussed.",
+              "Jakiro* (with MoE-tree decoupling, no contrastive) is only reported for T=1, while Jakiro (with contrastive, non-decoupled tree) is the default for T=0; the rationale for not reporting Jakiro* in greedy or Jakiro in non-greedy across all settings is unclear.",
+              "On HumanEval at T=1, Jakiro* often performs worse than both Jakiro and Eagle2 (e.g., Vicuna 7B: Jakiro* 2.48x vs Jakiro 2.92x vs Eagle2 2.64x), suggesting the MoE-tree hurts code generation, but this is not analyzed."
+            ],
+            "missing_information": [
+              "No measurement of draft-step count or actual draft-model latency overhead per step.",
+              "No throughput results.",
+              "No analysis of memory overhead from MoE experts.",
+              "No measurement of how often each expert is selected (load balancing).",
+              "Ablation does not include 'MoE without parallel decoding' vs 'MLP head + parallel decoding' to isolate the MoE contribution per se."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that 'Jakiro excels across both code generation and natural language tasks' is contradicted by the HumanEval Jakiro* results.",
+              "The 15.4% improvement number is on a single model/setting; presented as headline but not generalized in the text."
+            ]
+          },
+          {
+            "name": "Ablation Study",
+            "summary": "Two ablations: (1) N–K configuration on Vicuna 7B (T=0); (2) effect of parallel decoding (PD) and contrastive mechanism (Const).",
+            "key_claims": [
+              "N=K=2 yields the highest speedup despite smaller τ than larger N configurations.",
+              "PD and Const each provide modest improvement; combining both is best."
+            ],
+            "supporting_evidence": [
+              "Table 3 and Table 4."
+            ],
+            "issues": [
+              "The N-K ablation shows that increasing N decreases speedup and only marginally increases τ — this somewhat undermines the motivation for MoE diversity, since the gains plateau or reverse.",
+              "Table 4 shows extremely small differences (2.92x vs 2.98x vs 2.99x) without variance — the claimed superiority of full Jakiro over partial ablations is within plausible noise.",
+              "Ablations only on Vicuna 7B at T=0; the non-greedy regime (where MoE is claimed most beneficial) is not ablated.",
+              "No ablation on the number K of activated experts (only N varies, K fixed at 2).",
+              "No ablation on the contrastive coefficients α, β (learned vs fixed)."
+            ],
+            "missing_information": [
+              "No ablation comparing against a non-MoE Eagle baseline trained with the same hybrid PD strategy, which would isolate MoE's contribution.",
+              "No ablation on weighting hyperparameters w^moe_cls=0.1, w^const_cls=0.05."
+            ],
+            "ambiguous_or_unsupported": [
+              "Statement that 'combining both mechanisms further unleashes the potential of Jakiro' is supported by ~0.01x speedup differences without significance testing."
+            ]
+          },
+          {
+            "name": "Conclusion",
+            "summary": "Restates contributions: MoE-decoupled drafting + hybrid autoregressive/parallel decoding with feature contrast, achieving SOTA SD speedups.",
+            "key_claims": [
+              "Jakiro improves prediction confidence, diversity, and factuality.",
+              "Demonstrates SOTA speedup across tasks and model sizes."
+            ],
+            "supporting_evidence": [
+              "Refers to experimental results."
+            ],
+            "issues": [
+              "Mentions 'factuality' as a contribution but the paper does not evaluate factuality or hallucination directly.",
+              "No discussion of limitations or negative results."
+            ],
+            "missing_information": [
+              "Future work mentioned only in passing (K>2 extension); no roadmap."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim of improved 'factuality' is unsupported by any experiment in the paper."
+            ]
+          },
+          {
+            "name": "Supplementary",
+            "summary": "Appendix A contains acceptance-length figure (Fig. 6), speedup comparisons across hardware (Fig. 7), and full tables for A40 and A100 (Tables 5, 6).",
+            "key_claims": [
+              "Jakiro achieves the highest acceptance length on MT-bench non-greedy.",
+              "Speedup is consistent across MI250, A40, A100."
+            ],
+            "supporting_evidence": [
+              "Figures 6, 7 and Tables 5, 6."
+            ],
+            "issues": [
+              "Table 6 (A100, T=1) shows several configurations where Jakiro* performs worse than Eagle2 (e.g., V 13B mean 2.64x Jakiro* vs 2.57x Eagle2 — only marginal gain; some sub-tasks Jakiro* is below Eagle2 like CNN/DM Vicuna 13B 1.96x vs Eagle2 2.28x). These contradictory results are not discussed.",
+              "Tables 5/6 sometimes omit Jakiro (non-*) results at T=1 for some models, making the comparison asymmetric.",
+              "Standard deviations still absent in appendix.",
+              "Figure 6 shows τ comparisons but only on MT-bench non-greedy; greedy-mode τ comparison (where Jakiro underperforms in some cases) is not highlighted."
+            ],
+            "missing_information": [
+              "No comparison of model size / FLOPs of Jakiro draft vs Eagle draft beyond the parameter count list in main text.",
+              "No qualitative output examples.",
+              "No training-time comparison."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim of 'consistent improvements across devices' is partially undermined by the worse-than-Eagle2 entries on A100."
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4225,
+        "output_tokens": 5758,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 50176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_3": {
+      "parsed": {
+        "claims": [
+          {
+            "claim": "Candidates within the same layer of prior tree-based SD draft trees are correlated because they derive from the same feature representation, which limits prediction accuracy.",
+            "category": "novelty",
+            "evidence_in_paper": "Sections 1 and 2.3 argue Medusa heads share the last hidden state and Eagle's top-k tokens at the same draft-tree layer derive from the same feature; Figure 1 visually contrasts the designs.",
+            "evidence_strength": "weak",
+            "notes": "Argument is qualitative; no quantitative measurement of intra-layer correlation/diversity is provided to substantiate the framing motivating the entire approach."
+          },
+          {
+            "claim": "Replacing the draft MLP with an MoE layer (top-2 experts) achieves dynamic intra-layer decoupling and increases candidate diversity.",
+            "category": "novelty",
+            "evidence_in_paper": "Eqs. 1–5 describe top-K MoE routing with K=2, producing two distinct logits distributions per layer; Figure 3 illustrates the construction.",
+            "evidence_strength": "weak",
+            "notes": "Diversity is asserted via the architecture but never directly measured (e.g., divergence between experts, token-set overlap). The 'decoupling' claim is structural, not empirical."
+          },
+          {
+            "claim": "Jakiro achieves higher walltime speedups than Eagle2 and other speculative decoding baselines across models, tasks, and hardware.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Tables 1, 2, 5, 6 and Figures 2, 7 report mean speedups exceeding Eagle2 (e.g., Vicuna 7B greedy mean 2.88x vs 2.62x on MI250; non-greedy mean 2.84x vs 2.27x with Jakiro* on MI250; A100 MT-bench up to 3.86x).",
+            "evidence_strength": "strong",
+            "notes": "Coverage is broad across 7 target models, 6 benchmarks, 3 GPUs. However, no standard deviations, confidence intervals, or significance tests are reported despite averaging 'over four inference runs'. Comparisons are limited to Eagle1/Eagle2 (Medusa/Hydra/SpS only on Vicuna 7B); recent SD methods (e.g., Kangaroo, Glide, Sequoia, REST) are not compared."
+          },
+          {
+            "claim": "Jakiro maintains the target model's output distribution (lossless acceleration).",
+            "category": "theoretical",
+            "evidence_in_paper": "Section 2.1 reuses the standard speculative-sampling acceptance criterion from Leviathan et al. (2023); the paper states Jakiro uses the same verification.",
+            "evidence_strength": "strong",
+            "notes": "Inherits losslessness from standard speculative sampling because verification is unchanged; no new proof needed. Reasonable as stated."
+          },
+          {
+            "claim": "The hybrid autoregressive+parallel decoding with feature contrastive mechanism improves speedup without harming the acceptance rate.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Ablation Table 4 (Vicuna 7B, T=0): w/o both 2.92x, w/o PD 2.98x, w/o Const 2.98x, full 2.99x on MT-bench; similar pattern on other tasks.",
+            "evidence_strength": "weak",
+            "notes": "Magnitude of improvement from PD+Const is very small (0.07x speedup over 'w/o both' on MT-bench), and the ablation is reported only on Vicuna 7B at T=0. The marginal effect contrasts with the strong rhetorical emphasis placed on these components."
+          },
+          {
+            "claim": "Smaller N (number of MoE candidate experts) yields better walltime speedup despite lower τ, due to MoE compute overhead.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 3 on Vicuna 7B shows N=2,K=2 gives best speedups (2.92x MT-bench) while larger N gives marginally higher τ but lower speedup.",
+            "evidence_strength": "weak",
+            "notes": "Reported only on Vicuna 7B at T=0; conclusion may not generalize. Also undermines the 'MoE diversity' motivation: best results occur with N=2, which is effectively two fixed experts rather than a true mixture."
+          },
+          {
+            "claim": "Jakiro generalizes consistently across hardware platforms (MI250, A40, A100).",
+            "category": "generalization",
+            "evidence_in_paper": "Figure 7 and Tables 5–6 show Jakiro > Eagle2 ordering on three GPUs for Vicuna 7B and several other models.",
+            "evidence_strength": "strong",
+            "notes": "Cross-hardware evaluation is a notable strength; absolute speedups differ across devices but ordering is consistent."
+          },
+          {
+            "claim": "Jakiro is the first method to leverage MoE for dynamic decoupling in draft attention tree construction.",
+            "category": "novelty",
+            "evidence_in_paper": "Stated as a main contribution in Section 1.",
+            "evidence_strength": "weak",
+            "notes": "No discussion of prior work that may also have used multiple heads or branches to diversify draft predictions (e.g., Medusa/Hydra use multiple heads albeit non-MoE). The 'first' claim is plausible but unverified, and the architectural novelty over Medusa-style multi-head + Eagle-style autoregression is relatively incremental."
+          },
+          {
+            "claim": "The contrastive mechanism between top-2 expert features improves draft generation quality in greedy mode.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Section 3.2 motivates with contrastive decoding (Li et al. 2022; O'Brien & Lewis 2023) and defines f_const = β f^top1 − α f^top2 (Eq. 7).",
+            "evidence_strength": "weak",
+            "notes": "Standard contrastive decoding subtracts logits/probabilities of a weaker model; here the contrast is in hidden-feature space between two experts of similar capacity within the draft model. The theoretical justification for this being a meaningful 'contrast' is thin, and the empirical benefit in Table 4 is marginal (≤0.07x)."
+          },
+          {
+            "claim": "MoE introduces minimal additional computational cost.",
+            "category": "practical_impact",
+            "evidence_in_paper": "Section 3.1.1 asserts efficiency; Table 3 shows that larger N reduces speedup despite higher τ, indicating MoE compute is non-trivial.",
+            "evidence_strength": "weak",
+            "notes": "Trainable parameters are reported (0.35B–1.87B by model size), and Table 3 indicates compute overhead is significant enough that N=2 outperforms N=5. The claim of 'minimal' cost is somewhat overstated."
+          },
+          {
+            "claim": "Jakiro establishes a new SOTA in speculative decoding.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Abstract and Section 1 claim SOTA; supported by speedup tables vs Eagle2.",
+            "evidence_strength": "weak",
+            "notes": "SOTA is claimed only relative to Eagle1/Eagle2 (and Medusa/Hydra/SpS on Vicuna 7B). Many recent SD methods (Kangaroo, Sequoia, Glide, REST, etc.) are not compared. The SOTA claim is overstated given the limited baseline set."
+          },
+          {
+            "claim": "Jakiro is particularly effective in non-greedy sampling scenarios.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 1 (T=1) and Figure 2 show Jakiro* achieves notable gains in non-greedy mode (e.g., Vicuna 7B 2.84x vs Eagle2 2.27x mean on MI250; A100 3.86x on MT-bench).",
+            "evidence_strength": "strong",
+            "notes": "Non-greedy gains are the most pronounced and best support the central diversity argument. However, gains in greedy mode are smaller, somewhat undermining the universality of the approach."
+          }
+        ],
+        "unsupported_claims": [
+          "Intra-layer candidate predictions in Eagle/Medusa are 'coupled' in a way that quantitatively limits accuracy (no diversity metric reported).",
+          "MoE 'effectively decouples correlations among predictions' (asserted architecturally but never measured).",
+          "The contrastive mechanism between two similarly-capable expert features functions as 'contrastive decoding' in the sense of prior work that contrasts strong vs. weak models.",
+          "Jakiro represents a 'new SOTA in speculative decoding' (only Eagle1/Eagle2 and Medusa/Hydra/SpS are compared; many recent SD methods are not benchmarked)."
+        ],
+        "overstated_claims": [
+          "'Minimal computational cost' of MoE — Table 3 shows non-trivial compute overhead such that smaller N is preferred for walltime.",
+          "Strong emphasis on the contrastive mechanism + parallel decoding contributions, while the ablation (Table 4) shows only ~0.07x mean speedup improvement from combining them.",
+          "'First to propose leveraging MoE for dynamic decoupling in draft attention tree construction' — claim is not adequately substantiated with discussion of related multi-head/multi-branch draft designs.",
+          "Universal 'effectiveness and robustness' across models — gains in greedy mode for some models (e.g., LLaMA2 7B on A100, where Jakiro is slightly worse than Eagle2) are not acknowledged."
+        ],
+        "claims_requiring_external_verification": [
+          "Reported Eagle1/Eagle2 baseline numbers being faithful reproductions of original results (paper reproduces from open-source code).",
+          "Whether more recent speculative decoding methods (Kangaroo, Sequoia, Glide, REST, Medusa-2, etc.) would outperform Jakiro at similar settings.",
+          "Whether the lossless property holds under the modified hybrid drafting with parallel decoding at the penultimate step (the standard verification proof assumes a specific draft distribution).",
+          "Reproducibility of walltime speedups across the three GPU platforms with the released code."
+        ]
+      },
+      "usage": {
+        "input_tokens": 2783,
+        "output_tokens": 3640,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 50176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_4": {
+      "parsed": {
+        "novelty_axes": [
+          {
+            "axis": "problem",
+            "claimed_contribution": "Framing the limitation of prior tree-based SD methods as 'intra-layer candidate coupling' — i.e., multiple top-k candidates at the same draft-tree level derive from the same feature representation and therefore lack diversity.",
+            "why_it_matters": "The whole motivation for the MoE-based decoupling rests on this framing. If the problem framing is novel and well-grounded, it justifies the architectural change.",
+            "search_keywords": [
+              "intra-layer draft tree diversity speculative decoding",
+              "candidate token coupling tree attention draft",
+              "feature uncertainty Eagle speculative decoding"
+            ],
+            "search_question": "Has prior speculative-decoding work explicitly identified and named intra-layer candidate coupling as a bottleneck for accuracy?",
+            "closest_prior_work_ref": "Eagle (Li et al. 2024a) [similar_prior_work #1]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "method",
+            "claimed_contribution": "Replacing the draft model's MLP with a top-2 MoE layer to produce two decoupled candidate logit distributions per draft step, enabling intra-layer decoupling in the draft tree.",
+            "why_it_matters": "This is the central architectural novelty claim. Its load-bearing assumption is that no prior SD method has used MoE-style routed experts in the draft head.",
+            "search_keywords": [
+              "MoE draft head speculative decoding",
+              "mixture of experts draft model LLM inference",
+              "routed experts draft head"
+            ],
+            "search_question": "Has any prior speculative-decoding method used a Mixture-of-Experts layer (with routed top-K experts) inside the draft model to generate multiple diverse candidates per step?",
+            "closest_prior_work_ref": "Medusa (Cai et al. 2024) [similar_prior_work #2] and Hydra (Ankner et al. 2024) [similar_prior_work #3]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "method",
+            "claimed_contribution": "A feature-level contrastive mechanism between the top-1 and top-2 expert outputs (f_const = β f^top1 − α f^top2) used during a parallel-decoding penultimate step.",
+            "why_it_matters": "Prior contrastive decoding (Li 2022, O'Brien & Lewis 2023, DoLa) contrasts strong-vs-weak models or different layers; contrasting two similarly-capable experts in feature space is presented as new.",
+            "search_keywords": [
+              "contrastive decoding hidden features experts MoE",
+              "self-contrastive MoE SCMoE",
+              "feature contrastive draft head speculative"
+            ],
+            "search_question": "Is contrasting two routed-expert hidden-feature outputs (rather than logits of strong/weak models or different layers) a novel use of contrastive decoding?",
+            "closest_prior_work_ref": "SCMoE (Shi et al. 2024) [similar_prior_work #4] and Contrastive Decoding (Li et al. 2022) [similar_prior_work #5]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "method",
+            "claimed_contribution": "A hybrid drafting strategy: autoregressive feature-level drafting for the first γ−1 steps and parallel decoding (via the contrastive head) for the last step, saving one draft pass relative to Eagle.",
+            "why_it_matters": "Combines Eagle-style autoregressive drafting with Medusa-style parallel multi-token prediction in a staged way. Novelty hinges on whether the staged hybrid has been proposed before.",
+            "search_keywords": [
+              "hybrid autoregressive parallel speculative decoding",
+              "Medusa Eagle hybrid drafting",
+              "multi-token prediction last step speculative"
+            ],
+            "search_question": "Has the specific scheme of autoregressive drafting for initial steps + parallel multi-token prediction for the last step been proposed in prior SD work?",
+            "closest_prior_work_ref": "PaSS (Monea et al. 2023) [similar_prior_work #6] and Medusa (Cai et al. 2024) [similar_prior_work #2]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "empirical",
+            "claimed_contribution": "New SOTA walltime speedups over Eagle2 across 7 LLMs, 6 benchmarks, and 3 GPU platforms (e.g., up to 3.86x on Vicuna-7B MT-bench non-greedy; ~15% mean gain over Eagle2 in non-greedy).",
+            "why_it_matters": "Empirical SOTA is one of the main contributions claimed; assessing genuine SOTA requires comparing to all current competitive SD methods, not just Eagle1/Eagle2.",
+            "search_keywords": [
+              "Kangaroo speculative decoding",
+              "Sequoia speculative decoding",
+              "Glide CAPE speculative decoding",
+              "REST retrieval speculative decoding",
+              "Medusa-2 speculative"
+            ],
+            "search_question": "Do other recent SD methods (Kangaroo, Sequoia, Glide+CAPE, REST, Medusa-2, EAGLE-3) report comparable or stronger speedups on the same models/tasks, and are they missing from the comparison?",
+            "closest_prior_work_ref": "Eagle-2 (Li et al. 2024b) [similar_prior_work #7]; missing comparators Kangaroo, Sequoia, Glide listed in potential_missing_citations",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "training",
+            "claimed_contribution": "Combined loss adding Smooth-L1 feature regression and cross-entropy on both the MoE output and the contrastive parallel-decoding head (Eqs. 9–14).",
+            "why_it_matters": "Training procedure novelty is needed if the additional heads require specialized losses; otherwise the training is largely Eagle-style with extra terms.",
+            "search_keywords": [
+              "Eagle speculative decoding training loss feature regression",
+              "Medusa training auxiliary head loss"
+            ],
+            "search_question": "Does the training objective add a substantively new component beyond Eagle's feature-regression + token-CE loss?",
+            "closest_prior_work_ref": "Eagle (Li et al. 2024a) [similar_prior_work #1] and Medusa (Cai et al. 2024) [similar_prior_work #2]",
+            "axis_verdict": "derivative"
+          }
+        ],
+        "novelty_axes_searched": [],
+        "similar_prior_work": [
+          {
+            "title": "EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty",
+            "venue_or_source": "arXiv:2401.15077 (ICML 2024)",
+            "year": "2024",
+            "similarity_summary": "Provides the direct architectural backbone Jakiro builds on: a one-layer decoder draft model that autoregresses at the feature level before the shared LM head, with tree-based verification. Jakiro replaces only the MLP sub-module with a top-2 MoE.",
+            "key_difference": "Eagle uses a single MLP per draft layer and a top-k token expansion at each tree node, so candidates at the same tree level share the same feature; Jakiro generates two separate feature/logit outputs per node via routed experts and adds the contrastive parallel-decoding head."
+          },
+          {
+            "title": "Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads",
+            "venue_or_source": "arXiv:2401.10774",
+            "year": "2024",
+            "similarity_summary": "Already uses multiple independent MLP heads atop the target model's last hidden state to produce parallel candidate tokens at different future positions. This is the most direct prior instance of 'multiple heads producing diverse candidates' in SD.",
+            "key_difference": "Medusa's heads predict different future time-steps from the same shared hidden state (no routing, no diversity within a single time-step at the same tree level); Jakiro's MoE produces multiple candidates for the same time-step via routed experts and adds Eagle-style autoregression across steps."
+          },
+          {
+            "title": "Hydra: Sequentially-Dependent Draft Heads for Medusa Decoding",
+            "venue_or_source": "arXiv:2402.05109",
+            "year": "2024",
+            "similarity_summary": "Extends Medusa by making the multiple draft heads sequentially dependent, partially addressing the same 'intra-step coupling' problem Jakiro targets.",
+            "key_difference": "Hydra still uses fixed (non-routed) sequential heads and does not use MoE routing or contrastive feature combination; Jakiro's contribution is specifically the routed-experts mechanism plus contrastive head."
+          },
+          {
+            "title": "Unchosen Experts Can Contribute Too: Unleashing MoE Models' Power by Self-Contrast (SCMoE)",
+            "venue_or_source": "arXiv:2405.14507",
+            "year": "2024",
+            "similarity_summary": "Performs contrastive decoding between selected and unselected experts inside an MoE LLM. Conceptually closest to Jakiro's contrast between top-1 and top-2 expert outputs.",
+            "key_difference": "SCMoE contrasts chosen vs. unchosen experts at inference of a standalone MoE LLM; Jakiro contrasts the two activated (chosen) experts' hidden features inside a draft model and uses the result to drive a parallel-decoding step in speculative decoding. The paper explicitly distinguishes itself from SCMoE on this point, but does not benchmark against it."
+          },
+          {
+            "title": "Contrastive Decoding: Open-ended Text Generation as Optimization",
+            "venue_or_source": "arXiv:2210.15097 (ACL 2023)",
+            "year": "2022",
+            "similarity_summary": "Original contrastive decoding: subtract weak-model log-probs from strong-model log-probs to improve generation.",
+            "key_difference": "Operates on logits across two different models of different capacity; Jakiro instead linearly combines hidden features of two same-capacity experts with learnable α, β. The 'contrastive' label is reused but the mechanism is markedly different (and arguably less theoretically justified)."
+          },
+          {
+            "title": "PaSS: Parallel Speculative Sampling",
+            "venue_or_source": "arXiv:2311.13581",
+            "year": "2023",
+            "similarity_summary": "Introduces parallel decoding into speculative-sampling frameworks, drafting multiple future tokens in one forward pass.",
+            "key_difference": "Pure parallel drafting without staged autoregression; Jakiro's contribution is the hybrid (autoregressive then parallel) staging plus the MoE-contrast head."
+          },
+          {
+            "title": "EAGLE-2: Faster Inference of Language Models with Dynamic Draft Trees",
+            "venue_or_source": "arXiv:2406.16858",
+            "year": "2024",
+            "similarity_summary": "Direct SOTA baseline. Adds dynamic, runtime-adaptive draft trees on top of Eagle.",
+            "key_difference": "Eagle-2 keeps a single MLP in the draft head, so intra-layer top-k tokens remain coupled. Jakiro is essentially Eagle-2 with the draft MLP replaced by MoE and an added contrastive parallel-decoding head."
+          },
+          {
+            "title": "SpecInfer: Accelerating Generative LLM Serving with Tree-based Speculative Inference and Verification",
+            "venue_or_source": "arXiv:2305.09781 (ASPLOS 2024)",
+            "year": "2023",
+            "similarity_summary": "Introduces tree-based parallel verification used by Medusa, Eagle, and Jakiro.",
+            "key_difference": "SpecInfer focuses on the verification side and uses multiple boosted small draft models for diversity, an alternative intra-layer-diversity strategy that the paper does not discuss."
+          },
+          {
+            "title": "Mixtral of Experts",
+            "venue_or_source": "arXiv:2401.04088",
+            "year": "2024",
+            "similarity_summary": "Provides the top-K routed MoE block design that Jakiro borrows verbatim (router, expert centroids, softmax gating, K=2).",
+            "key_difference": "Mixtral applies MoE inside a target LLM for capacity scaling; Jakiro repurposes the same block as a draft-model head for diversity. The reuse is direct and well-cited."
+          }
+        ],
+        "potential_missing_citations": [
+          "Kangaroo (Liu et al. 2024) — recent SD method with self-drafting that should be compared / acknowledged",
+          "Sequoia (Chen et al. 2024) — scalable, hardware-aware speculative decoding with tree construction",
+          "Glide with CAPE (Du et al. 2024) — KV-reusing draft model for SD, a relevant competitor",
+          "REST (He et al. 2024) — retrieval-based speculative decoding, an alternative diversity strategy",
+          "SpecInfer's boosted small models — relevant prior idea of using multiple draft sources to diversify candidates, only the tree-attention component is cited",
+          "Recurrent Drafter / Multi-token prediction work (Gloeckle et al. 2024) — cited only for parallel decoding, but is also a direct draft-head competitor"
+        ],
+        "novelty_type": "technical",
+        "novelty_assessment": "incremental",
+        "novelty_risk_level": "medium",
+        "rationale": "Decomposing the paper by axis: the problem framing ('intra-layer candidate coupling') is a relabeling of an issue already implicit in Medusa/Eagle and visualised in their own Figure 1 — it is sharpened rhetorically rather than newly discovered, so incremental. The core method (top-2 MoE in the draft head) is a straightforward swap of Eagle's MLP for the Mixtral MoE block; conceptually it is close to Medusa/Hydra's multi-head idea, but with routing — a useful but modest architectural recombination, and notably the best ablation setting is N=K=2 (i.e., two fixed parallel experts), which further reduces the MoE story to 'two parallel MLP heads.' The feature-level contrastive head reuses the contrastive-decoding name but operates between two similarly-capable experts in hidden-feature space (closely related to SCMoE), and the ablation shows only ~0.07× incremental speedup from it, undermining its load-bearing role. The hybrid autoregressive+parallel staging is sensible but mirrors well-known parallel-decoding ideas (PaSS, Medusa). Training is essentially Eagle's loss with two extra heads — derivative. Empirically, the speedup gains over Eagle-2 are real, replicated across hardware, and most convincing in non-greedy sampling; but the SOTA claim is undercut by missing comparisons to Kangaroo, Sequoia, Glide, REST, etc. Overall, the paper is a clean engineering recombination of three well-known ingredients (Eagle draft model + Mixtral-style MoE + contrastive decoding/parallel decoding), validated on a broad model/dataset/hardware grid. No axis carries strong conceptual novelty, but the package — especially the MoE-as-draft-head idea applied at scale with cross-hardware empirical validation — is a meaningful incremental advance rather than purely derivative.",
+        "source_of_judgment": "model_knowledge"
+      },
+      "usage": {
+        "input_tokens": 9531,
+        "output_tokens": 7008,
+        "cache_creation_input_tokens": 66952,
+        "cache_read_input_tokens": 189785
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_5": {
+      "parsed": {
+        "perspectives": {
+          "domain_expert": {
+            "add_to_field": "Introduces intra-layer decoupling of draft-tree candidates via MoE, which is a conceptually new axis of diversification orthogonal to inter-step decoupling pioneered by Eagle. Also brings contrastive decoding ideas into the draft model's feature space rather than logits.",
+            "beneficiaries": "Researchers and practitioners working on speculative decoding, particularly those building Eagle-style drafters, and teams deploying batch-1 latency-sensitive LLM serving (e.g., interactive chat, code assistants).",
+            "importance": "Speedup of speculative decoding is an actively important problem; intra-layer correlation is a real and previously underexamined limitation, so identifying and addressing it is a meaningful contribution to the subfield.",
+            "improvement_meaningful": "Yes—10–20% mean speedup over Eagle2 (the prior SOTA) across multiple models and benchmarks is a meaningful incremental gain in a mature area where Eagle2 itself was considered a strong improvement.",
+            "future_influence": "The MoE-as-decoupling-mechanism idea is likely to be reused and extended (e.g., K>2 parallel decoding, learned routing tuned for diversity) and may spark follow-up work combining MoE drafters with dynamic tree search and contrastive training."
+          },
+          "methodology_expert": {
+            "add_to_field": "Provides a concrete recipe combining MoE gating, hybrid AR+parallel drafting, and feature-level contrastive prediction with a multi-term Smooth-L1 + CE loss. The use of learnable β, α to contrast top-1 and top-2 expert features is a small but novel methodological piece.",
+            "beneficiaries": "Method designers building speculative drafters; researchers studying contrastive decoding and MoE routing under tight latency constraints.",
+            "importance": "Addresses an identified bottleneck (shared-feature coupling) with a principled architectural change. The methodological framing (decouple intra-layer, complement Eagle's inter-step decoupling) is clean.",
+            "improvement_meaningful": "Methodologically meaningful but each component is incremental; the contrastive feature mechanism's contribution is small in ablations (2.98x→2.99x), and the MoE itself is a fairly standard top-2 sparse gate.",
+            "future_influence": "Could influence how draft models are architected (small MoE drafters), and how contrastive training is integrated into draft-model objectives. The hybrid AR+parallel scheme is a reusable design pattern."
+          },
+          "empirical_evaluation_expert": {
+            "add_to_field": "Broad empirical sweep: 7 target models, 6 benchmarks, three GPU platforms, both greedy and non-greedy modes—one of the more comprehensive evaluations in recent SD papers.",
+            "beneficiaries": "Practitioners selecting SD methods can use these tables as a fairly thorough comparative reference.",
+            "importance": "Empirically validates that the proposed design transfers across scales (7B–70B) and hardware, which is non-trivial.",
+            "improvement_meaningful": "Gains over Eagle2 are consistent but modest in greedy mode (~5–10%); larger in non-greedy mode (up to 15–20% mean, and the Jakiro* variant shows larger jumps on A100). However, no standard deviations, no statistical tests, occasional inconsistencies (e.g., some tables show Jakiro slightly worse than Eagle2 on certain rows), and τ sometimes decreases while speedup increases, complicating interpretation.",
+            "future_influence": "Sets a higher empirical bar for future SD work, but the lack of variance reporting and the Jakiro vs Jakiro* split (different tree-construction variants chosen per setting) make rigorous comparison harder for follow-ups."
+          },
+          "skeptical_reviewer": {
+            "add_to_field": "Adds a clever architectural twist, but the core claim—that intra-layer coupling is a key bottleneck—is supported only qualitatively. No direct measurement of candidate diversity or correlation is provided to substantiate the mechanism story.",
+            "beneficiaries": "Mainly the SD-research community; less obvious benefit for general LLM users since the gains are incremental walltime improvements over an already-strong baseline.",
+            "importance": "Important within the narrow SD niche, but speculative decoding's broader importance is bounded—it's batch-1 latency optimization, which is a specific deployment regime.",
+            "improvement_meaningful": "Mixed. Ablation Table 4 shows the contrastive + parallel decoding components contribute only ~0.07x over MoE-only (2.92x→2.99x), suggesting most gains come from MoE alone. The 'Jakiro*' variant—which actually produces the headline 3.86x numbers—is essentially a different method (decoupled tree without contrastive), raising questions about which configuration is 'the' contribution. Losslessness is inherited rather than re-verified, and N=2,K=2 (which is just two experts always activated) is essentially a dual-head design, not really MoE in the conventional sense.",
+            "future_influence": "Likely cited as an incremental improvement on Eagle2. Whether the specific MoE-as-decoupling framing endures depends on whether future work shows it scales beyond two experts, which the paper does not demonstrate (Table 3 shows N>2 hurts walltime)."
+          },
+          "practical_impact_expert": {
+            "add_to_field": "Demonstrates an additional 10–30% walltime improvement over Eagle2 with negligible additional training cost (2–3 days for 70B drafter) and small parameter overhead, while preserving losslessness.",
+            "beneficiaries": "LLM inference serving providers, on-device deployment teams, and any latency-sensitive product using Vicuna/LLaMA-family targets. Open-source code release lowers adoption barriers.",
+            "importance": "For batch-1 latency, every 10–20% gain matters in production. Solves a real, measurable problem.",
+            "improvement_meaningful": "Yes for batch-1 latency, but limited applicability to batched serving (where SD benefits diminish). Gains in greedy mode are small; the largest improvements appear in non-greedy/temperature=1 sampling, which is common in chat/creative use cases.",
+            "future_influence": "Likely to be integrated or compared against in next-generation SD systems (e.g., vLLM, TGI). The hybrid AR+parallel decoding pattern may see practical adoption even if MoE specifics are simplified."
+          }
+        },
+        "consensus": [
+          "The work addresses a real, identified limitation (intra-layer candidate coupling) in current speculative decoding and is positioned within an actively important subfield.",
+          "Empirical evaluation is broad in models, benchmarks, and hardware, and consistently shows Jakiro >= Eagle2 in mean walltime speedup.",
+          "Improvements over Eagle2 are real but incremental, with the largest gains in non-greedy sampling.",
+          "Losslessness is inherited from standard speculative sampling rather than re-proved, which is acceptable but worth noting.",
+          "The contribution will be of primary interest to the speculative-decoding research community and to latency-sensitive deployment practitioners."
+        ],
+        "disagreement": [
+          "Whether the MoE framing is genuinely novel/important (domain & methodology experts) or essentially a two-head design rebranded (skeptical reviewer), given best results come from N=K=2.",
+          "Whether the contrastive mechanism is a meaningful contribution: ablations suggest only marginal gains (~0.07x), which the skeptical reviewer weighs heavily but the methodology expert sees as a useful design pattern.",
+          "Whether the headline speedups (Jakiro* up to 3.86x) reflect the same method as the main 'Jakiro' configuration or a different variant—skeptical and empirical reviewers see this as muddying the contribution; domain expert is more accepting.",
+          "How transformative the work is: practical-impact and domain experts view it as a solid step forward; the skeptical reviewer sees it as an incremental refinement of Eagle2."
+        ],
+        "significance_score_1_to_10": 6,
+        "impact_assessment": "moderate"
+      },
+      "usage": {
+        "input_tokens": 2971,
+        "output_tokens": 2840,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 50176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_6": {
+      "parsed": {
+        "problem_and_solution_formulation": {
+          "definitions_clear": [
+            "Speculative decoding pipeline (drafting/verification/refinement) is clearly defined in Section 2.1 with standard notation.",
+            "Walltime speedup ratio and average acceptance length τ are clearly defined evaluation metrics.",
+            "Medusa-style and Eagle-style baselines are summarized clearly enough to contrast with Jakiro."
+          ],
+          "assumptions_clear": [
+            "Batch size 1 inference setting is explicitly stated, following Eagle and Medusa conventions.",
+            "Target LLMs are kept fixed during training is stated.",
+            "Lossless acceleration is assumed by inheriting the speculative-sampling acceptance criterion from prior work."
+          ],
+          "derivations_algorithms_clear": [
+            "MoE routing equations (Eqs. 1–5) follow standard top-k MoE notation.",
+            "Training loss formulation (Eqs. 9–14) is explicitly given with weighting coefficients (0.1, 0.05)."
+          ],
+          "suggested_improvements_for_formulation": [
+            "Resolve the notation inconsistency between Eq. 3 (single mixed feature f_i) and Eqs. 6–7 (per-expert features f^top1, f^top2); the relationship between f_i used in Eq. 4 and f^top1/f^top2 used in Eq. 6 is unclear.",
+            "Precisely define 'dynamic decoupling' — currently the two sibling candidates always come from the same router decision and same hidden state u_i, so what is 'decoupled' beyond the expert MLP needs to be made explicit.",
+            "Clarify the difference between 'Jakiro' (no *) and 'Jakiro*' tree construction; 'weighted decoupling' vs 'weighted non-decoupling' is only introduced in table captions.",
+            "Provide an argument (or proof) that the hybrid drafting with parallel decoding at the penultimate step still satisfies the speculative-sampling lossless guarantee; standard proofs assume the draft model produces a well-defined distribution q over the predicted position.",
+            "Describe MoE router initialization, whether a load-balancing loss is used, and how K>2 would extend the tree construction.",
+            "Describe how learnable α, β are trained (jointly over both inference modes) and their typical learned values."
+          ]
+        },
+        "theoretical_support": {
+          "correct": [
+            "Inherited losslessness of speculative sampling under unchanged verification criterion (Section 2.1) is correctly stated."
+          ],
+          "partially_correct": [
+            "Claim that MoE 'decouples correlations among predictions' — structurally plausible at the expert-MLP level, but no formal definition of coupling or proof of decoupling is provided.",
+            "Claim that contrastive features f_const = β f^top1 − α f^top2 implement 'contrastive decoding' — prior contrastive decoding contrasts strong vs weak models in logit/probability space; here the contrast is between two similarly-capable experts in feature space without theoretical justification that the resulting distribution has the desired contrastive properties.",
+            "Claim that the lossless property extends to the hybrid parallel-decoding step is implicit; the paper does not prove that the parallel-decoded draft satisfies the same q(.|.) distribution assumed by Leviathan et al.'s acceptance criterion."
+          ],
+          "suggested_improvements_for_theoretical_support": [
+            "Provide either a formal proof or a careful informal argument that the parallel-decoded penultimate step preserves the lossless guarantee.",
+            "Provide a quantitative measure of 'decoupling' (e.g., KL divergence or token-set overlap between sibling experts' predictions) to substantiate the central motivation.",
+            "Theoretically situate the feature-level contrast between two similar experts relative to standard contrastive decoding's strong-vs-weak premise."
+          ]
+        },
+        "experimental_support": {
+          "supported": [
+            "Walltime speedup gains over Eagle2 on the majority of (model, benchmark, hardware) configurations in non-greedy mode are well-documented in Tables 1, 2, 5, 6 and Figures 2, 6, 7.",
+            "Cross-hardware consistency (MI250/A40/A100) is reasonably demonstrated in Figure 7 and Tables 5–6 for Vicuna 7B.",
+            "Inheritance of lossless acceleration (verification unchanged) follows directly from the speculative-sampling framework."
+          ],
+          "partially_supported": [
+            "Claim that Jakiro 'consistently outperforms' Eagle2 — Table 6 (A100, T=0) shows L2 7B with Jakiro speedup 3.05x vs Eagle2 3.10x and τ 4.51 vs 4.63; CNN/DM Vicuna 13B T=1 shows Jakiro* 1.96x vs Eagle2 2.28x; these counterexamples are not discussed.",
+            "Effectiveness of parallel decoding + contrastive mechanism (Table 4): differences (2.92x→2.99x) are within plausible run-to-run noise without reported variance.",
+            "MoE diversity rationale (N–K ablation): N=2,K=2 yields best walltime speedup, partially undermining the 'more experts → more diversity' framing; the claim is supported only in a narrow regime.",
+            "'Particularly effective in non-greedy mode' is supported by Vicuna 7B and a few other models, but for Vicuna 13B on A100 T=1 the gain is small; uniform 'effectiveness' is overstated.",
+            "HumanEval (code generation) gains: Jakiro* underperforms both Jakiro and Eagle2 on Vicuna 7B T=1 (2.48x vs 2.92x vs 2.64x), contradicting 'excels across code generation' wording."
+          ],
+          "unsupported_or_overstated": [
+            "SOTA claim — only Eagle1/Eagle2 (and Medusa/Hydra/SpS on Vicuna 7B) are compared; recent SD methods (Kangaroo, Sequoia, Glide, REST, Medusa-2, PaSS, SPACE) are not benchmarked.",
+            "Claim of improved 'factuality' in the conclusion — no factuality/hallucination evaluation is performed.",
+            "Claim that MoE introduces 'minimal computational cost' — Table 3 shows non-trivial overhead such that increasing N harms speedup despite higher τ.",
+            "Claim that 'decoupling correlations among candidates' is achieved — diversity/correlation between expert outputs is never measured.",
+            "Claim that the contrastive mechanism 'introduces almost no additional latency' — not measured."
+          ],
+          "suggested_improvements_for_claim_support": [
+            "Add direct diversity metrics (e.g., divergence or overlap between sibling expert distributions, expert utilization/load balance, expert specialization patterns).",
+            "Compare against more recent SD baselines (Kangaroo, Sequoia, Glide, REST, Medusa-2, PaSS, SPACE) to substantiate the SOTA claim.",
+            "Report standard deviation / confidence intervals over the four runs and statistical tests for close comparisons.",
+            "Add ablation isolating MoE from PD+contrastive (e.g., Eagle-style draft + PD only) to disentangle contributions.",
+            "Discuss counterexample configurations (L2 7B A100 T=0; Vicuna 13B CNN/DM T=1; HumanEval Jakiro*) explicitly.",
+            "Add throughput and memory measurements at batch size > 1 to validate practical deployment claims."
+          ]
+        },
+        "experimental_rigor": {
+          "baseline_quality": "Limited. Eagle1 and Eagle2 are the only consistently compared modern SD baselines; Medusa/Hydra/SpS appear only on Vicuna 7B T=0. The 'SOTA' claim is not adequately backed up given the omission of many recent SD methods.",
+          "missing_baselines": [
+            "Kangaroo",
+            "Sequoia",
+            "Glide",
+            "REST",
+            "Medusa-2 / Hydra-2",
+            "PaSS (Monea et al., 2023) and SPACE (Yi et al., 2024) at matched settings",
+            "An Eagle-style draft trained with the same hybrid parallel-decoding loss but without MoE, to isolate MoE's contribution",
+            "Multi-token prediction (Gloeckle et al., 2024) at comparable scale"
+          ],
+          "dataset_quality": "Reasonable; six standard benchmarks (MT-bench, HumanEval, GSM8K, Alpaca, CNN/DM, Natural Questions) covering dialogue, code, math, summarization, QA.",
+          "better_datasets": [
+            "Longer-context benchmarks to assess scaling behavior of speculative decoding",
+            "Multilingual or non-English tasks to test generality"
+          ],
+          "metric_appropriateness": "Speedup and τ are standard for SD. However, the paper occasionally conflates 'prediction accuracy' with τ or speedup without isolating the underlying acceptance probability per draft position.",
+          "better_metric": [
+            "Per-position acceptance probability curves vs draft depth",
+            "Direct measurement of draft-model latency per step and effective γ used",
+            "Expert load balance / utilization statistics for MoE",
+            "Inter-sibling diversity metric (KL or token-set overlap) to validate the 'decoupling' claim",
+            "Memory overhead and throughput at batch sizes > 1"
+          ],
+          "missing_ablations": [
+            "Ablation of contrastive mechanism components (learned α, β vs fixed; logit-space vs feature-space contrast)",
+            "Ablation of K (activated experts) with K>2",
+            "Ablation on non-greedy mode (T=1) for the PD+Const components",
+            "Ablation on loss weighting w^moe_cls=0.1, w^const_cls=0.05",
+            "Ablation isolating MoE (without PD/Const) vs Eagle baseline trained on same data",
+            "Ablation on training data size / iterations"
+          ],
+          "statistical_significance": "Absent. Although 'averaged over four inference runs' is mentioned, no standard deviations, confidence intervals, or significance tests are reported. Several headline comparisons (e.g., Table 4: 2.92x vs 2.98x vs 2.99x) are within plausible run-to-run noise.",
+          "better_significance_test_or_confidence_interval": [
+            "Report mean ± std over the four runs in all tables",
+            "Provide paired t-test or bootstrap CIs when comparing Jakiro to Eagle2 on per-prompt walltimes",
+            "Report results over more seeds, especially for the small ablation differences"
+          ],
+          "hyperparameter_clarity": "Partial. Learning rate (9e-5), optimizer (AdamW with β1,β2=0.9,0.95), gradient clip (0.5), training data size (~68k ShareGPT iterations), loss weights, and trainable parameter counts are reported. Missing: MoE router init, whether a load-balancing auxiliary loss is used, K-selection details, draft tree depth/width parameters, exact tree budget for Eagle2/Jakiro at runtime, learned values of α, β.",
+          "negative_results_discussed": "no",
+          "possible_confounders": [
+            "Reproduced Eagle1 numbers diverge substantially from the original paper (e.g., LLaMA3-instruct 8B Eagle1 at 1.67x on A100) without explanation; this could bias the speedup comparisons.",
+            "Tree budget / depth chosen for Jakiro vs Eagle2 may not be equalized, since Jakiro removes one autoregressive step and shifts to parallel decoding.",
+            "MoE adds parameters and compute; speedup comparisons could be confounded by different draft-model sizes (Jakiro draft 0.35B–1.87B; Eagle draft size is not stated in comparison).",
+            "Different GPU memory pressure across hardware and model sizes (single vs multi-GPU sharding for 33B/70B models).",
+            "Batch size = 1 limits external validity; MoE overhead behaves differently at higher batch sizes.",
+            "Run-to-run variability of walltime measurements on GPUs."
+          ],
+          "confounder_reduction_alternatives": [
+            "Match draft-model parameter count between Jakiro and Eagle baselines, or report parameter-matched controls.",
+            "Report and equalize tree budget (total nodes / depth) across methods.",
+            "Use original Eagle1/Eagle2 reported numbers in addition to in-house reproductions and explain any discrepancy.",
+            "Measure mean throughput per prompt with warmup and multiple runs; report variance explicitly.",
+            "Include batch size > 1 experiments to test deployment relevance."
+          ],
+          "reproducibility_score_1_to_10": 6,
+          "suggestions_for_improving_reproducibility": [
+            "Release training data preprocessing scripts and the exact ShareGPT split.",
+            "Release tree-budget configuration and runtime tree parameters for each model.",
+            "Specify MoE router/auxiliary-loss configuration and learned α, β values.",
+            "Provide per-run walltime numbers (not only averages) and seeds.",
+            "Document hardware-specific kernel/library versions (ROCm/CUDA, FlashAttention, PyTorch) since walltimes depend on them.",
+            "Clarify the difference and code paths for 'Jakiro' vs 'Jakiro*' tree construction."
+          ]
+        }
+      },
+      "usage": {
+        "input_tokens": 10267,
+        "output_tokens": 4715,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 50176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_7": {
+      "parsed": {
+        "strengths": [
+          "Identifies a real and previously underexamined limitation in tree-based speculative decoding: intra-layer candidate coupling due to shared feature representation, complementing Eagle's inter-step decoupling.",
+          "Proposes a clean architectural solution (MoE-based draft head with top-2 routing) that produces two distinct intra-layer logits distributions, integrated with a hybrid AR + parallel decoding scheme and a feature-level contrastive mechanism.",
+          "Broad empirical evaluation: 7 target models (7B–70B across Vicuna, LLaMA2-chat, LLaMA3-Instruct), 6 benchmarks (MT-bench, HumanEval, GSM8K, Alpaca, CNN/DM, Natural Questions), three GPU platforms (MI250, A40, A100), and both greedy and non-greedy modes.",
+          "Walltime speedups consistently meet or exceed Eagle2 in most settings, with notable gains in non-greedy sampling (e.g., up to 3.86x on A100 MT-bench), supporting the diversity-via-decoupling story.",
+          "Losslessness is preserved by inheriting the standard speculative-sampling verification criterion, and code is released, which aids adoption.",
+          "Practical contribution: small additional trainable parameters and modest training cost (2–3 days for 70B drafter on 4×A100)."
+        ],
+        "weaknesses": [
+          "The central 'decoupling' claim is asserted only architecturally and never measured empirically; no diversity metric (e.g., KL between sibling experts' distributions, token-set overlap, expert utilization) is reported to substantiate the motivating story.",
+          "Ablation Table 3 shows the best walltime is achieved at N=K=2, which is effectively a two-expert/two-head design rather than a true mixture; this undermines the 'MoE diversity' framing and the 'leveraging MoE' contribution as currently described.",
+          "The contrastive mechanism contributes only marginally in ablations (Table 4: 2.92x → 2.99x on MT-bench Vicuna 7B T=0), within plausible run-to-run noise without reported variance; yet it is positioned as a major contribution. Its theoretical justification is also weak — standard contrastive decoding contrasts strong vs. weak models in logit space, while here two similarly-capable experts are contrasted in hidden-feature space.",
+          "No standard deviations, confidence intervals, or significance tests are reported despite averaging over four runs; several headline comparisons differ by amounts plausibly within noise.",
+          "The 'SOTA' claim is overstated: comparisons are essentially limited to Eagle1/Eagle2 (with Medusa/Hydra/SpS only on Vicuna 7B). Recent SD methods (Kangaroo, Sequoia, Glide, REST, Medusa-2/Hydra-2, PaSS, SPACE, multi-token prediction) are not benchmarked.",
+          "Confusing presentation of two variants 'Jakiro' and 'Jakiro*' with different tree construction strategies, used selectively across tables; the headline 3.86x speedup comes from Jakiro*, not the main Jakiro configuration described in Section 3.",
+          "Counterexamples and negative results are not discussed: e.g., A100 T=0 LLaMA2 7B Jakiro 3.05x vs Eagle2 3.10x; Vicuna 13B CNN/DM T=1 Jakiro* 1.96x vs Eagle2 2.28x; HumanEval Vicuna 7B T=1 Jakiro* 2.48x vs Eagle2 2.64x.",
+          "Losslessness under the modified hybrid drafting with parallel decoding at the penultimate step is asserted by inheritance but never formally argued; the parallel-decoded penultimate draft distribution and its compatibility with the standard acceptance criterion deserve at least a careful informal proof.",
+          "Several minor claims are unsupported by experiments: 'improves factuality' (no factuality evaluation), 'minimal computational cost' (Table 3 contradicts this), 'almost no additional latency' from contrastive operation (not measured).",
+          "Notation in Section 3 is internally inconsistent: Eq. 3 produces a single mixed feature f_i, while Eqs. 6–7 introduce f^top1 and f^top2 used in Eqs. 4 and 8 — the relationship between these is not made explicit.",
+          "Possible confounders in walltime comparisons: draft model parameter counts and tree budgets are not equalized with Eagle baselines; the reproduced Eagle1 number for LLaMA3-Instruct 8B (1.67x on A100) appears anomalously low without explanation."
+        ],
+        "fatal_flaws": [],
+        "minor_issues": [
+          "Typos/grammar throughout (e.g., 'we observe that it is not wise to adopt'; 'similar to average accpet length').",
+          "Title and abstract use the marketing term 'Boosting' without technical meaning.",
+          "Citation 'Langley, 2000' appears in references but is never cited in the paper body.",
+          "Some tables omit baselines (e.g., L3 8B and L3 70B in Table 1 lack Eagle1 numbers, while Table 2 has them) inconsistently.",
+          "Figure 2 reports A100 numbers that imply roughly 130% mean improvement over Eagle1 on LLaMA3-Instruct 8B, but the reproduced Eagle1 1.67x baseline is far below the original Eagle1 paper's reported speedup — this discrepancy should be explained.",
+          "Description of K>2 supporting parallel decoding for last K steps is deferred to future work and remains hypothetical.",
+          "No measurement of expert load balancing or whether an auxiliary load-balancing loss is used."
+        ],
+        "questions_for_authors": [
+          "Can you provide a direct quantitative measure of intra-layer 'decoupling' — e.g., KL divergence or top-k overlap between the top-2 experts' predicted distributions — and compare against Eagle2's intra-layer top-k correlations to substantiate the central mechanism story?",
+          "Given Table 3 shows best speedup at N=2,K=2, is your method effectively a two-head design? How should we interpret the 'MoE' framing, and have you tried N>2 with parameter-matched controls and tuned tree budgets?",
+          "Can you provide an explicit argument (formal or informal) that the hybrid drafting with a parallel-decoded penultimate step preserves the lossless guarantee of standard speculative sampling? Specifically, what distribution q(.|.) is used in the acceptance criterion at the parallel step?",
+          "Why does the reproduced Eagle1 speedup for LLaMA3-Instruct 8B on A100 (1.67x) differ substantially from the originally published numbers? Were tree configurations, draft model sizes, and inference codepaths matched?",
+          "Can you report mean ± std (or CIs) over the four runs for all main tables and ablations? Several reported differences (e.g., Table 4 PD/Const ablation, several Jakiro vs Eagle2 comparisons) appear within plausible run-to-run noise.",
+          "How were the learned contrastive weights α and β initialized and what are their typical learned values? Did you compare with fixed contrastive weights, with logit-space contrast instead of feature-space, or with a control baseline that performs parallel decoding without the contrast?",
+          "Why are recent speculative decoding methods (Kangaroo, Sequoia, Glide, REST, Medusa-2/Hydra-2, PaSS, SPACE, multi-token prediction) not included as baselines? Without them, the SOTA claim is hard to evaluate.",
+          "Could you clarify the relationship between Jakiro and Jakiro* and report a unified configuration whose results are used consistently across tables? Currently the headline 3.86x number is achieved by a variant (Jakiro*) without the contrastive mechanism, complicating attribution of credit to the proposed components.",
+          "Are the draft model parameter counts and the runtime tree budgets matched against Eagle1/Eagle2 for the speedup comparisons? An Eagle-style draft trained with the same hybrid PD/contrastive objective but without MoE would help isolate MoE's contribution.",
+          "The conclusion mentions improved 'factuality' — can you provide any direct factuality/hallucination evaluation (e.g., TruthfulQA, FactScore) supporting this claim, or revise the wording?",
+          "Equations 3 vs 6–7 appear inconsistent: Eq. 3 defines a single fused feature f_i, while Eq. 6 introduces a weighted sum and Eq. 7 a contrast over f^top1 and f^top2. Could you reconcile the notation and clarify which features feed into the LM head at each step?",
+          "How does Jakiro behave at batch sizes > 1, where MoE compute overhead and tree-attention masking interact differently with memory-bandwidth bottlenecks?"
+        ],
+        "recommendation": "weak_reject",
+        "recommendation_rationale": "The paper identifies a genuine limitation (intra-layer candidate coupling) in current speculative decoding and proposes a reasonable architectural fix (MoE-based decoupling with hybrid AR+parallel decoding and feature contrast). Empirical evaluation is broad across models, benchmarks, and hardware, and walltime speedups over Eagle2 are consistently positive, with notable gains in non-greedy sampling. However, several aspects fall short of the bar expected at a top-tier venue: (i) the central 'decoupling' mechanism is never directly measured, and the N=K=2 ablation undermines the MoE framing; (ii) the contrastive mechanism is heavily emphasized but contributes only marginally in ablations, within plausible run-to-run noise without reported variance; (iii) the SOTA claim is unsupported by the chosen baseline set, which omits most recent SD methods; (iv) the headline numbers come from a 'Jakiro*' variant whose relationship to the main Jakiro method is not transparently discussed; (v) losslessness under the modified hybrid drafting is asserted rather than argued; and (vi) counterexample configurations and reproduced baseline anomalies (e.g., Eagle1 LLaMA3 8B at 1.67x) are not addressed. The contributions are real but incremental given Eagle2, and the presentation/evaluation issues are significant enough that the paper would benefit from revision before acceptance. I would be willing to raise my score if the authors add direct diversity measurements, statistical significance reporting, comparisons to more recent SD baselines, a unified Jakiro configuration, and a careful losslessness argument.",
+        "confidence_1_to_5": 3
+      },
+      "usage": {
+        "input_tokens": 13970,
+        "output_tokens": 3548,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 50176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_8": {
+      "parsed": {
+        "summary_of_paper": "The paper proposes Jakiro, a speculative decoding method that addresses a specific limitation of tree-based draft methods: candidates at the same draft-tree layer are derived from a single shared feature representation and are therefore correlated. Jakiro replaces the Eagle-style draft MLP with a Mixture-of-Experts layer using top-2 routing, producing two intra-layer logits distributions that are used to construct the draft tree. To reduce drafting cost, the authors introduce a hybrid strategy that drafts γ−1 steps autoregressively and uses parallel decoding at the penultimate step, augmented by a learned feature-level contrastive operation (β f^top1 − α f^top2) between the two activated experts before the shared LM head. Training uses Smooth-L1 feature regression and cross-entropy classification losses for both MoE and contrastive heads.\n\nThe method is evaluated on Vicuna (7B/13B/33B), LLaMA2-chat (7B/13B/70B), and LLaMA3-Instruct (8B/70B), across six benchmarks (MT-bench, HumanEval, GSM8K, Alpaca, CNN/DM, Natural Questions), under both greedy and non-greedy decoding, and on MI250/A40/A100 GPUs at batch size 1. Reported walltime speedups consistently exceed Eagle2, with the largest gains in non-greedy mode (up to 3.86x on A100 MT-bench for Vicuna 7B). Ablations study the number of candidate experts and the individual contributions of parallel decoding and the contrastive mechanism.",
+        "main_strengths": [
+          "Identifies a concrete and previously underexamined limitation in tree-based speculative decoding: intra-layer candidate coupling due to shared feature representation, which complements Eagle's inter-step decoupling story.",
+          "Proposes a clean architectural fix (MoE draft head with top-2 routing) that integrates naturally with existing Eagle-style drafters and both static (Eagle1) and dynamic (Eagle2) tree constructions.",
+          "Empirical evaluation is broad: 7 target models spanning 7B–70B and three families, 6 benchmarks, three GPU platforms, and both greedy and non-greedy modes; speedups over Eagle2 are consistently positive in the headline tables.",
+          "Losslessness of the verification step is preserved by inheriting standard speculative-sampling acceptance, and code is released, which aids reproducibility and adoption.",
+          "Training cost is modest (the 70B drafter trains in 2–3 days on 4×A100), and additional trainable parameters are small relative to the target model.",
+          "Ablation on N–K (Table 3) provides useful insight into the cost–benefit tradeoff of larger MoE configurations, even if the result complicates the framing."
+        ],
+        "main_weaknesses": [
+          "The central 'decoupling' claim is argued only architecturally and never measured. No quantitative diversity metric (e.g., KL between sibling experts' distributions, top-k token-set overlap, expert utilization, conditional acceptance probabilities at each tree layer) is reported to substantiate the motivating story or compare against Eagle2's intra-layer correlation.",
+          "Table 3 shows the best walltime is achieved at N=2,K=2, which is essentially a two-head design rather than a true mixture. This undermines the 'MoE' framing as a primary contribution and suggests the gains may come mostly from having two parallel heads with shared backbone rather than from sparse expert routing.",
+          "The contrastive mechanism is positioned as a major contribution but contributes only marginally in ablations (Table 4 on Vicuna 7B, T=0: 2.92x → 2.99x on MT-bench, 3.36x → 3.43x on HumanEval), within plausible run-to-run noise. No variance/CI is reported, so it is unclear whether the effect is statistically meaningful.",
+          "No standard deviations, confidence intervals, or significance tests are reported despite averaging over four runs. Several headline comparisons (e.g., Jakiro vs Eagle2 on some configurations) differ by amounts that could plausibly be within noise.",
+          "The 'SOTA' claim is overstated. Comparisons are limited to Eagle1/Eagle2 (with Medusa/Hydra/SpS only on Vicuna 7B greedy). Recent SD methods such as Kangaroo, Sequoia, Glide, REST, Medusa-2/Hydra-2, PaSS, SPACE, and multi-token-prediction drafters are not benchmarked.",
+          "Two variants 'Jakiro' and 'Jakiro*' are used inconsistently across tables, and the headline 3.86x speedup in Figure 2 comes from Jakiro* (weighted decoupling tree, without the contrastive mechanism per Table 1 footnote), not the main Jakiro configuration described in Section 3. This complicates attribution of credit to the proposed components.",
+          "Counterexamples and negative results are not discussed: e.g., A100 T=0 LLaMA2 7B Jakiro 3.05x vs Eagle2 3.10x (Table 6); Vicuna 13B CNN/DM T=1 Jakiro* 1.96x vs Eagle2 2.28x; HumanEval Vicuna 7B T=1 Jakiro 2.48x vs Eagle2 2.64x in Table 1.",
+          "Losslessness under the modified hybrid drafting (parallel decoding at the penultimate step with a contrastive feature) is asserted by inheritance but never explicitly argued. It is not clear which draft distribution q(.|.) is used in the acceptance criterion for tokens proposed at the parallel step, nor how rejection-resampling behaves in this regime.",
+          "Several claims are not directly supported by experiments: 'improves factuality' (no factuality benchmark), 'minimal computational cost' (Table 3 shows the opposite trend with larger N), and 'almost no additional latency' from the contrastive operation (not measured).",
+          "Notation in Section 3 is internally inconsistent: Eq. 3 produces a single fused feature f_i, while Eqs. 6–7 introduce f^top1 and f^top2 and use them in Eqs. 4 and 8. The mapping between these quantities is not made explicit.",
+          "The reproduced Eagle1 number for LLaMA3-Instruct 8B on A100 (1.67x) appears anomalously low compared to the original Eagle paper, but no explanation is provided. This affects the credibility of the speedup comparisons that use this baseline."
+        ],
+        "detailed_comments": [
+          "Section 3.1 motivates MoE primarily for diversity but the formal mechanism (Eqs. 1–5) is standard sparse-gated MoE; nothing in the construction explicitly encourages experts to produce diverse predictions (no diversity regularizer, no load-balancing loss mentioned). It would help to either (a) show empirically that the top-2 experts produce more diverse distributions than Eagle's top-2 logits, or (b) add an explicit diversity-inducing objective during training.",
+          "The contrastive mechanism in Eq. 7 contrasts two similarly-capable experts in hidden-feature space, whereas the cited contrastive decoding works (Li et al., 2022; O'Brien & Lewis, 2023) contrast strong vs. weak models in logit space. The theoretical justification for feature-space contrast between similarly trained experts is not made.",
+          "Table 4 ablations are run only on Vicuna 7B at T=0 — the regime where the paper itself concedes the contrastive mechanism is least impactful. An ablation under non-greedy mode and on at least one larger model would strengthen the case for the proposed components.",
+          "The relationship between Jakiro and Jakiro* should be made explicit early in the method section. Currently, the table caption (Table 1) is the first place readers learn that the headline non-greedy numbers come from a different tree-construction variant.",
+          "Figure 7 reports both 'mean speedup ratio' on all tasks for different devices. The bar labeling is dense and the figure would benefit from grouping by device and including τ.",
+          "The paper claims 'one less drafting step than Eagle2' as a key efficiency lever, but doesn't isolate this from MoE compute overhead. An ablation matching Eagle2 with one fewer step (parallel-decoded at the last step) but without MoE would help isolate the MoE contribution.",
+          "Training details (e.g., expert dropout, load-balancing auxiliary loss, expert collapse mitigation) are not discussed. For an MoE module with only 2 experts (in the N=2 setting), expert collapse is a real concern.",
+          "The paper does not discuss inference-time memory overhead of the MoE drafter, nor how it scales with batch size > 1.",
+          "Minor: citation 'Langley, 2000' appears in references but is never cited in the body. Some tables omit Eagle1 numbers inconsistently. There are typos (e.g., 'accpet length')."
+        ],
+        "questions_for_authors": [
+          "Can you provide a direct quantitative measure of intra-layer 'decoupling' — for example, KL divergence or top-k token-set overlap between the two activated experts' distributions, compared against the analogous quantity for Eagle2's top-2 sibling tokens — to substantiate the central mechanism story?",
+          "Given Table 3 shows the best speedup at N=K=2, is your method effectively a two-head design? Have you tried N>2 with parameter-matched controls (e.g., expanded MLP) and tuned tree budgets so that compute is comparable?",
+          "Can you provide an explicit argument (formal or informal) that the hybrid drafting with a parallel-decoded penultimate step preserves the lossless guarantee of standard speculative sampling? Specifically, what draft distribution q(.|.) is used in the acceptance criterion for tokens proposed at that step?",
+          "Why does the reproduced Eagle1 speedup for LLaMA3-Instruct 8B on A100 (1.67x) differ substantially from the originally published numbers? Were tree configurations, draft model sizes, and inference codepaths matched?",
+          "Can you report mean ± std (or confidence intervals) over the four runs for all main tables and ablations? Several differences appear within plausible run-to-run variance.",
+          "How were the learned contrastive weights α and β initialized, and what are their typical learned values? Did you compare with fixed contrastive weights, logit-space contrast, or a control that performs parallel decoding without the contrast?",
+          "Why are recent speculative decoding methods (Kangaroo, Sequoia, Glide, REST, Medusa-2/Hydra-2, PaSS, SPACE, multi-token prediction) not included as baselines? Without them, the SOTA claim is hard to assess.",
+          "Could you clarify the relationship between Jakiro and Jakiro* and report a unified configuration whose results are used consistently across tables? Currently, the headline 3.86x number is achieved by a variant (Jakiro*) without the contrastive mechanism, which complicates attribution.",
+          "Are draft model parameter counts and runtime tree budgets matched against Eagle1/Eagle2 in the speedup comparisons? An Eagle-style baseline trained with the same hybrid PD/contrastive objective but without MoE would help isolate MoE's contribution.",
+          "The conclusion mentions improved 'factuality' — can you provide any direct factuality/hallucination evaluation (e.g., TruthfulQA, FactScore) supporting this claim, or otherwise soften the wording?",
+          "Equations 3 vs 6–7 appear inconsistent: Eq. 3 defines a single fused feature f_i, while Eq. 6 introduces a weighted sum of f^top1 and f^top2 and Eq. 7 a contrast over the same. Could you reconcile the notation and clarify which features feed into the LM head at each step?",
+          "How does Jakiro behave at batch sizes > 1, where MoE compute overhead and tree-attention masking interact differently with memory-bandwidth bottlenecks?",
+          "Was any auxiliary load-balancing loss used for the MoE router? With small N (e.g., N=2), how do you prevent or detect expert collapse?"
+        ],
+        "suggestions_for_improvement": [
+          "Add direct, quantitative measurements of intra-layer diversity (e.g., distributional divergence and token overlap between the two heads/experts) and compare against Eagle2 to support the decoupling motivation.",
+          "Report mean ± standard deviation (or bootstrap CIs) over runs for all main results and ablations; mark differences that are not statistically significant.",
+          "Unify the Jakiro and Jakiro* configurations or, at minimum, present a single canonical configuration whose components are isolated in a clean ablation grid (MoE / hybrid PD / contrastive) on multiple models, in both greedy and non-greedy modes.",
+          "Provide an explicit (even if informal) argument for losslessness under the parallel-decoded penultimate step, specifying the draft distribution q used at that position and how acceptance/rejection is computed.",
+          "Soften the 'SOTA' claim or add more recent SD baselines (Kangaroo, Sequoia, Glide, REST, Medusa-2/Hydra-2, PaSS, SPACE).",
+          "Match draft-model parameter counts and tree budgets when comparing to Eagle1/Eagle2, and report a baseline that uses Eagle's architecture trained with the same hybrid drafting + contrastive objective to isolate the MoE contribution.",
+          "Explain the anomalous reproduced Eagle1 number for LLaMA3-Instruct 8B on A100 and verify the reproduction settings.",
+          "Discuss counterexamples in the tables (configurations where Jakiro is slightly worse than Eagle2) and analyze when and why this occurs.",
+          "Remove or substantiate the 'factuality' and 'minimal computational cost' / 'almost no additional latency' claims with direct measurements.",
+          "Fix notation inconsistencies in Section 3 (especially between Eqs. 3 and 6–7), and clarify which features feed into the LM head at each step of inference.",
+          "Discuss MoE-specific training considerations (load balancing, expert collapse) and report expert utilization statistics."
+        ],
+        "overall_recommendation": "Weak reject. The paper identifies a real limitation in tree-based speculative decoding and proposes a reasonable architectural fix with broad empirical evaluation, but the central mechanism is never directly measured, key ablations weaken the MoE framing, gains from the heavily emphasized contrastive component appear marginal and within plausible noise, the SOTA claim is not supported by an adequate baseline set, and the inconsistent use of Jakiro vs Jakiro* obscures credit attribution. With direct diversity measurements, statistical significance reporting, comparisons to more recent SD baselines, a unified Jakiro configuration, and a careful losslessness argument, the paper could be substantially strengthened.",
+        "reviewer_confidence_1_to_5": 3,
+        "score_card": {
+          "soundness_1_to_4": 2,
+          "presentation_1_to_4": 2,
+          "contribution_1_to_4": 2,
+          "overall_1_to_10": 4
+        }
+      },
+      "usage": {
+        "input_tokens": 6576,
+        "output_tokens": 5260,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 50176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_9": {
+      "parsed": {
+        "hallucinated_comments": [],
+        "misrepresentations": [
+          "The draft states the headline 3.86x in Figure 2 comes from Jakiro* 'without the contrastive mechanism' — Table 1 footnote says Jakiro* uses MoE-based weighted decoupling tree construction, while non-* refers to weighted non-decoupling combined with contrastive. The draft's parenthetical 'without the contrastive mechanism per Table 1 footnote' is an inference and is not explicitly stated in the paper; whether Jakiro* also uses contrastive is ambiguous in the paper. This should be hedged."
+        ],
+        "missed_strengths": [
+          "The paper provides cross-device evaluation (MI250, A40, A100) in the appendix, demonstrating hardware-agnostic improvements.",
+          "The method preserves the target LLM's output distribution (lossless property inherited from standard speculative sampling acceptance)."
+        ],
+        "missed_weaknesses": [
+          "The contrastive loss formulation (Eq. 10) supervises f_i^const to predict f_{i+2}^p (two steps ahead) using contrast between two same-step features, but the rationale for why feature subtraction between sibling experts would predict the next-next token is not justified.",
+          "The router and Top-K mechanism for tree expansion is conflated with the standard MoE Top-K routing; the paper uses K=2 for both expert selection and tree branching, which may be coincidental but is not clarified."
+        ],
+        "too_strong_claims": [
+          "The draft says 'Jakiro* without the contrastive mechanism' — this is not clearly established by the paper and should be softened to 'a different variant whose exact component composition is not fully specified.'",
+          "The claim that Table 3's N=K=2 result 'undermines the MoE framing' is reasonable but should be presented as an interpretation rather than a definitive conclusion, since the authors note hardware/algorithmic optimizations could change this."
+        ],
+        "non_actionable_criticisms": [],
+        "tone_issues": [],
+        "consistency_between_summary_weaknesses_and_recommendation": "consistent",
+        "external_novelty_claims_supported": "partial",
+        "corrections_needed": [
+          "Soften the claim about Jakiro* not using the contrastive mechanism — the paper's footnote distinguishes Jakiro* by tree-construction method (weighted decoupling vs non-decoupling+contrastive), but does not explicitly state Jakiro* lacks the contrastive component; rephrase as ambiguous/under-specified.",
+          "Frame the 'N=K=2 undermines MoE framing' point as an interpretation rather than a fact.",
+          "Add a weakness about the contrastive regression target (Eq. 10) supervising two-step-ahead prediction from a sibling-expert contrast, which lacks clear theoretical motivation.",
+          "Acknowledge cross-device robustness (appendix tables) as a minor additional strength."
+        ]
+      },
+      "usage": {
+        "input_tokens": 5590,
+        "output_tokens": 960,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 50176
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_10": {
+      "parsed": {
+        "final_review": {
+          "summary_of_paper": "The paper proposes Jakiro, a speculative decoding method that targets a specific limitation of tree-based draft methods: candidates at the same draft-tree layer are derived from a single shared feature representation and are therefore correlated. Jakiro replaces the Eagle-style draft MLP with a Mixture-of-Experts layer using top-2 routing, producing two intra-layer logits distributions that are used to construct the draft tree. To reduce drafting cost, the authors introduce a hybrid strategy that drafts γ−1 steps autoregressively and uses parallel decoding at the penultimate step, augmented by a learned feature-level contrastive operation (β f^top1 − α f^top2) between the two activated experts before the shared LM head. Training uses Smooth-L1 feature regression and cross-entropy classification losses for both MoE and contrastive heads. The method is evaluated on Vicuna (7B/13B/33B), LLaMA2-chat (7B/13B/70B), and LLaMA3-Instruct (8B/70B), across six benchmarks (MT-bench, HumanEval, GSM8K, Alpaca, CNN/DM, Natural Questions), under both greedy and non-greedy decoding, and on MI250/A40/A100 GPUs at batch size 1. Reported walltime speedups consistently exceed Eagle2, with the largest gains in non-greedy mode (up to 3.86x on A100 MT-bench for Vicuna 7B). Ablations study the number of candidate experts and the individual contributions of parallel decoding and the contrastive mechanism.",
+          "main_strengths": [
+            "Identifies a concrete and previously underexamined limitation in tree-based speculative decoding: intra-layer candidate coupling due to shared feature representation, which complements Eagle's inter-step decoupling story.",
+            "Proposes a clean architectural fix (MoE draft head with top-2 routing) that integrates naturally with existing Eagle-style drafters and both static (Eagle1) and dynamic (Eagle2) tree constructions.",
+            "Empirical evaluation is broad: 7 target models spanning 7B–70B and three families, 6 benchmarks, three GPU platforms (MI250/A40/A100 reported in main text and appendix), and both greedy and non-greedy modes; speedups over Eagle2 are consistently positive in the headline tables.",
+            "Cross-device appendix results (MI250, A40, A100) indicate the gains are not specific to a single hardware platform.",
+            "Losslessness of the verification step is preserved by inheriting standard speculative-sampling acceptance, and code is released, which aids reproducibility and adoption.",
+            "Training cost is modest (the 70B drafter trains in 2–3 days on 4×A100), and additional trainable parameters are small relative to the target model.",
+            "Ablation on N–K (Table 3) provides useful insight into the cost–benefit tradeoff of larger MoE configurations, even if the result complicates the framing."
+          ],
+          "main_weaknesses": [
+            "The central 'decoupling' claim is argued only architecturally and never measured. No quantitative diversity metric (e.g., KL between sibling experts' distributions, top-k token-set overlap, expert utilization, conditional acceptance probabilities at each tree layer) is reported to substantiate the motivating story or compare against Eagle2's intra-layer correlation.",
+            "Table 3 shows the best walltime is achieved at N=2, K=2, which arguably reduces to a two-head design with shared backbone rather than a true sparse mixture. This is an interpretive concern rather than a definitive conclusion (larger N may benefit from further hardware/algorithmic optimization, as the authors note), but it nonetheless weakens the framing of MoE as the primary mechanism behind the gains.",
+            "The contrastive mechanism is positioned as a major contribution but contributes only marginally in ablations (Table 4 on Vicuna 7B, T=0: 2.92x → 2.99x on MT-bench, 3.36x → 3.43x on HumanEval). Without variance estimates these differences are hard to distinguish from run-to-run noise.",
+            "No standard deviations, confidence intervals, or significance tests are reported despite averaging over four runs. Several headline comparisons (e.g., Jakiro vs Eagle2 on some configurations) differ by amounts that could plausibly be within noise.",
+            "The 'SOTA' claim is overstated relative to the baseline set. Comparisons are limited to Eagle1/Eagle2 (with Medusa/Hydra/SpS only on Vicuna 7B greedy). Recent SD methods such as Kangaroo, Sequoia, Glide, REST, Medusa-2/Hydra-2, PaSS, SPACE, and multi-token-prediction drafters are not benchmarked.",
+            "Two variants 'Jakiro' and 'Jakiro*' are used inconsistently across tables. Per the Table 1 footnote, the distinction is in tree construction (weighted decoupling vs weighted non-decoupling combined with the contrastive mechanism), but whether the contrastive component is also active in Jakiro* is not explicitly clarified. The headline 3.86x speedup on Vicuna 7B (Figure 2) is achieved by Jakiro*, while most ablations and the architectural narrative center on the non-* variant, complicating attribution of credit to individual components.",
+            "Counterexamples and configurations where Jakiro is comparable to or slightly worse than Eagle2 are not discussed: e.g., A100 T=0 LLaMA2 7B Jakiro 3.05x vs Eagle2 3.10x (Table 6); A100 T=1 Vicuna 13B CNN/DM Jakiro* 1.96x vs Eagle2 2.28x; A100 T=1 HumanEval Vicuna 7B Jakiro 2.96x vs Eagle2 3.11x.",
+            "Losslessness under the modified hybrid drafting (parallel decoding at the penultimate step with a contrastive feature) is asserted by inheritance but never explicitly argued. It is not clear which draft distribution q(.|.) is used in the acceptance criterion for tokens proposed at the parallel step, nor how rejection-resampling behaves in this regime.",
+            "Several claims are not directly supported by experiments: 'improves factuality' (no factuality benchmark), 'minimal computational cost' (Table 3 suggests cost grows with N), and 'almost no additional latency' from the contrastive operation (not measured).",
+            "The contrastive regression target (Eq. 10) supervises f_i^const to predict the feature at position i+2 using a contrast between sibling experts at step i. The theoretical/empirical motivation for why a subtraction of two same-step expert features should predict the next-next token is not provided.",
+            "The Top-K mechanism for MoE expert selection (K=2) and the top-k tree branching at each layer are both set to 2 and described together; whether these two uses of 'K' are linked by design or coincidence is not clarified.",
+            "Notation in Section 3 is inconsistent: Eq. 3 produces a single fused feature f_i, while Eqs. 6–7 introduce f^top1 and f^top2 and use them in Eqs. 4 and 8. The mapping between these quantities is not made explicit.",
+            "The reproduced Eagle1 number for LLaMA3-Instruct 8B on A100 (1.67x) appears anomalously low compared to the original Eagle paper, but no explanation is provided. This affects the credibility of the speedup comparisons that use this baseline."
+          ],
+          "detailed_comments": [
+            "Section 3.1 motivates MoE primarily for diversity, but the formal mechanism (Eqs. 1–5) is standard sparse-gated MoE; nothing in the construction explicitly encourages experts to produce diverse predictions (no diversity regularizer, no load-balancing loss mentioned). It would help to either (a) show empirically that the top-2 experts produce more diverse distributions than Eagle's top-2 logits, or (b) add an explicit diversity-inducing objective during training.",
+            "The contrastive mechanism in Eq. 7 contrasts two similarly-capable experts in hidden-feature space, whereas the cited contrastive decoding works (Li et al., 2022; O'Brien & Lewis, 2023) contrast strong vs. weak models in logit space. The justification for feature-space contrast between similarly trained experts is not made.",
+            "Table 4 ablations are run only on Vicuna 7B at T=0 — the regime where the paper itself concedes the contrastive mechanism is least impactful. An ablation under non-greedy mode and on at least one larger model would strengthen the case for the proposed components.",
+            "The relationship between Jakiro and Jakiro* should be made explicit early in the method section. Currently, the Table 1 footnote is the first place readers learn that the headline non-greedy numbers come from a different tree-construction variant, and the exact component composition of Jakiro* (in particular, whether the contrastive mechanism is active) is not fully clarified.",
+            "Figure 7's labeling is dense; grouping by device and including τ would improve readability.",
+            "The paper claims 'one less drafting step than Eagle2' as a key efficiency lever, but doesn't isolate this from MoE compute overhead. An ablation matching Eagle2 with one fewer step (parallel-decoded at the last step) but without MoE would help isolate the MoE contribution.",
+            "Training details (e.g., expert dropout, load-balancing auxiliary loss, expert collapse mitigation) are not discussed. For an MoE module with small N, expert collapse is a real concern.",
+            "The paper does not discuss inference-time memory overhead of the MoE drafter, nor how it scales with batch size > 1.",
+            "Minor: citation 'Langley, 2000' appears in references but is never cited in the body. Some tables omit Eagle1 numbers inconsistently. There are typos (e.g., 'accpet length')."
+          ],
+          "questions_for_authors": [
+            "Can you provide a direct quantitative measure of intra-layer 'decoupling' — for example, KL divergence or top-k token-set overlap between the two activated experts' distributions, compared against the analogous quantity for Eagle2's top-2 sibling tokens — to substantiate the central mechanism story?",
+            "Given Table 3 shows the best speedup at N=K=2, is your method effectively a two-head design? Have you tried N>2 with parameter-matched controls (e.g., expanded MLP) and tuned tree budgets so that compute is comparable?",
+            "Can you provide an explicit argument (formal or informal) that the hybrid drafting with a parallel-decoded penultimate step preserves the lossless guarantee of standard speculative sampling? Specifically, what draft distribution q(.|.) is used in the acceptance criterion for tokens proposed at that step?",
+            "Why does the reproduced Eagle1 speedup for LLaMA3-Instruct 8B on A100 (1.67x) differ substantially from the originally published numbers? Were tree configurations, draft model sizes, and inference codepaths matched?",
+            "Can you report mean ± std (or confidence intervals) over the four runs for all main tables and ablations? Several differences appear within plausible run-to-run variance.",
+            "How were the learned contrastive weights α and β initialized, and what are their typical learned values? Did you compare with fixed contrastive weights, logit-space contrast, or a control that performs parallel decoding without the contrast?",
+            "What is the rationale for supervising f_i^const (a contrast of two sibling-expert features at step i) to predict the feature at step i+2 (Eq. 10)? Have you tried alternative targets (e.g., predicting step i+1 with a contrastive correction)?",
+            "Why are recent speculative decoding methods (Kangaroo, Sequoia, Glide, REST, Medusa-2/Hydra-2, PaSS, SPACE, multi-token prediction) not included as baselines? Without them, the SOTA claim is hard to assess.",
+            "Could you clarify the relationship between Jakiro and Jakiro* — including precisely which components (MoE tree construction, parallel decoding, contrastive mechanism) are active in each — and report a unified configuration whose results are used consistently across tables?",
+            "Are draft model parameter counts and runtime tree budgets matched against Eagle1/Eagle2 in the speedup comparisons? An Eagle-style baseline trained with the same hybrid PD/contrastive objective but without MoE would help isolate MoE's contribution.",
+            "The conclusion mentions improved 'factuality' — can you provide any direct factuality/hallucination evaluation (e.g., TruthfulQA, FactScore) supporting this claim, or otherwise soften the wording?",
+            "Equations 3 vs 6–7 appear inconsistent: Eq. 3 defines a single fused feature f_i, while Eq. 6 introduces a weighted sum of f^top1 and f^top2 and Eq. 7 a contrast over the same. Could you reconcile the notation and clarify which features feed into the LM head at each step?",
+            "Is the use of K=2 for both MoE expert activation and tree branching intentional and linked, or coincidental? How does decoupling these two K values affect performance?",
+            "How does Jakiro behave at batch sizes > 1, where MoE compute overhead and tree-attention masking interact differently with memory-bandwidth bottlenecks?",
+            "Was any auxiliary load-balancing loss used for the MoE router? With small N, how do you prevent or detect expert collapse, and what are the expert utilization statistics?"
+          ],
+          "suggestions_for_improvement": [
+            "Add direct, quantitative measurements of intra-layer diversity (e.g., distributional divergence and token overlap between the two heads/experts) and compare against Eagle2 to support the decoupling motivation.",
+            "Report mean ± standard deviation (or bootstrap CIs) over runs for all main results and ablations; mark differences that are not statistically significant.",
+            "Unify the Jakiro and Jakiro* configurations or, at minimum, present a single canonical configuration whose components are isolated in a clean ablation grid (MoE / hybrid PD / contrastive) on multiple models, in both greedy and non-greedy modes. State explicitly which components are active in each variant.",
+            "Provide an explicit (even if informal) argument for losslessness under the parallel-decoded penultimate step, specifying the draft distribution q used at that position and how acceptance/rejection is computed.",
+            "Soften the 'SOTA' claim or add more recent SD baselines (Kangaroo, Sequoia, Glide, REST, Medusa-2/Hydra-2, PaSS, SPACE).",
+            "Match draft-model parameter counts and tree budgets when comparing to Eagle1/Eagle2, and report a baseline that uses Eagle's architecture trained with the same hybrid drafting + contrastive objective to isolate the MoE contribution.",
+            "Explain the anomalous reproduced Eagle1 number for LLaMA3-Instruct 8B on A100 and verify the reproduction settings.",
+            "Discuss counterexamples in the tables (configurations where Jakiro is comparable to or worse than Eagle2) and analyze when and why this occurs.",
+            "Remove or substantiate the 'factuality' and 'minimal computational cost' / 'almost no additional latency' claims with direct measurements.",
+            "Fix notation inconsistencies in Section 3 (especially between Eqs. 3 and 6–7), and clarify which features feed into the LM head at each step of inference.",
+            "Justify the choice of contrastive regression target in Eq. 10 (predicting f^p_{i+2} from a same-step sibling-expert contrast) and consider ablating alternative target offsets.",
+            "Discuss MoE-specific training considerations (load balancing, expert collapse) and report expert utilization statistics."
+          ],
+          "overall_recommendation": "Weak reject. The paper identifies a real limitation in tree-based speculative decoding and proposes a reasonable architectural fix with broad empirical evaluation, but the central mechanism is never directly measured, key ablations weaken the MoE framing, gains from the heavily emphasized contrastive component appear marginal and within plausible noise, the SOTA claim is not supported by an adequate baseline set, and the inconsistent and under-specified use of Jakiro vs Jakiro* obscures credit attribution. With direct diversity measurements, statistical significance reporting, comparisons to more recent SD baselines, a unified and fully specified Jakiro configuration, and a careful losslessness argument, the paper could be substantially strengthened.",
+          "reviewer_confidence_1_to_5": 3,
+          "score_card": {
+            "soundness_1_to_4": 2,
+            "presentation_1_to_4": 2,
+            "contribution_1_to_4": 2,
+            "overall_1_to_10": 4
+          }
+        },
+        "author_facing_improvement_checklist": [
+          "Add a quantitative diversity analysis (KL or top-k overlap) between sibling experts vs Eagle2's top-2 sibling tokens.",
+          "Report mean ± std (or CIs) over runs for all tables and mark non-significant differences.",
+          "Provide a clean component ablation grid (MoE / hybrid PD / contrastive) on multiple models and at both T=0 and T=1, explicitly stating which components are active in Jakiro and Jakiro*.",
+          "State an explicit losslessness argument for the hybrid drafting with parallel-decoded penultimate step, including the form of q used in acceptance.",
+          "Add comparisons to more recent SD baselines (e.g., Kangaroo, Sequoia, Glide, REST, Medusa-2/Hydra-2, PaSS, SPACE) or soften the SOTA claim.",
+          "Match draft parameter counts and tree budgets across baselines; include an Eagle-style baseline with the same hybrid + contrastive objective to isolate MoE's contribution.",
+          "Investigate/explain the anomalous reproduced Eagle1 LLaMA3-Instruct 8B speedup on A100.",
+          "Discuss configurations where Jakiro is comparable to or worse than Eagle2 and analyze causes.",
+          "Either run a factuality benchmark or remove the 'factuality' claim; similarly substantiate or remove 'minimal computational cost' and 'almost no additional latency'.",
+          "Reconcile notation between Eqs. 3 and 6–7 and clarify which features feed the LM head at each step.",
+          "Justify the contrastive regression target in Eq. 10 (predicting feature at i+2 from a same-step sibling-expert contrast).",
+          "Clarify whether the K=2 used for MoE routing and the K=2 used for tree branching are intentionally coupled.",
+          "Discuss MoE training stability (load balancing, expert collapse) and report expert utilization, especially for small N.",
+          "Report inference-time memory overhead and behavior at batch sizes > 1.",
+          "Fix minor issues: 'accpet length' typo, unused Langley 2000 citation, inconsistent inclusion of Eagle1 baseline across tables."
+        ],
+        "changes_from_draft": [
+          "Softened the claim that the headline 3.86x from Jakiro* is 'without the contrastive mechanism', since the Table 1 footnote distinguishes Jakiro* by tree-construction strategy but does not explicitly state that the contrastive component is inactive; rephrased as ambiguous/under-specified.",
+          "Reframed the 'N=K=2 undermines the MoE framing' weakness as an interpretive concern rather than a definitive conclusion, acknowledging the authors' note about possible hardware/algorithmic optimization for larger N.",
+          "Added a new weakness about the contrastive regression target (Eq. 10) supervising two-step-ahead prediction from a same-step sibling-expert contrast lacking clear motivation, with a corresponding question and improvement suggestion.",
+          "Added a new weakness/question about the conflation of K=2 in MoE routing and K=2 in tree branching.",
+          "Added cross-device robustness (appendix tables) as an additional strength.",
+          "Made a minor presentation correction: removed the specific Vicuna 7B HumanEval T=1 counterexample numbers from the draft (which were misread) and replaced them with verifiable A100 examples from Table 6."
+        ]
+      },
+      "usage": {
+        "input_tokens": 6649,
+        "output_tokens": 7039,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 50176
+      },
+      "stop_reason": "end_turn"
+    }
+  },
+  "total_usage": {
+    "input_tokens": 67082,
+    "output_tokens": 47234,
+    "cache_creation_input_tokens": 117128,
+    "cache_read_input_tokens": 641369
+  }
+}

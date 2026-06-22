@@ -1,0 +1,1065 @@
+{
+  "paper": {
+    "filename": "Task_Tokens_A_Flexible_Approach_to_Adapting_Behavior_Foundation_Models.pdf",
+    "path": "papers/accepted/Task_Tokens_A_Flexible_Approach_to_Adapting_Behavior_Foundation_Models.pdf",
+    "num_bytes": 5339095,
+    "input_mode": "pdf_document"
+  },
+  "config": {
+    "model": "claude-opus-4-7",
+    "effort": "high",
+    "web_search": true
+  },
+  "stages": {
+    "stage_0": {
+      "parsed": {
+        "title": "Task Tokens: A Flexible Approach to Adapting Behavior Foundation Models",
+        "authors": [
+          "Ron Vainshtein",
+          "Zohar Rimon",
+          "Shie Mannor",
+          "Chen Tessler"
+        ],
+        "venue_hint": "arXiv preprint (March 2026); likely submitted to an ML/robotics venue (e.g., ICLR/NeurIPS/CoRL workshop track)",
+        "field": "Reinforcement learning / Behavior foundation models / Humanoid character control",
+        "abstract": "The paper introduces 'Task Tokens', a parameter-efficient method to adapt goal-conditioned behavior foundation models (GC-BFMs) like MaskedMimic to specific downstream tasks. Rather than fine-tuning the BFM, a lightweight task encoder is trained via reinforcement learning to produce a learned token that is concatenated with the BFM's existing prompt tokens. The frozen BFM remains untouched, preserving its zero-shot behavioral priors. The authors claim up to 125x fewer trainable parameters and up to 6x faster convergence, along with retained multi-modal prompting and improved OOD robustness across friction/gravity perturbations and human-likeness judgments.",
+        "sections": {
+          "introduction": "Motivates the gap between flexible zero-shot prompting in GC-BFMs (e.g., MaskedMimic) and the precise control required for task-specific behaviors. Argues that prompt engineering is fragile and fine-tuning destroys priors. Proposes Task Tokens: train a task encoder via RL to produce tokens that join the BFM's prompt sequence while keeping the BFM frozen, enabling a hybrid of user-defined goals and reward-driven optimization.",
+          "related_work": "Reviews humanoid control via imitation learning + physics simulation (DeepMimic, AMP, PULSE, ASE), behavior foundation models (PSM, FB representations, PULSE), and goal-conditioned BFMs (Decision Transformer, RT-2, MaskedMimic). Positions Task Tokens against parameter-efficient adaptation methods in NLP (LoRA, adapters, prefix-tuning).",
+          "method": "Task Tokens trains a feed-forward MLP task encoder that takes egocentric goal observations (plus proprioceptive info such as head/pelvis pose) and outputs a 512-dim token, concatenated with existing prior tokens (text, joint conditions) and state tokens fed to the frozen MaskedMimic transformer. Training uses PPO with gradients flowing through the frozen BFM to update only the task encoder (~200K params).",
+          "theory": null,
+          "experiments": "Evaluates on five humanoid tasks in Isaac Gym (Reach, Direction, Steering, Strike, Long Jump) using the SMPL humanoid. Compares Task Tokens to MaskedMimic (J.C. only), MaskedMimic Fine-Tune, PULSE, AMP, and Pure PPO. Studies task adaptation success, sample efficiency, OOD perturbations (friction, gravity) on steering, human study on motion quality (~96 participants, 3 forms), multi-modal prompting (combining task tokens with text/joint priors via an FSM for Strike), and ablations on encoder architecture.",
+          "results": "Task Tokens achieve high success rates (94.88 Reach, 99.26 Direction, 88.69 Steering, 99.75 Long Jump, 76.61 Strike), comparable to or better than fine-tuning while using ~125x fewer parameters and ~6x faster convergence. They show stronger robustness under friction/gravity perturbations. In human studies, Task Tokens beat all baselines except PULSE in human-likeness. Multi-modal prompting demonstrates combining learned tokens with text/joint priors to fix unwanted behaviors (e.g., walking backward).",
+          "limitations": "Performance depends on the underlying BFM's coverage; validated only on MaskedMimic; relies on hand-crafted rewards/observations; only simulation, no sim-to-real; separate encoder per task (no multi-task learning yet).",
+          "conclusion": "Task Tokens provide a parameter-efficient hybrid control paradigm combining user priors with reward-driven RL, preserving BFM robustness and multi-modal prompting while enabling task-specific adaptation."
+        },
+        "main_claims": [
+          "A lightweight task encoder producing learned conditioning tokens can adapt a frozen GC-BFM (MaskedMimic) to new tasks effectively.",
+          "Task Tokens require ~125x fewer trainable parameters and converge ~6x faster than fine-tuning or hierarchical baselines like PULSE.",
+          "Keeping the BFM frozen preserves multi-modal prompting and yields better OOD robustness to friction/gravity perturbations than fine-tuning.",
+          "Task Tokens produce more human-like motion than fine-tuning, AMP, PPO and J.C.-only baselines, though PULSE is judged more human-like.",
+          "Task Tokens compose with user-defined priors (text, joint conditions) to correct undesired emergent behaviors."
+        ],
+        "key_contributions": [
+          "Task Tokens: a parameter-efficient adaptation method for transformer-based GC-BFMs using a learned task encoder and frozen BFM.",
+          "Hybrid control paradigm combining user-specified goals (text, joint conditions) with RL-learned task tokens.",
+          "Empirical demonstration of efficiency, performance, OOD robustness, and motion naturalness across five humanoid tasks.",
+          "Multi-modal prompting demonstration including an FSM-based scheme for sequential phases (Strike)."
+        ],
+        "experimental_results": [
+          "Table 1: Success rates across 5 tasks; Task Tokens match or exceed MaskedMimic Fine-Tune on Reach/Direction/Steering/Long Jump; slightly lower on Strike (76.61 vs 83.07 PULSE/FT).",
+          "Figure 3: Strike convergence — Task Tokens reach ~0.75 success within ~50M steps; PULSE reaches similar performance only by ~300M steps.",
+          "Figure 4: OOD perturbations on Steering — Task Tokens maintain higher success rates under low friction and high gravity than fine-tuning and PULSE.",
+          "Table 2: Human study (~96 participants) — Task Tokens preferred over MaskedMimic FT, AMP, PPO, J.C.-only at high rates (>~70%) but lose to PULSE on most tasks.",
+          "Multi-modal prompting (Figs 5,6): Adding orientation/text priors fixes backward walking in Direction and produces a kick-based Strike behavior.",
+          "Ablation (Table 4): Larger MLP without current-pose input gives best Steering success (87.77%); poor results when smaller MLP combined with current pose."
+        ],
+        "assumptions_and_limitations": [
+          "Depends on quality and coverage of the pretrained BFM (MaskedMimic).",
+          "Only one BFM architecture tested; generality across GC-BFMs unverified.",
+          "Tasks and rewards are hand-designed; no automated reward/observation design.",
+          "Only simulation; no sim-to-real or real robot evaluation.",
+          "Separate encoder per task; no multi-task/lifelong learning.",
+          "Human study has limited scale (~96 participants) and uses anonymous web survey.",
+          "Strike task uses a finite-state machine for phase switching, requiring task-specific scaffolding."
+        ],
+        "figures_tables": [
+          "Figure 1: System diagram showing Task Encoder output combined with state and prior tokens fed to frozen GC-BFM; gradients flow through frozen BFM.",
+          "Figure 2: Visual examples of the five tasks (Direction, Steering, Reach, Strike, Long Jump).",
+          "Figure 3: Strike convergence curves comparing Task Tokens, FT, PULSE, AMP, PureRL.",
+          "Figure 4: OOD robustness — success rate vs friction and gravity multiplier on Steering.",
+          "Figure 5: Multi-modal prompting demonstration on Direction (backward walking fixed via priors).",
+          "Figure 6: Strike behavior generated via combined task tokens, orientation priors, and textual kick prior.",
+          "Figure 8: FSM diagram for Strike (locomotion → striking phase based on distance).",
+          "Table 1: Success rates across tasks vs baselines.",
+          "Table 2: Human study win rates of Task Tokens vs each baseline.",
+          "Table 3: Ablation comparing Task Tokens vs MaskedMimic fine-tune with/without J.C.",
+          "Table 4: Architectural ablations of task encoder (size, current pose)."
+        ],
+        "equations_algorithms": [
+          "Standard MDP formulation with discounted return objective.",
+          "PPO objective used to optimize the task encoder, with gradients backpropagated through the frozen BFM.",
+          "Token concatenation scheme: [prior tokens, task token τ ∈ R^512, state tokens] fed to the transformer BFM.",
+          "FSM for multi-phase prompting on Strike, switching prior tokens by geometric proximity to the target."
+        ]
+      },
+      "usage": {
+        "input_tokens": 354,
+        "output_tokens": 3219,
+        "cache_creation_input_tokens": 42283,
+        "cache_read_input_tokens": 0
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_1": {
+      "parsed": {
+        "field_and_subfield": "Reinforcement learning and physics-based humanoid character control; parameter-efficient adaptation of transformer-based behavior foundation models.",
+        "problem_addressed": "How to adapt a pretrained goal-conditioned behavior foundation model (GC-BFM) such as MaskedMimic to specific downstream humanoid control tasks without (a) brittle prompt engineering, (b) losing the BFM's behavioral prior via full fine-tuning, or (c) sacrificing multi-modal prompting capabilities.",
+        "research_question": "Can a lightweight, RL-trained task encoder producing additional conditioning tokens for a frozen GC-BFM achieve task-specific performance comparable to or better than full fine-tuning while preserving the BFM's robustness, naturalness, and multi-modal prompting?",
+        "one_paragraph_summary": "The paper introduces Task Tokens, a parameter-efficient method for adapting goal-conditioned behavior foundation models (specifically MaskedMimic) to new humanoid control tasks. A small MLP task encoder is trained with PPO to produce a 512-dim token that is concatenated with the BFM's existing prior and state tokens; gradients flow through the frozen transformer to update only the encoder (~200K parameters vs ~25M for full fine-tuning). Experiments on five humanoid tasks (Reach, Direction, Steering, Strike, Long Jump) in Isaac Gym show that Task Tokens match or exceed fine-tuning, PULSE, AMP, and PPO baselines in success rate while converging up to ~6x faster and using up to ~125x fewer trainable parameters. A human study with ~96 participants finds Task Tokens produce more human-like motions than fine-tuning, AMP, and PPO, though PULSE remains preferred. Task Tokens also preserve the BFM's multi-modal prompting and exhibit stronger robustness under OOD friction/gravity perturbations than fine-tuning.",
+        "problem_statement": "Goal-conditioned behavior foundation models excel at zero-shot generation of human-like motions but struggle when downstream tasks require precise behaviors that fall outside the prompt interface, while fine-tuning destroys their priors and multi-modal capabilities; a parameter-efficient adaptation mechanism that preserves the BFM is needed.",
+        "main_contributions": [
+          "Task Tokens: a method to adapt a frozen GC-BFM (MaskedMimic) by training a small task encoder via RL to produce additional conditioning tokens injected into the BFM's transformer input.",
+          "Demonstrated parameter-efficient adaptation (~200K trainable parameters per task vs ~25M for full fine-tuning; ~125x reduction) with up to ~6x faster convergence than PULSE on Strike.",
+          "Hybrid control paradigm enabling composition of learned task tokens with user-defined priors (text, joint conditioning) and FSM-based phase switching for sequential tasks.",
+          "Empirical evidence of stronger OOD robustness (friction, gravity perturbations on Steering) compared to fine-tuning and other baselines, and a human study supporting motion naturalness."
+        ],
+        "claim_evidence_map": [
+          {
+            "claim": "Task Tokens match or exceed full fine-tuning and other baselines in task success.",
+            "evidence_in_paper": "Table 1: success rates of 94.88/99.26/88.69/99.75/76.61 for Reach/Direction/Steering/Long Jump/Strike, comparable to or above MaskedMimic Fine-Tune, PULSE, AMP, and PPO except slightly lower on Strike."
+          },
+          {
+            "claim": "Task Tokens require ~125x fewer parameters and converge ~6x faster than alternatives.",
+            "evidence_in_paper": "Section 4.1 reports Task Tokens use ~200K parameters vs 9.3M (PULSE) and 25M (Fine-Tune), and Figure 3 shows Task Tokens reach Strike success ~50M steps vs ~300M steps for PULSE."
+          },
+          {
+            "claim": "Keeping the BFM frozen yields better OOD robustness than fine-tuning.",
+            "evidence_in_paper": "Figure 4 shows Task Tokens (with and without J.C.) maintain higher Steering success under low friction (~0.4x) and high gravity (~1.5x) than MaskedMimic Fine-Tune, PULSE, AMP, and PureRL."
+          },
+          {
+            "claim": "Task Tokens produce more human-like motion than most baselines.",
+            "evidence_in_paper": "Table 2 reports Task Tokens win rates of 70-99% vs MaskedMimic FT, AMP, PPO, and J.C.-only across tasks (n~96 participants), though PULSE is preferred over Task Tokens in most tasks."
+          },
+          {
+            "claim": "Task Tokens can be combined with user-defined priors to correct undesired emergent behaviors.",
+            "evidence_in_paper": "Figures 5 and 6 demonstrate that adding orientation/text priors fixes backward walking in Direction and produces a coherent kick-based strike behavior via an FSM."
+          },
+          {
+            "claim": "Fine-tuning the entire BFM causes catastrophic forgetting of multi-modal prompting.",
+            "evidence_in_paper": "Section 4.4 states this qualitatively but provides no quantitative evidence comparing prompt retention after fine-tuning."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 3421,
+        "output_tokens": 1904,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 42283
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_2": {
+      "parsed": {
+        "sections": [
+          {
+            "name": "Abstract",
+            "summary": "Introduces Task Tokens as a parameter-efficient adaptation method for goal-conditioned behavior foundation models (GC-BFMs), claiming up to 125x fewer trainable parameters and 6x faster convergence while preserving multi-modal prompting and OOD robustness.",
+            "key_claims": [
+              "Task Tokens adapt BFMs while keeping the original model frozen.",
+              "Up to 125x parameter reduction and 6x faster convergence than baselines.",
+              "Method retains compatibility with other prompting modalities."
+            ],
+            "supporting_evidence": [
+              "Quantitative claims are previewed; details deferred to Sections 4.1 and 4.2."
+            ],
+            "issues": [
+              "The '6x faster' and '125x fewer parameters' numbers are stated against unspecified 'standard baselines'; abstract does not clarify which baseline (PULSE vs full fine-tune).",
+              "Does not preview the negative result (PULSE preferred in human study)."
+            ],
+            "missing_information": [
+              "Which baseline yields the 6x and 125x comparison.",
+              "Scope of OOD generalization claims (which tasks/conditions)."
+            ],
+            "ambiguous_or_unsupported": [
+              "The phrase 'Task Tokens match the high task performance of full fine-tuning' is contradicted in Table 1 for Strike (76.61 vs 83.07)."
+            ]
+          },
+          {
+            "name": "Introduction",
+            "summary": "Motivates the need to combine reward-driven optimization with the prompt-conditioning interface of GC-BFMs. Argues that prompt engineering is fragile and fine-tuning destroys priors. Frames Task Tokens as a hybrid control paradigm.",
+            "key_claims": [
+              "GC-BFMs struggle with task-specific precision despite zero-shot strength.",
+              "Hybrid user-prior + RL-learned token solves both prompt-engineering and reward-design pitfalls.",
+              "Inspired by parameter-efficient NLP methods (LoRA, adapters, prefix tuning)."
+            ],
+            "supporting_evidence": [
+              "Uses the 'walk to and strike object' anecdote to illustrate prompt-engineering vs reward-design tradeoff."
+            ],
+            "issues": [
+              "The analogy to LoRA/prefix-tuning is loose; Task Tokens are closer to prefix-tuning conceptually but the paper does not make the precise technical analogy explicit.",
+              "Claims of 'unmatched parameter efficiency' are not justified against other PEFT baselines (e.g., LoRA, adapters) — only against full fine-tune and hierarchical RL."
+            ],
+            "missing_information": [
+              "Why other PEFT methods (LoRA on BFM) are not considered as baselines.",
+              "Definition of 'standard baselines' used for the headline efficiency claims."
+            ],
+            "ambiguous_or_unsupported": [
+              "The introduction frames the method as 'novel' but does not distinguish it from existing learned-prompt/prefix-tuning approaches in transformer policies."
+            ]
+          },
+          {
+            "name": "Related Work",
+            "summary": "Reviews humanoid control (DeepMimic, AMP, PULSE, ASE), behavior foundation models (PSM, FB representations), and goal-conditioned BFMs (Decision Transformer, RT-2, MaskedMimic).",
+            "key_claims": [
+              "GC-BFMs differ from skill-latent methods (PULSE/ASE) by direct goal-to-action mapping.",
+              "GC-BFMs struggle with OOD constraints, motivating Task Tokens."
+            ],
+            "supporting_evidence": [
+              "Citation-based overview."
+            ],
+            "issues": [
+              "Notably absent: discussion of prompt tuning / prefix tuning as a direct conceptual precedent, despite citation in the introduction.",
+              "Does not discuss prior work on RL-based prompt optimization or learned-token control in policy transformers.",
+              "AMP description is brief and may misrepresent its capabilities; baselines selection rationale is not justified here."
+            ],
+            "missing_information": [
+              "Comparison to other PEFT methods for control policies.",
+              "Discussion of HRL with learned options vs Task Tokens."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that GC-BFMs 'struggle' with OOD constraints is asserted without citation or evidence."
+            ]
+          },
+          {
+            "name": "Method",
+            "summary": "Describes Task Tokens: a feedforward task encoder takes egocentric goal observations (plus proprioception) and outputs a 512-dim token, concatenated with prior/state tokens fed to a frozen MaskedMimic transformer. Trained with PPO; gradients flow through frozen BFM.",
+            "key_claims": [
+              "Token-based architecture allows seamless integration without modifying BFM.",
+              "Approach is generic to any transformer-based BFM that attends over arbitrary tokens.",
+              "Only ~200K parameters per task vs ~20M for conventional methods."
+            ],
+            "supporting_evidence": [
+              "Figure 1 architecture diagram.",
+              "Architectural details in Appendix A."
+            ],
+            "issues": [
+              "Critical technical details are sparse: no equations for PPO objective, no description of how gradients propagate through the frozen transformer (e.g., are KV caches affected? how is the action distribution parameterized when the BFM was trained with DAgger/imitation, not for action-distribution sampling under PPO?).",
+              "The training objective optimizes the BFM's action probabilities via PPO, but MaskedMimic was distilled with imitation, not as a stochastic policy with a clean PPO-compatible distribution; the value head architecture and where the critic gets features are not described in the main text.",
+              "Claim that the method generalizes to any transformer-BFM is asserted but never tested with another BFM.",
+              "Use of proprioceptive input in the task encoder is mentioned only briefly; the rationale is deferred to ablations."
+            ],
+            "missing_information": [
+              "PPO hyperparameters and critic architecture in main text.",
+              "Whether the action head/decoder is included in the trainable parameters or considered part of the frozen BFM.",
+              "Explanation of how the encoder is initialized to avoid disrupting the prior at training start."
+            ],
+            "ambiguous_or_unsupported": [
+              "'gradients flowing through the frozen GC-BFM' is mentioned but not contextualized — full backprop through a large transformer for a 200K-param encoder may negate the parameter efficiency advantage in compute/memory."
+            ]
+          },
+          {
+            "name": "Experiments",
+            "summary": "Five humanoid tasks in Isaac Gym (Reach, Direction, Steering, Strike, Long Jump). Compares Task Tokens to MaskedMimic (J.C. only), MaskedMimic Fine-Tune, PULSE, AMP, and Pure PPO. Includes OOD perturbation study, human study, multi-modal prompting demonstrations, and ablations.",
+            "key_claims": [
+              "Task Tokens match or exceed fine-tuning on most tasks while using far fewer parameters.",
+              "Task Tokens are more sample-efficient than PULSE (50M vs 300M steps to similar performance on Strike).",
+              "Task Tokens improve OOD robustness vs fine-tuning under friction/gravity perturbations.",
+              "Task Tokens generate more human-like motion than fine-tuning, AMP, PPO; lose to PULSE."
+            ],
+            "supporting_evidence": [
+              "Table 1, Figure 3, Figure 4, Table 2, Figures 5–6."
+            ],
+            "issues": [
+              "Section heading 'Behavioral Frequency Modulation (BFM)' in Section 4 intro is a typo/error — should be 'Behavior Foundation Model'.",
+              "Comparison fairness: MaskedMimic Fine-Tune is trained for the same number of steps (4000 epochs / 120M frames), but the paper does not show whether FT might match Task Tokens given more steps; convergence is judged at fixed budget.",
+              "Strike results show high variance for FT (47.36 ± 54.78) and AMP (76.59 ± 43.42) and PPO (61.91 ± 52.26) on Long Jump and Strike — standard deviation exceeding 50% suggests bimodal success/failure across seeds, which deserves discussion.",
+              "OOD generalization is only tested on Steering; generalization claims are over-stated relative to the evidence.",
+              "Human study uses ~96 participants across 3 differently-sized forms (20, 24, 52); statistical analysis (CI, significance) is not provided beyond ±std.",
+              "The Strike task uses an FSM with hand-designed phase switching, which is a non-trivial scaffold not afforded to baselines; this is acknowledged only implicitly.",
+              "Joint conditioning is used as an additional input for Task Tokens on Reach/Direction/Steering but not all baselines have the equivalent — the comparison conflates two changes (token learning + extra J.C. priors)."
+            ],
+            "missing_information": [
+              "Total wall-clock or FLOPs comparison; '6x faster' refers to environment steps, not compute through the frozen BFM.",
+              "Whether PULSE baseline used the same SMPL humanoid and motion data.",
+              "Per-seed performance to evaluate the high-variance baselines.",
+              "Comparison to other PEFT methods (LoRA, adapter, prompt tuning) which would be the natural baselines for the parameter efficiency claim.",
+              "Details of reward functions for each task in the main text."
+            ],
+            "ambiguous_or_unsupported": [
+              "Caption of Fig 3 claims 'Fine-tuning converges similarly, likely due to its higher capacity, leading to overfitting' — but the figure shows FT plateaus near similar success rate; 'overfitting' is unsupported.",
+              "'~125x fewer parameters' compares to fine-tuning ~25M (whole MaskedMimic) but the paper says PULSE is 9.3M (46.5x). The 125x headline figure uses the largest competitor; this is presented as the general claim.",
+              "Robustness claims based on a single task (Steering) are generalized to 'unmatched generalization on OOD cases'."
+            ]
+          },
+          {
+            "name": "Results",
+            "summary": "Reports quantitative and qualitative results across tasks, OOD perturbations, motion quality, and multi-modal prompting.",
+            "key_claims": [
+              "Task Tokens balance efficiency, motion quality, and robustness.",
+              "PULSE remains preferred for human-likeness — attributed to its prior-constrained latent representation."
+            ],
+            "supporting_evidence": [
+              "Tables 1–2; Figures 3–6."
+            ],
+            "issues": [
+              "The interpretation that PULSE is more human-like 'because PULSE constrains the high-level representation to stay closer to the prior' is plausible but not directly demonstrated/ablated.",
+              "The claim 'Task Tokens preserve the pre-trained prompting capabilities' is illustrated qualitatively but never tested quantitatively (e.g., evaluating zero-shot J.C. tasks on a model with active Task Tokens for a different task).",
+              "Multi-modal prompting on Strike uses an FSM, which is a manually engineered scaffold; this is glossed over in the main results."
+            ],
+            "missing_information": [
+              "Quantitative evaluation that demonstrates non-degradation of the underlying BFM's pretrained capabilities.",
+              "Sample efficiency comparison normalized to wall-clock or FLOPs.",
+              "Quantitative motion-quality metrics (e.g., MPJPE vs reference motions, foot sliding) in addition to human judgments."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim of 'unmatched parameter efficiency' vs unspecified comparators.",
+              "The OOD plot's interpretation: at very low friction (0.2) and high gravity (2x) all methods collapse near zero; the 'highly improved robustness' claim hinges on intermediate regimes."
+            ]
+          },
+          {
+            "name": "Limitations",
+            "summary": "Acknowledges dependence on the underlying BFM, single-BFM validation, manual reward/observation design, simulation-only evaluation, and per-task encoder training.",
+            "key_claims": [
+              "Method's generality to other GC-BFMs needs verification.",
+              "Sim-to-real not addressed.",
+              "Multi-task and lifelong extensions are future work."
+            ],
+            "supporting_evidence": [
+              "Self-acknowledged in Section 5."
+            ],
+            "issues": [
+              "Does not acknowledge the limitation that the FSM scaffolding for Strike is a manual addition.",
+              "Does not discuss compute cost of backpropagation through the frozen BFM as a limitation.",
+              "Does not acknowledge the limited scope of OOD experiments (single task)."
+            ],
+            "missing_information": [
+              "No discussion of failure modes of the encoder when prior tokens conflict with the task token.",
+              "No discussion of catastrophic-interference behavior of the frozen BFM when receiving an unfamiliar learned token."
+            ],
+            "ambiguous_or_unsupported": []
+          },
+          {
+            "name": "Supplementary",
+            "summary": "Appendices cover encoder architecture (A), task definitions (B), training/eval details (C), the FSM for Strike (D), ablations (E), and human study details (F).",
+            "key_claims": [
+              "Encoder is a simple ReLU MLP with online observation normalization.",
+              "Tasks use clearly defined success criteria.",
+              "Ablations confirm robustness to encoder size and the value of J.C."
+            ],
+            "supporting_evidence": [
+              "Tables 3 and 4."
+            ],
+            "issues": [
+              "Ablation in Table 4 contains a non-monotonic pattern: smaller MLP + current pose performs worst (66%) while larger MLP + current pose is mid-tier (78%); the rationale is not explained, and the paper's main configuration claims current pose helps human-likeness but here it hurts success — these two metrics may trade off, which is not analyzed.",
+              "Human study: 3 different forms with very different participant counts (20/24/52) and no per-form analysis; presentation of '±' values is not explicitly defined (standard error vs std).",
+              "AMP baseline uses a 'locomotion-focused motion dataset'; this choice may disadvantage AMP on strike/jump tasks, which is acknowledged but not mitigated.",
+              "PULSE used 128 parallel envs vs 1024 for others, even with the same total frames — this may affect optimization dynamics and is a potential confound for the convergence comparison."
+            ],
+            "missing_information": [
+              "Reward function specifications for each task.",
+              "PPO hyperparameters in main results (deferred to cited prior work).",
+              "Significance tests for human study results.",
+              "Demographic information of human study participants."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that 'preliminary experiments indicated such [architectural] additions were unnecessary' is asserted without data."
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 3480,
+        "output_tokens": 5311,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 42283
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_3": {
+      "parsed": {
+        "claims": [
+          {
+            "claim": "Task Tokens match or exceed full fine-tuning on task success rates across five humanoid tasks.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 1: Task Tokens success rates (94.88/99.26/88.69/99.75/76.61) are comparable to MaskedMimic Fine-Tune (93.70/99.10/87.44/47.36/83.07) on Reach/Direction/Steering/Long Jump/Strike. Task Tokens are notably higher on Long Jump and slightly lower on Strike.",
+            "evidence_strength": "strong",
+            "notes": "Reasonable evidence with 5 seeds and stds reported. However, Strike shows Task Tokens (76.61) underperforms FT (83.07), PULSE (83.18), and even PPO (81.36), which complicates the 'match or exceed' framing."
+          },
+          {
+            "claim": "Task Tokens require ~125x fewer trainable parameters than full fine-tuning (~200K vs ~25M).",
+            "category": "practical_impact",
+            "evidence_in_paper": "Section 3.3 and 4.1 state ~200K parameters for the task encoder vs ~25M for MaskedMimic Fine-Tune, yielding ~125x reduction.",
+            "evidence_strength": "strong",
+            "notes": "Parameter counts are plausible for an MLP [512,512,512] vs a full transformer; verifiable from architecture descriptions."
+          },
+          {
+            "claim": "Task Tokens converge up to ~6x faster than alternative methods.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 3 (Strike convergence) shows Task Tokens reaching ~0.75 success near 50M steps while PULSE reaches similar performance around 300M steps.",
+            "evidence_strength": "weak",
+            "notes": "The 6x claim relies on a single task (Strike) and a single comparison (vs PULSE). Fine-Tune appears to converge at a similar rate to Task Tokens in Figure 3. No convergence comparisons shown for other tasks."
+          },
+          {
+            "claim": "Task Tokens exhibit improved OOD robustness to friction and gravity perturbations relative to fine-tuning and other baselines.",
+            "category": "generalization",
+            "evidence_in_paper": "Figure 4: on the Steering task, Task Tokens (with and without J.C.) maintain higher success under low friction (~0.4x) and high gravity (~1.5x) than MaskedMimic Fine-Tune, PULSE, AMP, and PureRL.",
+            "evidence_strength": "weak",
+            "notes": "Evidence is from a single task (Steering). The shaded std regions overlap substantially in some regimes, and the curves for FT and Task Tokens are close at nominal conditions. Generalizability to other tasks is not tested."
+          },
+          {
+            "claim": "Task Tokens produce more human-like motion than fine-tuning, AMP, PPO, and J.C.-only baselines.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 2: Task Tokens win rates of 53-99% vs these baselines across tasks, based on ~96 participants over 3 Google Forms.",
+            "evidence_strength": "weak",
+            "notes": "Human study has methodological limitations: participants not balanced across forms (20/24/52), no demographic info, no statistical testing of significance, and 'human-likeness' judgment may conflate task success with motion quality. PULSE outperforms Task Tokens in most tasks, which undermines the strongest naturalness claims."
+          },
+          {
+            "claim": "Task Tokens can be composed with user-defined prior tokens (text, joint conditioning) to correct undesired emergent behaviors.",
+            "category": "practical_impact",
+            "evidence_in_paper": "Figures 5 and 6 qualitatively show that adding orientation/text priors corrects backward walking in Direction and produces a kick-based Strike via an FSM (Appendix D).",
+            "evidence_strength": "weak",
+            "notes": "Demonstration is qualitative (figures + videos). No quantitative metrics on how well priors are respected, or comparison to fine-tuned model's ability to do the same."
+          },
+          {
+            "claim": "Fine-tuning the entire BFM leads to catastrophic forgetting of multi-modal prompting capabilities.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Section 4.4 asserts this but no quantitative comparison or experiment specifically measures prompt retention after fine-tuning.",
+            "evidence_strength": "missing",
+            "notes": "This is a key motivating claim for the method but is stated without dedicated experiments. The human study includes a 'MaskedMimic F.T. + J.C.' condition (Table 2) but that measures human-likeness, not prompt-following fidelity."
+          },
+          {
+            "claim": "Task Tokens are a novel parameter-efficient adaptation technique for behavior foundation models.",
+            "category": "novelty",
+            "evidence_in_paper": "Authors position the method as inspired by LoRA, adapters, prefix tuning (Hu et al., Houlsby et al., Li & Liang) but applied to BFMs.",
+            "evidence_strength": "weak",
+            "notes": "The mechanism is essentially prefix-tuning / soft-prompt tuning adapted to a transformer BFM. Novelty lies more in the application domain than the technique itself; this could be more honestly framed."
+          },
+          {
+            "claim": "Task Tokens are applicable to any transformer-based BFM that integrates additional tokens.",
+            "category": "generalization",
+            "evidence_in_paper": "Stated in Section 3.1; experiments are conducted only with MaskedMimic.",
+            "evidence_strength": "missing",
+            "notes": "Acknowledged in Limitations as needing further validation across more GC-BFM architectures."
+          },
+          {
+            "claim": "Gradients flow through the frozen BFM to update only the task encoder, enabling efficient task-specific optimization.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Section 3.3 explains the PPO objective is computed on BFM actions while only the task encoder is updated; Figure 1 illustrates gradient flow.",
+            "evidence_strength": "strong",
+            "notes": "Mechanism is standard and well-described; consistent with prefix-tuning style approaches."
+          },
+          {
+            "claim": "Task Tokens preserve the BFM's behavioral priors and motion manifold.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Argued throughout; supported indirectly via OOD robustness experiments (Figure 4) and human study (Table 2).",
+            "evidence_strength": "weak",
+            "notes": "No direct measurement (e.g., divergence from BFM's output distribution, motion quality metrics like Fréchet distance). Inference is indirect via downstream effects."
+          }
+        ],
+        "unsupported_claims": [
+          "Fine-tuning the entire BFM causes catastrophic forgetting of multi-modal prompting (no dedicated quantitative experiment).",
+          "Task Tokens are applicable to any transformer-based BFM (only MaskedMimic tested).",
+          "Task Tokens preserve the BFM's motion manifold (no direct distributional measurement)."
+        ],
+        "overstated_claims": [
+          "'Up to ~6x faster convergence' is derived from a single task comparison (Strike vs PULSE); Fine-Tune appears similarly fast in the same plot.",
+          "'Match the high task performance of full fine-tuning' — on Strike, Task Tokens (76.61) clearly underperforms Fine-Tune (83.07), PULSE (83.18), and PPO (81.36).",
+          "'Surpassing other methods in terms of robustness to changes in environment dynamics' is supported only on one task (Steering).",
+          "Novelty framing as a 'novel approach' undersells that this is essentially prefix-tuning adapted to BFMs."
+        ],
+        "claims_requiring_external_verification": [
+          "Exact parameter counts of MaskedMimic (~25M) and PULSE (9.3M) used to compute the 125x and 46.5x reduction factors.",
+          "Whether MaskedMimic's published baselines (J.C. only zero-shot performance numbers) match what is reported here.",
+          "PULSE's published convergence behavior to validate the 6x speedup claim.",
+          "Whether the AMP baseline using locomotion-only motions is a fair comparison for Strike and Long Jump tasks."
+        ]
+      },
+      "usage": {
+        "input_tokens": 2148,
+        "output_tokens": 2991,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 42283
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_4": {
+      "parsed": {
+        "novelty_axes": [
+          {
+            "axis": "method",
+            "claimed_contribution": "A parameter-efficient adaptation mechanism for transformer-based Goal-Conditioned Behavior Foundation Models: train a small task encoder that emits a 512-d 'Task Token' appended to the BFM's prompt sequence, optimized via PPO with gradients flowing through the frozen BFM.",
+            "why_it_matters": "The mechanism is the core technical contribution. If the underlying technique already exists in the PEFT/RL literature, novelty must rest on the new combination/domain rather than the mechanism itself.",
+            "search_keywords": [
+              "prefix tuning frozen transformer policy",
+              "soft prompt tuning reinforcement learning",
+              "learned token conditioning frozen policy PEFT RL",
+              "PPO gradients frozen transformer prefix"
+            ],
+            "search_question": "Has prior work proposed prefix/soft-prompt tuning of a frozen transformer policy where the learned prefix/token is optimized via on-policy RL (PPO)?",
+            "closest_prior_work_ref": "Li & Liang 2021 prefix-tuning [similar_prior_work #1]; Lester et al. 2021 prompt tuning [similar_prior_work #2]; RLPrompt (Deng 2022) [similar_prior_work #3]",
+            "axis_verdict": "derivative"
+          },
+          {
+            "axis": "application",
+            "claimed_contribution": "Applying PEFT-style adaptation to humanoid-control BFMs (specifically MaskedMimic), and showing that a learned task token can outperform prompt engineering and rival fine-tuning while preserving the BFM's behavioral priors.",
+            "why_it_matters": "If the mechanism is borrowed from NLP PEFT, then novelty largely rests on whether anyone has applied this to BFMs / GC-BFMs for physics-based character control.",
+            "search_keywords": [
+              "MaskedMimic adaptation downstream task",
+              "behavior foundation model parameter efficient adaptation humanoid",
+              "PULSE downstream task adapter",
+              "adapt GC-BFM frozen prompt RL"
+            ],
+            "search_question": "Have prior works adapted goal-conditioned humanoid BFMs (MaskedMimic, PULSE, ASE) by training only a small learned conditioning module while keeping the BFM frozen?",
+            "closest_prior_work_ref": "PULSE (Luo 2024a) [similar_prior_work #4]; ASE (Peng 2022) [similar_prior_work #5]; LoLA / Fast Adaptation with BFMs (RLJ 2025) [similar_prior_work #6]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "method",
+            "claimed_contribution": "A hybrid control paradigm that composes learned task tokens with user-supplied prior tokens (text, joint conditioning) into one transformer prompt, including an FSM-driven multi-phase prompt scheme (Strike).",
+            "why_it_matters": "Composability of learned and human-specified prompts is a load-bearing differentiator vs full fine-tuning (which the paper argues causes catastrophic forgetting of multi-modal prompts) and vs hierarchical methods like PULSE.",
+            "search_keywords": [
+              "combine soft prompt with hard prompt frozen transformer",
+              "multi-modal prompt humanoid character control text joint",
+              "MaskedMimic text joint prompting compose"
+            ],
+            "search_question": "Have prior works combined learned (RL-optimized) prompt tokens with user-provided prior tokens within the same transformer-policy prompt for character control?",
+            "closest_prior_work_ref": "MaskedMimic (Tessler 2024) [similar_prior_work #7] supports multi-modal prompts but not learned-token composition; CALM (Tessler 2023) [similar_prior_work #8]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "empirical",
+            "claimed_contribution": "Empirical findings that (i) freezing the BFM preserves OOD robustness to friction/gravity perturbations relative to fine-tuning, and (ii) the adapted policy retains more human-likeness than fine-tuning per a small user study.",
+            "why_it_matters": "These are the experimental claims that justify the design choice of keeping the BFM frozen.",
+            "search_keywords": [
+              "fine-tuning catastrophic forgetting foundation model robotics",
+              "frozen foundation model OOD robustness RL adaptation",
+              "humanoid motion naturalness preservation fine-tuning"
+            ],
+            "search_question": "Have prior works empirically shown that freezing a pretrained motor BFM during RL adaptation preserves OOD robustness or motion naturalness compared to full fine-tuning?",
+            "closest_prior_work_ref": "PULSE (Luo 2024a) [similar_prior_work #4]; ASE (Peng 2022) [similar_prior_work #5] both implicitly rely on this idea via latent-skill conditioning",
+            "axis_verdict": "incremental"
+          }
+        ],
+        "novelty_axes_searched": [
+          "prefix tuning reinforcement learning frozen transformer policy adaptation",
+          "MaskedMimic humanoid control adaptation downstream task",
+          "PULSE universal humanoid motion latent skill RL",
+          "behavior foundation model fine-tuning parameter efficient RL",
+          "soft prompt tuning reinforcement learning policy",
+          "ASE adversarial skill embedding hierarchical RL humanoid"
+        ],
+        "similar_prior_work": [
+          {
+            "title": "Prefix-Tuning: Optimizing Continuous Prompts for Generation",
+            "venue_or_source": "ACL 2021 (arXiv:2101.00190)",
+            "year": "2021",
+            "similarity_summary": "Introduces training a small set of continuous prefix vectors prepended to a frozen transformer's input/key-value cache to adapt it to downstream tasks, while keeping the base model frozen.",
+            "key_difference": "Task Tokens is essentially prefix-tuning applied to a transformer policy, with the 'prefix' produced dynamically by an MLP from the current goal/proprioception and optimized by on-policy RL (PPO) instead of supervised next-token loss. Cited by the paper but the mechanistic equivalence is understated."
+          },
+          {
+            "title": "The Power of Scale for Parameter-Efficient Prompt Tuning",
+            "venue_or_source": "EMNLP 2021",
+            "year": "2021",
+            "similarity_summary": "Lester et al.'s prompt tuning learns a small set of soft tokens prepended to a frozen LM's input; conceptually identical interface to what Task Tokens uses.",
+            "key_difference": "Not cited by the paper. Task Tokens differs only in that the soft token is goal-conditioned (output of an MLP per timestep) and optimized by RL, not language SFT."
+          },
+          {
+            "title": "RLPrompt: Optimizing Discrete Text Prompts with Reinforcement Learning",
+            "venue_or_source": "EMNLP 2022",
+            "year": "2022",
+            "similarity_summary": "Uses RL to optimize prompt tokens that condition a frozen pre-trained model — directly analogous in spirit to learning a Task Token via PPO on top of a frozen BFM.",
+            "key_difference": "RLPrompt optimizes discrete text tokens for NLP tasks; Task Tokens optimizes continuous tokens for a humanoid-control BFM. Not cited; the connection (RL-optimized prompts to frozen pre-trained models) is highly relevant prior art."
+          },
+          {
+            "title": "Universal Humanoid Motion Representations for Physics-Based Control (PULSE)",
+            "venue_or_source": "ICLR 2024",
+            "year": "2024",
+            "similarity_summary": "Provides a pretrained latent motion representation that downstream RL controllers reuse by training only a high-level policy that emits latents into a frozen low-level decoder — same 'freeze the prior, train a small module on top' template.",
+            "key_difference": "PULSE conditions a frozen decoder on a continuous latent code; Task Tokens instead inserts an extra token into a transformer prompt. Task Tokens uses a transformer BFM (MaskedMimic) and combines learned tokens with user-defined prompt tokens, which PULSE cannot do."
+          },
+          {
+            "title": "ASE: Large-Scale Reusable Adversarial Skill Embeddings for Physically Simulated Characters",
+            "venue_or_source": "ACM TOG / SIGGRAPH 2022",
+            "year": "2022",
+            "similarity_summary": "Pretrains a latent skill space from motion data and adapts to new tasks by training a hierarchical controller that picks latents, while keeping the low-level skill decoder fixed.",
+            "key_difference": "ASE uses a non-transformer latent skill interface; Task Tokens leverages the transformer prompt interface and composes with user priors. Mechanistically the 'freeze decoder, train high-level chooser' template is the same."
+          },
+          {
+            "title": "Fast Adaptation with Behavioral Foundation Models (LoLA)",
+            "venue_or_source": "RLJ / RLC 2025",
+            "year": "2025",
+            "similarity_summary": "Proposes lightweight, computationally efficient adaptation of pretrained Behavioral Foundation Models using policy gradients with lookahead returns and without updating the pretrained critic.",
+            "key_difference": "LoLA targets FB/Successor-Measure-style BFMs (reward-conditioned latent inference) rather than transformer GC-BFMs, and adapts via lookahead policy improvement rather than learning a prompt token. Not cited; closest contemporaneous work on the same 'adapt a BFM cheaply' problem."
+          },
+          {
+            "title": "MaskedMimic: Unified Physics-Based Character Control Through Masked Motion Inpainting",
+            "venue_or_source": "ACM TOG / SIGGRAPH Asia 2024",
+            "year": "2024",
+            "similarity_summary": "The pretrained BFM that Task Tokens adapts. Already supports multi-modal prompting via text, joint conditions, and target objects.",
+            "key_difference": "MaskedMimic itself is zero-shot prompt-engineering only; Task Tokens adds a reward-driven learned token on top. Properly cited as the base model."
+          },
+          {
+            "title": "CALM: Conditional Adversarial Latent Models for Directable Virtual Characters",
+            "venue_or_source": "SIGGRAPH 2023",
+            "year": "2023",
+            "similarity_summary": "Trains a conditional latent skill model that can be steered by downstream high-level controllers, again under the 'freeze low-level decoder, train high-level conditioner' template.",
+            "key_difference": "Different conditioning interface (latent + discriminator-based motion prior) and no transformer-token composition with user prompts."
+          }
+        ],
+        "potential_missing_citations": [
+          "Lester et al. 2021, 'The Power of Scale for Parameter-Efficient Prompt Tuning' (EMNLP) — the most direct mechanistic analogue to Task Tokens; the paper cites LoRA, adapters, and prefix-tuning but omits standard prompt tuning.",
+          "Deng et al. 2022, 'RLPrompt' (EMNLP) — RL optimization of prompts for a frozen pretrained model, a near-direct precedent for optimizing soft/discrete prompts with RL.",
+          "Chen et al. 2025 (RLJ), 'Fast Adaptation with Behavioral Foundation Models' (LoLA) — concurrent/prior work on efficient adaptation of BFMs that should be discussed.",
+          "Decision Transformer / Trajectory Transformer style work on learned conditioning tokens for control (the paper cites Decision Transformer once but does not discuss its conditioning interface as a precedent).",
+          "Context-based meta-RL (e.g., PEARL, RL² / context vectors) where a small encoder produces a conditioning vector consumed by a frozen/shared policy — a closely analogous design pattern."
+        ],
+        "novelty_type": "application_driven",
+        "novelty_assessment": "incremental",
+        "novelty_risk_level": "medium",
+        "rationale": "Decomposed across axes, the picture is consistent: (a) on method, the mechanism is essentially prefix/prompt tuning ported from NLP — a learned continuous token inserted into a frozen transformer's prompt and optimized end-to-end through the frozen model — which the paper itself flags via citations to LoRA, adapters, and prefix-tuning; the only real twist is that the token is produced by a goal-conditioned MLP and optimized with PPO rather than supervised loss, and even that combination has precedent (RLPrompt). This axis is derivative. (b) On application, applying this PEFT pattern to a transformer-based humanoid BFM (MaskedMimic) is, to my knowledge, the first such demonstration on a GC-BFM with prompt-style multi-modal inputs, which gives the paper a legitimate but incremental application-novelty footing — the broader 'freeze the motion prior, train a small high-level module' template is already established by ASE, CALM, and PULSE, and the contemporaneous LoLA work attacks a similar problem on FB-style BFMs. (c) The composition of learned task tokens with user-supplied text/joint prior tokens within one prompt, including the FSM-based multi-phase prompting for Strike, is a genuinely useful and reasonably novel framing in the character-control setting, though qualitatively demonstrated rather than rigorously evaluated. (d) Empirically, the OOD-robustness and human-likeness findings reinforce a known intuition (freezing pretrained priors protects them) rather than uncovering a surprising phenomenon, and are supported on a narrow slice (one perturbation task, small user study). Overall, the paper is a competent and well-motivated application of established PEFT ideas to a fresh domain with a useful composability story, but it does not introduce a fundamentally new mechanism, theory, or phenomenon. The novelty is real but should be framed honestly as 'prefix tuning for behavior foundation models with multi-modal prompt composition,' not as a 'novel approach' in the abstract sense the paper currently suggests.",
+        "source_of_judgment": "web_search"
+      },
+      "usage": {
+        "input_tokens": 8138,
+        "output_tokens": 6860,
+        "cache_creation_input_tokens": 60823,
+        "cache_read_input_tokens": 227145
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_5": {
+      "parsed": {
+        "perspectives": {
+          "domain_expert": {
+            "add_to_field": "Provides a concrete recipe for adapting transformer-based goal-conditioned behavior foundation models (specifically MaskedMimic) to downstream humanoid control tasks via an additional learned conditioning token, bridging the gap between prompt engineering and full fine-tuning in physics-based character animation.",
+            "beneficiaries": "Researchers and practitioners in physics-based character animation, humanoid control, and motion synthesis who want to repurpose pretrained BFMs like MaskedMimic for new tasks without retraining from scratch.",
+            "importance": "Yes—prompt engineering for BFMs is brittle and full fine-tuning destroys behavioral priors; a parameter-efficient adapter approach addresses a real pain point in the GC-BFM workflow.",
+            "improvement_meaningful": "Yes within the niche: matching fine-tuning's task success while preserving the BFM's priors, multi-modal prompting, and robustness is a genuine practical gain, even if individual tasks are familiar.",
+            "future_influence": "Likely to inspire token-based adapter strategies for other BFM architectures (PULSE, FB representations, decision transformers) and motivate hybrid prompt+RL interfaces for character control."
+          },
+          "methodology_expert": {
+            "add_to_field": "Demonstrates that NLP-style parameter-efficient adaptation (prefix/prompt tuning analogues) transfers naturally to tokenized BFMs trained via DAgger, with RL gradients flowing through a frozen transformer to a small encoder.",
+            "beneficiaries": "ML researchers working on PEFT for control/RL, those interested in composing learned and human-specified conditioning signals, and developers of hierarchical or modular policies.",
+            "importance": "Moderately—the underlying idea (learn an embedding/prefix that conditions a frozen transformer) is well-established in NLP; the contribution is mainly the demonstration in a new domain rather than a methodological novelty.",
+            "improvement_meaningful": "The ~125x parameter reduction and ~6x convergence speed are meaningful efficiency gains, but methodologically the approach is a fairly direct port of prefix-tuning ideas to a tokenized BFM.",
+            "future_influence": "Could encourage more systematic study of which adapter forms (token injection, LoRA on attention, adapter layers) work best for tokenized control models, and how to compose multiple learned tokens for multi-task or lifelong settings."
+          },
+          "empirical_evaluation_expert": {
+            "add_to_field": "Provides a multi-task empirical comparison (5 tasks) including success rates, convergence curves, OOD robustness sweeps, and a human study with ~96 participants—reasonably comprehensive for a workshop/short-paper-scale evaluation.",
+            "beneficiaries": "Researchers needing baselines and benchmark results on humanoid control tasks via MaskedMimic; those evaluating PEFT vs fine-tuning tradeoffs empirically.",
+            "importance": "The evaluation addresses important questions (task performance, efficiency, robustness, naturalness), but the breadth is limited to a single BFM, one simulator, and a SMPL humanoid.",
+            "improvement_meaningful": "Results are statistically supported (5 seeds, std reported), and OOD sweeps + human study strengthen the claims; however, Task Tokens does not clearly dominate—it ties fine-tuning on most tasks and loses to PULSE on naturalness and Strike success, so the empirical case is nuanced rather than decisive.",
+            "future_influence": "The evaluation protocol (success rate + OOD perturbation + human study + parameter efficiency) is a sensible template for future BFM adaptation papers, even if the specific results may be superseded."
+          },
+          "skeptical_reviewer": {
+            "add_to_field": "Mostly a domain-specific application of prefix-tuning to MaskedMimic; the conceptual novelty is limited, and several headline claims are partially supported.",
+            "beneficiaries": "Primarily MaskedMimic users; the generality claim to 'any transformer-based BFM' is asserted but not demonstrated.",
+            "importance": "The problem is real but somewhat narrow—it presupposes one already has a strong tokenized GC-BFM. The 'catastrophic forgetting of multi-modal prompting' claim is stated qualitatively without supporting measurements.",
+            "improvement_meaningful": "Parameter-efficiency numbers are impressive but somewhat apples-to-oranges (Task Tokens reuses 25M+ frozen parameters that fine-tuning also relies on); the ~6x convergence claim is based on PULSE which uses different parallelism (128 vs 1024 envs), confounding the comparison. Task Tokens also underperforms several baselines on Strike and loses to PULSE in the human study.",
+            "future_influence": "Modest—useful engineering insight, but unlikely to drive a paradigm shift; depends heavily on whether GC-BFMs like MaskedMimic become the dominant interface for character control."
+          },
+          "practical_impact_expert": {
+            "add_to_field": "Offers a deployable workflow: keep a heavy pretrained BFM frozen and ship small (~200K param) per-task encoders, which is attractive for game animation pipelines and large-scale motion libraries.",
+            "beneficiaries": "Game studios, animation toolchains, and robotics simulation labs maintaining many task-specific behaviors atop a shared character controller.",
+            "importance": "Solves a practical scaling problem—per-task fine-tuning of 25M-parameter models is costly to store, deploy, and maintain.",
+            "improvement_meaningful": "Yes for deployment economics: smaller artifacts, faster training, preserved multi-modal prompting, and better OOD robustness translate to tangible production benefits even when task success is similar to fine-tuning.",
+            "future_influence": "Could establish 'frozen BFM + task adapter' as a standard pattern in character animation and humanoid simulation, similar to LoRA in LLM deployment. Real-world (sim-to-real) impact remains speculative since all results are in simulation."
+          }
+        },
+        "consensus": [
+          "The problem of adapting GC-BFMs without destroying their priors is real and worth addressing.",
+          "Task Tokens delivers meaningful parameter efficiency and convergence speedups while roughly matching fine-tuning on task success.",
+          "The conceptual contribution is incremental—largely a port of prefix/prompt-tuning ideas to tokenized BFMs—but executed cleanly in a relevant domain.",
+          "Robustness and multi-modal prompting preservation are genuine advantages over full fine-tuning.",
+          "Evaluation is limited to a single BFM (MaskedMimic), single simulator (Isaac Gym), and simulated humanoid, limiting generality claims."
+        ],
+        "disagreement": [
+          "Whether the methodological novelty is sufficient: methodology expert and skeptic view it as a direct NLP-PEFT port, while domain and practical experts see the domain adaptation itself as the contribution.",
+          "Whether the empirical case is compelling: empirical expert sees nuanced support, while skeptic highlights confounded comparisons (different env counts, qualitative-only forgetting claim, PULSE preferred in human study) as weakening the headline narrative.",
+          "Magnitude of future influence: practical impact expert anticipates a standard deployment pattern, while skeptic expects modest uptake contingent on BFM ecosystem growth."
+        ],
+        "significance_score_1_to_10": 5,
+        "impact_assessment": "moderate"
+      },
+      "usage": {
+        "input_tokens": 2336,
+        "output_tokens": 2639,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 42283
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_6": {
+      "parsed": {
+        "problem_and_solution_formulation": {
+          "definitions_clear": [
+            "GC-BFM and MaskedMimic framework are described clearly enough to follow the method.",
+            "Task encoder input/output dimensions and tokenization interface are specified (g_t^i, tau_t^i in R^512).",
+            "Task success criteria for each environment are defined in Appendix B."
+          ],
+          "assumptions_clear": [
+            "Assumes a transformer-based BFM that can attend over arbitrary additional input tokens.",
+            "Assumes the frozen BFM provides meaningful gradients to the task encoder."
+          ],
+          "derivations_algorithms_clear": [
+            "High-level training loop (PPO with frozen BFM, gradients through BFM to encoder) is stated.",
+            "Architecture of task encoder (MLP with ReLU, [512,512,512]) is specified in appendices."
+          ],
+          "suggested_improvements_for_formulation": [
+            "Provide the exact PPO objective and policy distribution parameterization, given MaskedMimic was trained via DAgger/imitation rather than as a stochastic RL policy.",
+            "Clarify whether the action decoder/head is included in 'frozen' parameters, and describe the critic architecture in the main text.",
+            "Explain initialization of the task encoder to avoid disrupting BFM priors at the start of training.",
+            "Make the conceptual relationship to prefix-tuning/soft-prompt tuning explicit rather than framing as a wholly novel technique.",
+            "Discuss compute cost of backprop through the frozen BFM, which is not reduced even though trainable parameters are."
+          ]
+        },
+        "theoretical_support": null,
+        "experimental_support": {
+          "supported": [
+            "~125x parameter reduction vs full fine-tuning (~200K vs ~25M parameters) is consistent with the reported architectures.",
+            "Task Tokens achieve high success rates on Reach, Direction, Steering, and Long Jump comparable to or exceeding baselines (Table 1).",
+            "The mechanism of training only the encoder via PPO gradients through the frozen BFM is consistently described and matches Figure 1."
+          ],
+          "partially_supported": [
+            "Claim of matching full fine-tuning performance: holds on 4/5 tasks but Strike shows Task Tokens (76.61) clearly below Fine-Tune (83.07), PULSE (83.18), and PPO (81.36).",
+            "OOD robustness claim: shown only on the Steering task (Figure 4), with substantial overlap in standard deviations; generalization to other tasks is not demonstrated.",
+            "Human-likeness claim: Task Tokens win over Fine-Tune/AMP/PPO but lose to PULSE in most tasks; framing as broadly more human-like is partial.",
+            "Multi-modal prompting compatibility: qualitatively demonstrated via figures/videos and FSM-scaffolded Strike, but no quantitative measurement of prior-following fidelity."
+          ],
+          "unsupported_or_overstated": [
+            "'Up to 6x faster convergence' is derived from a single task (Strike) and primarily a single comparator (PULSE); Fine-Tune appears to converge similarly in the same plot.",
+            "'Catastrophic forgetting' of multi-modal prompting under fine-tuning is asserted but not directly measured with a dedicated prompt-following experiment.",
+            "'Preservation of the BFM motion manifold' is argued indirectly; no distributional/quality metric (e.g., Frechet distance, MPJPE to references) is reported.",
+            "'Applicable to any transformer-based BFM' is asserted but only MaskedMimic is tested.",
+            "Caption claim that Fine-Tune 'overfits' due to higher capacity is not supported by the figure or any quantitative analysis."
+          ],
+          "suggested_improvements_for_claim_support": [
+            "Add a quantitative experiment measuring zero-shot prompt-following (J.C., text) after fine-tuning vs after Task Tokens training, to support the catastrophic-forgetting claim.",
+            "Report OOD perturbations across multiple tasks (not just Steering) to support broader robustness claims.",
+            "Include motion-quality metrics (e.g., foot sliding, joint smoothness, distance to reference motion distribution) to support 'human-likeness' beyond a small human study.",
+            "Show convergence curves on all tasks and against all baselines to substantiate the '6x faster' framing.",
+            "Demonstrate Task Tokens on at least one additional transformer-BFM to support the generality claim."
+          ]
+        },
+        "experimental_rigor": {
+          "baseline_quality": "Reasonable coverage with full fine-tuning, hierarchical RL (PULSE), motion-prior RL (AMP), and pure PPO, but missing comparison to other parameter-efficient adaptation techniques (LoRA, adapters, prefix-tuning), which are the most directly relevant baselines given the paper's framing.",
+          "missing_baselines": [
+            "LoRA / adapter / prefix-tuning on MaskedMimic (the most natural PEFT comparators).",
+            "Partial fine-tuning of MaskedMimic (e.g., last layers only) as an intermediate point between full FT and Task Tokens.",
+            "MaskedMimic with task-relevant prompt engineering for Strike and Long Jump (paper says J.C. is unavailable, but a designed prior could be tested)."
+          ],
+          "dataset_quality": "Five tasks in Isaac Gym with the SMPL humanoid is reasonable for the domain, but OOD evaluation is restricted to one task (Steering) and two perturbation types (friction, gravity).",
+          "better_datasets": [
+            "Apply OOD perturbations across all five tasks.",
+            "Include morphology perturbations or terrain variations for stronger generalization claims.",
+            "Evaluate on SMPL-Olympics or other established humanoid benchmarks beyond Long Jump."
+          ],
+          "metric_appropriateness": "Success rate is appropriate per task. Human-likeness is evaluated via human preference, which is reasonable but insufficiently rigorous. No quantitative motion-quality metric is reported.",
+          "better_metric": [
+            "Frechet Motion Distance / distribution distance to reference motions.",
+            "Foot-sliding, joint jerk, and contact metrics for motion quality.",
+            "Prompt-following metrics (e.g., orientation error when an orientation prior is provided)."
+          ],
+          "missing_ablations": [
+            "Ablation comparing Task Tokens vs LoRA/adapters/prefix-tuning at matched parameter counts.",
+            "Ablation isolating the effect of joint conditioning (J.C.) from the task token contribution in Reach/Direction/Steering.",
+            "Ablation on token dimensionality (512) and number of task tokens.",
+            "Ablation quantifying impact of the FSM scaffold in Strike vs a single-phase task token.",
+            "Ablation showing what happens when an active Task Token is combined with previously-supported prompts (to test claim of preserved multi-modal capability)."
+          ],
+          "statistical_significance": "5 random seeds with mean ± std is reported, which is reasonable. However, several baselines exhibit standard deviations exceeding 40-50% on Strike/Long Jump (e.g., FT 47.36 ± 54.78), suggesting bimodal seed outcomes that are not discussed. No significance tests are performed for the human study (96 participants split unevenly across 3 forms with 20/24/52 respondents).",
+          "better_significance_test_or_confidence_interval": [
+            "Bootstrap confidence intervals for success rates.",
+            "Per-seed scatter plots for high-variance tasks to reveal bimodality.",
+            "Binomial confidence intervals or paired tests (e.g., McNemar) for the human study win rates.",
+            "Explicitly state whether '±' values are std, SE, or CI throughout."
+          ],
+          "hyperparameter_clarity": "Main text defers most hyperparameters to MaskedMimic/PULSE publications; PPO objective specifics, reward function details, and critic architecture are underspecified. Encoder architecture and training budget are clearly stated.",
+          "negative_results_discussed": "partial",
+          "possible_confounders": [
+            "PULSE uses 128 parallel envs while other methods use 1024, which affects optimization dynamics for the convergence comparison.",
+            "AMP uses a locomotion-only motion dataset, which may disadvantage it on Strike and Long Jump.",
+            "Task Tokens on Reach/Direction/Steering also uses J.C. priors, conflating the gain from token learning with the gain from extra prior tokens.",
+            "Strike uses a manually-designed FSM scaffold that is not provided to baselines.",
+            "Number of training steps fixed at 120M frames; baselines may not have converged equivalently.",
+            "Human study form-size imbalance (20/24/52) without per-form analysis."
+          ],
+          "confounder_reduction_alternatives": [
+            "Match parallel environments and total compute across methods.",
+            "Provide AMP with task-stylistically-matched motion datasets per task.",
+            "Report a Task Tokens (no J.C.) row for all tasks to disentangle contributions.",
+            "Allow baselines access to the same FSM/phase scaffolding in Strike.",
+            "Run training for longer and report convergence curves.",
+            "Balance participant counts and randomize question order across forms."
+          ],
+          "reproducibility_score_1_to_10": 6,
+          "suggestions_for_improving_reproducibility": [
+            "Provide reward function definitions and PPO hyperparameters in the appendix.",
+            "Specify the critic architecture and how gradients flow through the BFM (e.g., whether KV caches are recomputed).",
+            "Release seeds, configs, and exact dataset/preprocessing details (the code link is provided, but in-paper details would help).",
+            "Document the FSM thresholds and phase-switching parameters for Strike.",
+            "Clarify the meaning of reported '±' values (std vs SE vs CI) consistently throughout."
+          ]
+        }
+      },
+      "usage": {
+        "input_tokens": 9171,
+        "output_tokens": 3498,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 42283
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_7": {
+      "parsed": {
+        "strengths": [
+          "Addresses a real and practically relevant problem: adapting goal-conditioned behavior foundation models (GC-BFMs) like MaskedMimic to downstream tasks without destroying pretrained priors or multi-modal prompting.",
+          "Parameter efficiency is meaningful: ~200K trainable parameters per task vs ~25M for full fine-tuning (~125x reduction), with a clean and well-described mechanism (PPO gradients through a frozen transformer to a small MLP encoder).",
+          "Empirical evaluation spans five humanoid tasks with five seeds, OOD perturbation sweeps, a human study (~96 participants), and qualitative demonstrations of multi-modal prompting and FSM-based phase composition.",
+          "Demonstrates a genuinely useful capability—composing learned task tokens with user-defined priors (text, joint conditioning)—that fine-tuning baselines cannot retain.",
+          "OOD robustness results on Steering (friction and gravity perturbations) suggest the frozen-BFM approach better preserves the pretrained robustness than fine-tuning, supporting a key claim of the paper.",
+          "Code and video supplementary materials are released, aiding reproducibility within the MaskedMimic ecosystem."
+        ],
+        "weaknesses": [
+          "Methodological novelty is limited: the approach is essentially prefix/soft-prompt tuning ported to a tokenized BFM. The paper does not benchmark against the most directly relevant PEFT baselines (LoRA, adapters, prefix-tuning at matched parameter counts), which is the natural comparison given the framing.",
+          "Several headline claims are partially supported or overstated. 'Up to 6x faster convergence' is derived from a single task (Strike) primarily vs PULSE, while in the same figure MaskedMimic Fine-Tune appears to converge similarly. 'Match the high task performance of full fine-tuning' is contradicted on Strike, where Task Tokens (76.61) clearly underperform Fine-Tune (83.07), PULSE (83.18), and even PPO (81.36).",
+          "The catastrophic-forgetting / multi-modal prompting loss under fine-tuning is a key motivating claim but is asserted only qualitatively; no dedicated quantitative experiment measures prompt-following fidelity after fine-tuning vs after Task Tokens training.",
+          "OOD robustness is evaluated on only one task (Steering) with overlapping standard deviation bands, making the broad 'surpasses other methods in robustness' framing too strong.",
+          "Confounded comparisons: PULSE uses 128 parallel envs vs 1024 for others (affecting convergence comparisons); AMP uses a locomotion-only motion dataset (likely disadvantaging it on Strike/Long Jump); Strike uses a hand-designed FSM scaffold not available to baselines; Reach/Direction/Steering Task Tokens results use J.C. priors, conflating the encoder contribution with the prior-token contribution.",
+          "Human study has methodological limitations: uneven form sizes (20/24/52), no significance testing, no demographic information, and 'human-likeness' may conflate task success with motion quality. Notably, PULSE is preferred over Task Tokens in most tasks, which the paper does not fully reconcile with its naturalness claims.",
+          "Generalizability claim—'applicable to any transformer-based BFM'—is asserted but only validated on MaskedMimic; no second BFM is tested.",
+          "No quantitative motion-quality metrics (e.g., Fréchet motion distance, foot sliding, joint smoothness, distance to reference motion distribution) are reported to support claims of preserving the BFM's motion manifold.",
+          "Several reported standard deviations (e.g., Fine-Tune on Strike 47.36 ± 54.78, AMP on Strike 52.21 ± 47.58) indicate bimodal seed behavior that is not analyzed or discussed."
+        ],
+        "fatal_flaws": [],
+        "minor_issues": [
+          "Section 4 abstract references the 'Behavioral Frequency Modulation (BFM)' framework, which is an incorrect expansion of the BFM acronym (should be Behavior Foundation Model).",
+          "The meaning of '±' (std vs SE vs CI) should be stated consistently.",
+          "Caption for Figure 3 attributes Fine-Tune's similar convergence to 'overfitting' without evidence.",
+          "PPO objective, reward functions, critic architecture, and FSM thresholds are underspecified in the main text.",
+          "Initialization of the task encoder (and its potential to disrupt BFM priors early in training) is not discussed.",
+          "Backprop through the frozen BFM still incurs full forward/backward compute; the paper highlights trainable-parameter savings without clarifying this point.",
+          "Related work could more honestly position the method as a soft-prompt/prefix-tuning analogue rather than framing it as a wholly novel technique."
+        ],
+        "questions_for_authors": [
+          "Can you provide a direct comparison to LoRA, adapters, or prefix-tuning on MaskedMimic at matched trainable-parameter budgets? This is the most natural baseline given the paper's framing.",
+          "Can you quantitatively demonstrate the 'catastrophic forgetting of multi-modal prompting' claim—e.g., measure J.C. or text prompt-following accuracy on held-out prompts after fine-tuning vs after Task Tokens training?",
+          "On Strike, why does Task Tokens underperform Fine-Tune, PULSE, and PPO? Does this indicate a fundamental capacity limitation of a single 512-d token for this task?",
+          "Can you report OOD perturbation results on tasks beyond Steering to support the broader robustness claim?",
+          "How sensitive are results to the parallel-environment counts? Could you rerun PULSE with 1024 envs (or the others with 128) to make the convergence comparison apples-to-apples?",
+          "Can you provide a Task Tokens (no J.C.) row for all applicable tasks to disentangle the encoder contribution from the prior-token contribution?",
+          "Were baselines (e.g., PPO, Fine-Tune) given access to the same FSM scaffold and orientation/text prior tokens used by Task Tokens on Strike? If not, can you re-run with parity?",
+          "Could you report quantitative motion-quality metrics (e.g., distance to reference motion distribution, foot sliding, jerk) to complement the human study?",
+          "Have you tested Task Tokens on any other transformer-based BFM to substantiate the generality claim?",
+          "Can you clarify whether the reported '±' values are std, SE, or CI, and analyze the bimodal seed outcomes visible in high-variance results?"
+        ],
+        "recommendation": "weak_reject",
+        "recommendation_rationale": "The paper tackles a real and timely problem and demonstrates a clean, parameter-efficient mechanism for adapting MaskedMimic. The empirical evidence for parameter efficiency and OOD robustness on Steering, and the qualitative demonstrations of multi-modal prompting composition, are genuine contributions to the GC-BFM ecosystem. However, the methodological contribution is essentially a port of prefix/soft-prompt tuning to a tokenized BFM, and the paper does not benchmark against the most directly relevant PEFT baselines (LoRA, adapters, prefix-tuning) at matched parameter budgets. Several headline claims—matching fine-tuning, 6x faster convergence, broad OOD robustness, catastrophic forgetting under fine-tuning, applicability to any transformer BFM—are partially supported or overstated, and key comparisons are confounded by uneven environment counts, dataset choices, and the FSM scaffold for Strike. The human study has methodological issues and is undermined by PULSE's preference in most tasks. With (a) PEFT baselines at matched parameter counts, (b) a quantitative experiment supporting the multi-modal-prompting-preservation claim, (c) OOD evaluation across multiple tasks, and (d) tighter, more honest framing of the contribution and confounders, this would be a clear accept. As it stands, the paper sits below the bar for a top-tier venue but is close.",
+        "confidence_1_to_5": 4
+      },
+      "usage": {
+        "input_tokens": 11268,
+        "output_tokens": 2846,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 42283
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_8": {
+      "parsed": {
+        "summary_of_paper": "The paper introduces Task Tokens, a parameter-efficient method for adapting goal-conditioned behavior foundation models (specifically MaskedMimic) to downstream humanoid control tasks. A small MLP task encoder is trained with PPO to produce an additional 512-dim conditioning token that is concatenated with the BFM's existing prior and state tokens; gradients flow through the frozen transformer to update only the encoder (~200K parameters vs ~25M for full fine-tuning). The method preserves the BFM's multi-modal prompting interface, allowing users to compose learned tokens with text or joint priors and to use an FSM for sequential phase switching.\n\nExperiments on five humanoid tasks (Reach, Direction, Steering, Strike, Long Jump) in Isaac Gym show that Task Tokens are competitive with or exceed MaskedMimic fine-tuning, PULSE, AMP, and PPO baselines in success rate while converging up to ~6x faster on Strike and using up to ~125x fewer trainable parameters. A human study (~96 participants) finds Task Tokens to produce more human-like motions than fine-tuning, AMP, and PPO (though PULSE remains preferred). OOD perturbation sweeps on Steering (friction and gravity) suggest Task Tokens preserve the BFM's robustness better than fine-tuning.",
+        "main_strengths": [
+          "Addresses a real and practically relevant problem: adapting GC-BFMs like MaskedMimic to downstream tasks without destroying pretrained priors or multi-modal prompting capabilities.",
+          "Clean, well-described mechanism that integrates naturally with the transformer interface of the BFM; meaningful parameter efficiency (~200K vs ~25M trainable parameters per task).",
+          "Reasonably broad empirical evaluation across five tasks with five seeds each, plus OOD perturbation sweeps, a human study, and qualitative demonstrations of multi-modal prompting and FSM composition.",
+          "Demonstrates a genuinely useful capability that fine-tuning baselines lose: composing learned task tokens with user-defined text/joint priors, illustrated convincingly on Direction and Strike.",
+          "OOD robustness results on Steering (friction/gravity) provide non-trivial evidence that the frozen-BFM design preserves pretrained robustness better than fine-tuning.",
+          "Code and supplementary videos are released; the writing is clear and the figure illustrating the architecture is helpful."
+        ],
+        "main_weaknesses": [
+          "Limited methodological novelty: the approach is essentially soft-prompt/prefix tuning ported to a tokenized BFM, but the paper does not benchmark against the most directly relevant PEFT baselines (LoRA, adapters, prefix-tuning) at matched trainable-parameter budgets. This is the natural comparison given the paper's own framing and citations (Hu et al. 2021; Houlsby et al. 2019; Li & Liang 2021).",
+          "Several headline claims are partially supported or overstated. The '6x faster convergence' claim is derived from a single task (Strike) primarily against PULSE; in the same figure, MaskedMimic Fine-Tune appears to converge similarly. The claim that Task Tokens 'match the high task performance of full fine-tuning' is contradicted on Strike, where Task Tokens (76.61) underperform Fine-Tune (83.07), PULSE (83.18), and even pure PPO (81.36).",
+          "The key claim that fine-tuning causes 'catastrophic forgetting' of multi-modal prompting is asserted qualitatively only; no dedicated experiment quantifies prompt-following fidelity after fine-tuning vs Task Tokens training.",
+          "OOD robustness is evaluated on a single task (Steering) and the standard-deviation bands overlap substantially with Fine-Tune across much of the perturbation range, making the broad 'surpasses other methods in robustness' framing too strong.",
+          "Several comparisons are confounded: PULSE is trained with 128 parallel envs vs 1024 for others (affecting convergence comparisons); AMP uses a locomotion-only motion dataset (likely disadvantaging it on Strike/Long Jump); Strike uses a hand-designed FSM scaffold and prior tokens not available to baselines; and Reach/Direction/Steering Task Tokens results use J.C. priors, conflating the encoder's contribution with the prior-token contribution.",
+          "The human study has methodological limitations (uneven form sizes of 20/24/52, no statistical significance testing, no demographic information, possible conflation of motion quality with task success) and is undermined by the observation that PULSE is preferred over Task Tokens in most tasks—a finding that the paper does not fully reconcile with its motion-quality claims.",
+          "The generality claim ('Task Tokens can be applicable to any transformer-based BFM') is asserted but not empirically validated: only MaskedMimic is tested.",
+          "No quantitative motion-quality metrics (e.g., Fréchet motion distance, foot sliding, joint smoothness, distance to reference motion distribution) are reported to complement the human study."
+        ],
+        "detailed_comments": [
+          "Positioning vs PEFT literature: The paper cites LoRA, adapters, and prefix-tuning as inspirations, but does not benchmark against any of them despite their being the most natural baselines. A LoRA or adapter applied to selected MaskedMimic transformer layers, at the same ~200K parameter budget, would be the most honest test of whether the token-injection design provides advantages beyond generic PEFT.",
+          "Strike result interpretation: Task Tokens are clearly worse than Fine-Tune and PULSE on Strike (76.61 vs 83.07/83.18). The paper attributes Fine-Tune's similar convergence to 'overfitting' in the Figure 3 caption without evidence, which reads as post-hoc rationalization. A more honest discussion of when a single 512-d token has insufficient capacity for the task would strengthen the paper.",
+          "Multi-modal prompting preservation: This is arguably the most important advantage of Task Tokens over fine-tuning, but the supporting evidence is qualitative. A simple experiment—e.g., evaluating prompt-following accuracy on held-out J.C. or text prompts after fine-tuning vs Task Tokens training—would substantially strengthen this claim.",
+          "OOD evaluation breadth: Robustness is a major selling point but is evaluated only on Steering. Extending the friction/gravity (and ideally morphological or sensor-noise) sweeps to Reach, Strike, or Long Jump would significantly support the generalization narrative.",
+          "Confounders in baselines: The differing env counts for PULSE vs others (128 vs 1024) directly affect convergence comparisons; the locomotion-only AMP dataset disadvantages it on the more complex tasks; and the Strike FSM+priors scaffold is not available to baselines. These should be addressed either by re-running with parity or by clearly stating these caveats.",
+          "Task Tokens vs Task Tokens + J.C.: For Reach/Direction/Steering, the headline results bundle Task Tokens with joint conditioning priors. An ablation (already partially present in Table 3) should be elevated to the main text to disentangle the encoder's contribution from the prior tokens.",
+          "High-variance seed behavior: Some standard deviations (Fine-Tune Strike 47.36 ± 54.78; AMP Strike 52.21 ± 47.58; Long Jump AMP 76.59 ± 43.42) indicate bimodal seed outcomes that warrant analysis (e.g., success-failure histograms across seeds).",
+          "Compute clarification: The paper emphasizes trainable-parameter savings but does not clarify that backpropagation still requires the full forward/backward pass through the BFM, so wall-clock and memory savings are smaller than the parameter ratio suggests.",
+          "Minor textual issues: Section 4 introduction expands BFM as 'Behavioral Frequency Modulation,' which is incorrect (should be Behavior Foundation Model). The meaning of '±' (std/SE/CI) should be stated consistently. PPO objective, reward functions, critic architecture, and the FSM threshold for Strike are underspecified in the main text."
+        ],
+        "questions_for_authors": [
+          "Can you provide a direct comparison to LoRA, adapters, or prefix-tuning applied to MaskedMimic at matched trainable-parameter budgets? This is the most natural baseline given the paper's framing.",
+          "Can you quantitatively demonstrate the catastrophic-forgetting-of-multi-modal-prompting claim, e.g., by measuring J.C. or text prompt-following accuracy on held-out prompts after fine-tuning vs after Task Tokens training?",
+          "On Strike, why do Task Tokens underperform Fine-Tune, PULSE, and PPO? Does this indicate a fundamental capacity limitation of a single 512-d token for tasks requiring precise interaction?",
+          "Can you report OOD perturbation results on tasks beyond Steering (e.g., Reach, Strike, Long Jump) to support the broader robustness claim?",
+          "How sensitive are convergence results to the number of parallel environments? Could you rerun PULSE with 1024 envs (or your method with 128) to make the convergence comparison apples-to-apples?",
+          "Can you add a 'Task Tokens (no J.C.)' row for Reach/Direction/Steering in the main results table to disentangle the encoder contribution from the prior-token contribution?",
+          "Were baselines (e.g., PPO, Fine-Tune) given access to the same FSM scaffold and orientation/text prior tokens used by Task Tokens on Strike? If not, can you re-run with parity?",
+          "Could you report quantitative motion-quality metrics (e.g., distance to reference motion distribution, foot sliding, jerk) to complement the human study?",
+          "Have you tested Task Tokens on any other transformer-based BFM (beyond MaskedMimic) to substantiate the generality claim?",
+          "Can you clarify whether the reported '±' values are std, SE, or CI, and analyze the bimodal seed outcomes visible in high-variance results (e.g., AMP and Fine-Tune on Strike)?"
+        ],
+        "suggestions_for_improvement": [
+          "Add PEFT baselines (LoRA, adapters, prefix-tuning) on the MaskedMimic transformer at matched parameter budgets; this would substantially strengthen the paper's positioning and contribution claims.",
+          "Add a quantitative experiment measuring multi-modal prompt-following before and after fine-tuning vs Task Tokens training, to support the catastrophic-forgetting argument that is currently only qualitative.",
+          "Extend OOD perturbation sweeps to multiple tasks; even partial coverage would strengthen the robustness narrative.",
+          "Provide an ablation isolating the Task Token's contribution from the joint-conditioning priors on Reach/Direction/Steering in the main results table.",
+          "Run baselines with parity in parallel environments (PULSE at 1024 or all methods at 128) and clearly state what the Strike scaffolding (FSM, priors) provides to Task Tokens but not to baselines.",
+          "Add quantitative motion-quality metrics (e.g., Fréchet motion distance, foot sliding, smoothness) alongside the human study.",
+          "Soften or qualify the strongest claims: 'match the high task performance of full fine-tuning' is not true on Strike; 'up to 6x faster convergence' should be stated as a single-task finding vs PULSE; 'applicable to any transformer-based BFM' should be marked as a conjecture pending empirical evidence.",
+          "Improve the human study: report participant demographics, perform significance testing, and consider separating naturalness from task-success judgments.",
+          "Fix the 'Behavioral Frequency Modulation' typo in Section 4, clarify the meaning of '±' throughout, and document the PPO setup, reward functions, critic architecture, and FSM thresholds in the main text or an explicit reproducibility appendix.",
+          "Discuss compute (wall-clock, GPU memory) explicitly, since backprop through the frozen BFM still incurs full forward/backward cost; this clarifies the practical meaning of the parameter savings."
+        ],
+        "overall_recommendation": "Weak Reject",
+        "reviewer_confidence_1_to_5": 4,
+        "score_card": {
+          "soundness_1_to_4": 2,
+          "presentation_1_to_4": 3,
+          "contribution_1_to_4": 2,
+          "overall_1_to_10": 5
+        }
+      },
+      "usage": {
+        "input_tokens": 5099,
+        "output_tokens": 4371,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 42283
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_9": {
+      "parsed": {
+        "hallucinated_comments": [],
+        "misrepresentations": [
+          "The draft states the 6x convergence claim is 'primarily against PULSE'; the paper's claim of ~6x is indeed PULSE-based (50M vs 300M steps in Figure 3), so this is accurate but should be phrased as 'this specific comparison is vs PULSE on Strike' rather than implying the paper hides other comparisons."
+        ],
+        "missed_strengths": [
+          "The method enables a hybrid control paradigm (combining learned task tokens with user-defined priors and an FSM) that is genuinely novel in the BFM adaptation context, even if the underlying PEFT idea is not new.",
+          "The ablation in Section E provides useful insight into architectural choices for the task encoder."
+        ],
+        "missed_weaknesses": [
+          "The paper provides no theoretical analysis of why a single 512-d token suffices or when it would not.",
+          "The FSM-based Strike pipeline is essentially hand-engineered task decomposition, partially undermining the 'unified framework' claim.",
+          "The 'Behavioral Frequency Modulation' expansion in Section 4 is a clear writing/proofreading error indicating limited final-pass review."
+        ],
+        "too_strong_claims": [
+          "The draft's characterization of the human study as 'undermined by' the PULSE result could be softened — the paper does acknowledge and discuss this finding, even if briefly."
+        ],
+        "non_actionable_criticisms": [],
+        "tone_issues": [],
+        "consistency_between_summary_weaknesses_and_recommendation": "consistent",
+        "external_novelty_claims_supported": "partial",
+        "corrections_needed": [
+          "Acknowledge that the paper does discuss the PULSE human-study result rather than ignoring it; soften the 'undermined' framing.",
+          "Clarify that the 6x convergence figure is from the Strike task vs PULSE specifically (per Figure 3), not a hidden comparison.",
+          "Add the missed strength about the hybrid control paradigm with FSM-based composition being a genuine practical contribution.",
+          "Note the Section 4 'Behavioral Frequency Modulation' typo more clearly as evidence of insufficient proofreading.",
+          "Mention that the FSM for Strike is essentially hand-engineered task decomposition, which tempers the unified-framework framing."
+        ]
+      },
+      "usage": {
+        "input_tokens": 4701,
+        "output_tokens": 819,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 42283
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_10": {
+      "parsed": {
+        "final_review": {
+          "summary_of_paper": "The paper introduces Task Tokens, a parameter-efficient method for adapting goal-conditioned behavior foundation models (specifically MaskedMimic) to downstream humanoid control tasks. A small MLP task encoder is trained with PPO to produce an additional 512-dim conditioning token that is concatenated with the BFM's existing prior and state tokens; gradients flow through the frozen transformer to update only the encoder (~200K parameters vs ~25M for full fine-tuning). The method preserves the BFM's multi-modal prompting interface, allowing users to compose learned tokens with text or joint priors and to use a finite-state machine for sequential phase switching. Experiments on five humanoid tasks (Reach, Direction, Steering, Strike, Long Jump) in Isaac Gym show that Task Tokens are competitive with or exceed MaskedMimic fine-tuning, PULSE, AMP, and PPO baselines in success rate while converging substantially faster than PULSE on Strike and using ~125x fewer trainable parameters than fine-tuning. A human study (~96 participants) finds Task Tokens to produce more human-like motions than fine-tuning, AMP, and PPO (though PULSE remains preferred). OOD perturbation sweeps on Steering (friction and gravity) suggest Task Tokens preserve the BFM's robustness better than fine-tuning.",
+          "main_strengths": [
+            "Addresses a real and practically relevant problem: adapting GC-BFMs like MaskedMimic to downstream tasks without destroying pretrained priors or multi-modal prompting capabilities.",
+            "Clean, well-described mechanism that integrates naturally with the transformer interface of the BFM; meaningful parameter efficiency (~200K vs ~25M trainable parameters per task).",
+            "Reasonably broad empirical evaluation across five tasks with five seeds each, plus OOD perturbation sweeps, a human study, and qualitative demonstrations of multi-modal prompting and FSM composition.",
+            "Demonstrates a genuinely useful capability that fine-tuning baselines lose: composing learned task tokens with user-defined text/joint priors and an FSM for sequential phase switching, illustrated on Direction and Strike. This hybrid control paradigm is a practical contribution distinct from prior PEFT work.",
+            "OOD robustness results on Steering (friction/gravity) provide non-trivial evidence that the frozen-BFM design preserves pretrained robustness better than fine-tuning.",
+            "Code and supplementary videos are released; the writing is generally clear and the figure illustrating the architecture is helpful.",
+            "The ablation study (Section E) provides useful insight into the influence of encoder size and proprioceptive inputs."
+          ],
+          "main_weaknesses": [
+            "Limited methodological novelty: the approach is essentially soft-prompt/prefix tuning ported to a tokenized BFM, but the paper does not benchmark against the most directly relevant PEFT baselines (LoRA, adapters, prefix-tuning) at matched trainable-parameter budgets, despite citing them as inspirations (Hu et al. 2021; Houlsby et al. 2019; Li & Liang 2021).",
+            "Several headline claims are partially supported or overstated. The 'up to 6x faster convergence' figure is derived specifically from the Strike task vs PULSE (Figure 3: ~50M vs ~300M steps), while in the same figure MaskedMimic Fine-Tune converges at a similar rate. The claim that Task Tokens 'match the high task performance of full fine-tuning' is contradicted on Strike, where Task Tokens (76.61) underperform Fine-Tune (83.07), PULSE (83.18), and pure PPO (81.36).",
+            "The key claim that fine-tuning causes 'catastrophic forgetting' of multi-modal prompting is asserted qualitatively only; no dedicated experiment quantifies prompt-following fidelity after fine-tuning vs Task Tokens training.",
+            "OOD robustness is evaluated on a single task (Steering); standard-deviation bands overlap substantially with Fine-Tune across much of the perturbation range, making the broad 'surpasses other methods in robustness' framing too strong.",
+            "Several comparisons are confounded: PULSE is trained with 128 parallel envs vs 1024 for others (affecting convergence comparisons); AMP uses a locomotion-only motion dataset (likely disadvantaging it on Strike/Long Jump); Strike uses a hand-designed FSM scaffold and prior tokens not available to baselines; and Reach/Direction/Steering Task Tokens results bundle the encoder with J.C. priors, conflating their respective contributions.",
+            "The FSM-based Strike pipeline is essentially hand-engineered task decomposition, which partially undermines the 'unified framework' framing and shifts some of the difficulty from learning to scripting.",
+            "The human study has methodological limitations (uneven form sizes of 20/24/52, no statistical significance testing, no demographic information, possible conflation of motion quality with task success). The paper acknowledges that PULSE is preferred over Task Tokens, attributing this to PULSE's prior constraint, but does not reconcile this with the broader motion-quality narrative.",
+            "The generality claim ('Task Tokens can be applicable to any transformer-based BFM') is asserted but not empirically validated: only MaskedMimic is tested.",
+            "No quantitative motion-quality metrics (e.g., Fréchet motion distance, foot sliding, joint smoothness, distance to reference motion distribution) are reported to complement the human study."
+          ],
+          "detailed_comments": [
+            "Positioning vs PEFT literature: A LoRA or adapter applied to selected MaskedMimic transformer layers at the same ~200K parameter budget would be the most natural test of whether the token-injection design provides advantages beyond generic PEFT.",
+            "Strike result interpretation: Task Tokens are clearly worse than Fine-Tune and PULSE on Strike. The paper attributes Fine-Tune's similar convergence to 'overfitting' in the Figure 3 caption without supporting evidence, which reads as post-hoc rationalization. A more honest discussion of when a single 512-d token has insufficient capacity for the task would strengthen the paper.",
+            "Multi-modal prompting preservation: This is arguably the most important advantage of Task Tokens over fine-tuning, but the supporting evidence is qualitative. A simple experiment evaluating prompt-following accuracy on held-out J.C. or text prompts after fine-tuning vs Task Tokens training would substantially strengthen the claim.",
+            "OOD evaluation breadth: Robustness is a major selling point but is evaluated only on Steering. Extending the friction/gravity (and ideally morphological or sensor-noise) sweeps to Reach, Strike, or Long Jump would significantly support the generalization narrative.",
+            "Confounders in baselines: The differing env counts for PULSE vs others (128 vs 1024) directly affect convergence comparisons; the locomotion-only AMP dataset disadvantages it on the more complex tasks; and the Strike FSM+priors scaffold is not available to baselines. These should be addressed by re-running with parity or by clearly stating these caveats.",
+            "Task Tokens vs Task Tokens + J.C.: For Reach/Direction/Steering, the headline results bundle Task Tokens with joint conditioning priors. An ablation (partially present in Table 3) should be elevated to the main text to disentangle the encoder's contribution.",
+            "High-variance seed behavior: Some standard deviations (Fine-Tune Strike 47.36 ± 54.78; AMP Strike 52.21 ± 47.58; AMP Long Jump 76.59 ± 43.42) indicate bimodal seed outcomes warranting analysis (e.g., success-failure histograms).",
+            "Compute clarification: The paper emphasizes trainable-parameter savings but does not clarify that backpropagation still requires a full forward/backward pass through the frozen BFM, so wall-clock and memory savings are smaller than the parameter ratio suggests.",
+            "Minor textual issues: Section 4 introduction expands BFM as 'Behavioral Frequency Modulation,' which is a clear proofreading error (it should be Behavior Foundation Model). The meaning of '±' (std/SE/CI) should be stated consistently. The PPO objective, reward functions, critic architecture, and the FSM threshold for Strike are underspecified in the main text."
+          ],
+          "questions_for_authors": [
+            "Can you provide a direct comparison to LoRA, adapters, or prefix-tuning applied to MaskedMimic at matched trainable-parameter budgets?",
+            "Can you quantitatively demonstrate the catastrophic-forgetting-of-multi-modal-prompting claim, e.g., by measuring J.C. or text prompt-following accuracy on held-out prompts after fine-tuning vs after Task Tokens training?",
+            "On Strike, why do Task Tokens underperform Fine-Tune, PULSE, and PPO? Does this indicate a capacity limitation of a single 512-d token for tasks requiring precise interaction?",
+            "Can you report OOD perturbation results on tasks beyond Steering (e.g., Reach, Strike, Long Jump) to support the broader robustness claim?",
+            "How sensitive are convergence results to the number of parallel environments? Could you rerun PULSE with 1024 envs (or your method with 128) to make the comparison apples-to-apples?",
+            "Can you add a 'Task Tokens (no J.C.)' row for Reach/Direction/Steering in the main results table to disentangle the encoder contribution from the prior-token contribution?",
+            "Were baselines (e.g., PPO, Fine-Tune) given access to the same FSM scaffold and orientation/text prior tokens used by Task Tokens on Strike? If not, can you re-run with parity?",
+            "Could you report quantitative motion-quality metrics (e.g., distance to reference motion distribution, foot sliding, jerk) to complement the human study?",
+            "Have you tested Task Tokens on any other transformer-based BFM beyond MaskedMimic to substantiate the generality claim?",
+            "Can you clarify whether the reported '±' values are std, SE, or CI, and analyze the bimodal seed outcomes visible in high-variance results (e.g., AMP and Fine-Tune on Strike)?"
+          ],
+          "suggestions_for_improvement": [
+            "Add PEFT baselines (LoRA, adapters, prefix-tuning) on the MaskedMimic transformer at matched parameter budgets.",
+            "Add a quantitative experiment measuring multi-modal prompt-following before and after fine-tuning vs Task Tokens training.",
+            "Extend OOD perturbation sweeps to multiple tasks.",
+            "Provide an ablation isolating the Task Token's contribution from the joint-conditioning priors on Reach/Direction/Steering in the main results table.",
+            "Run baselines with parity in parallel environments (PULSE at 1024 or all methods at 128) and clearly state what the Strike scaffolding (FSM, priors) provides to Task Tokens but not to baselines.",
+            "Add quantitative motion-quality metrics (e.g., Fréchet motion distance, foot sliding, smoothness) alongside the human study.",
+            "Soften or qualify the strongest claims: 'match the high task performance of full fine-tuning' is not true on Strike; 'up to 6x faster convergence' should be stated as a single-task finding vs PULSE; 'applicable to any transformer-based BFM' should be marked as conjecture pending empirical evidence.",
+            "Improve the human study: report participant demographics, perform significance testing, and separate naturalness from task-success judgments.",
+            "Fix the 'Behavioral Frequency Modulation' typo in Section 4, clarify the meaning of '±' throughout, and document the PPO setup, reward functions, critic architecture, and FSM thresholds in the main text or an explicit reproducibility appendix.",
+            "Discuss compute (wall-clock, GPU memory) explicitly, since backprop through the frozen BFM still incurs full forward/backward cost."
+          ],
+          "overall_recommendation": "Weak Reject",
+          "reviewer_confidence_1_to_5": 4,
+          "score_card": {
+            "soundness_1_to_4": 2,
+            "presentation_1_to_4": 3,
+            "contribution_1_to_4": 2,
+            "overall_1_to_10": 5
+          }
+        },
+        "author_facing_improvement_checklist": [
+          "Add PEFT baselines (LoRA / adapters / prefix-tuning) on MaskedMimic at matched parameter budgets.",
+          "Quantitatively demonstrate the catastrophic-forgetting-of-prompting claim with a held-out prompt-following evaluation.",
+          "Extend OOD perturbation experiments beyond Steering to at least one interaction task (e.g., Strike).",
+          "Elevate the Task-Tokens-without-J.C. ablation to the main results table to disentangle encoder vs prior-token contributions.",
+          "Equalize the number of parallel environments across PULSE and other baselines, or clearly caveat the convergence comparison.",
+          "Clearly state what scaffolding (FSM, prior tokens) is available to Task Tokens but not to baselines on Strike, and ideally re-run with parity.",
+          "Report quantitative motion-quality metrics (FMD, foot sliding, jerk) alongside the human study.",
+          "Soften overclaims: qualify the 6x-faster, matches-fine-tuning, and 'any transformer-based BFM' statements.",
+          "Improve human study reporting (demographics, significance tests, separation of naturalness from success).",
+          "Fix the 'Behavioral Frequency Modulation' typo, clarify '±' notation, and add explicit reproducibility details (PPO hyperparameters, reward functions, critic architecture, FSM thresholds).",
+          "Discuss wall-clock/memory implications of backprop through the frozen BFM."
+        ],
+        "changes_from_draft": [
+          "Clarified that the '~6x faster convergence' claim is specifically the Strike-vs-PULSE comparison (Figure 3), rather than implying a hidden comparison.",
+          "Softened the framing around the human study's PULSE result, noting that the paper does discuss it rather than ignore it.",
+          "Added a strength acknowledging the hybrid control paradigm (Task Tokens + user priors + FSM) as a practical contribution distinct from prior PEFT work.",
+          "Added a strength noting that the Section E ablation provides useful architectural insight.",
+          "Added a weakness noting that the FSM-based Strike pipeline is hand-engineered task decomposition, tempering the 'unified framework' framing.",
+          "Strengthened the description of the 'Behavioral Frequency Modulation' typo as evidence of insufficient proofreading."
+        ]
+      },
+      "usage": {
+        "input_tokens": 5561,
+        "output_tokens": 4942,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 42283
+      },
+      "stop_reason": "end_turn"
+    }
+  },
+  "total_usage": {
+    "input_tokens": 55677,
+    "output_tokens": 39400,
+    "cache_creation_input_tokens": 103106,
+    "cache_read_input_tokens": 607692
+  }
+}

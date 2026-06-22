@@ -10,12 +10,31 @@ Key design choices:
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
 import anthropic
+import httpx
 
 from config import Config
 from prompts import REVIEWER_SYSTEM
+
+
+def _resolve_ca_bundle() -> str | bool:
+    """Pick a CA bundle that trusts the local network's TLS chain.
+
+    Corporate networks often MITM TLS with a self-signed root that lives in the
+    OS trust store but not in certifi's bundle (which httpx uses by default).
+    Honor the usual env vars first, then fall back to the system bundle.
+    """
+    for var in ("REVIEWER_CA_BUNDLE", "SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"):
+        path = os.getenv(var)
+        if path and os.path.isfile(path):
+            return path
+    for path in ("/etc/ssl/certs/ca-certificates.crt", "/etc/pki/tls/certs/ca-bundle.crt"):
+        if os.path.isfile(path):
+            return path
+    return True
 
 
 def build_user_content(paper_document: dict[str, Any], user_prompt: str) -> list[dict[str, Any]]:
@@ -33,7 +52,13 @@ def build_user_content(paper_document: dict[str, Any], user_prompt: str) -> list
 class ReviewerLLM:
     def __init__(self, cfg: Config):
         self.cfg = cfg
-        self.client = anthropic.Anthropic(api_key=cfg.api_key)
+        for var in ("ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN"):
+            os.environ.pop(var, None)
+        self.client = anthropic.Anthropic(
+            api_key=cfg.api_key,
+            base_url="https://api.anthropic.com",
+            http_client=httpx.Client(verify=_resolve_ca_bundle()),
+        )
 
     def run_stage(
         self,

@@ -1,0 +1,1171 @@
+{
+  "paper": {
+    "filename": "Adaptive_Uncertainty-Aware_Tree_Search_for_Robust_Reasoning.pdf",
+    "path": "papers/rejected/Adaptive_Uncertainty-Aware_Tree_Search_for_Robust_Reasoning.pdf",
+    "num_bytes": 5160821,
+    "input_mode": "pdf_document"
+  },
+  "config": {
+    "model": "claude-opus-4-7",
+    "effort": "high",
+    "web_search": true
+  },
+  "stages": {
+    "stage_0": {
+      "parsed": {
+        "title": "Adaptive Uncertainty-Aware Tree Search for Robust Reasoning",
+        "authors": [
+          "Zeen Song",
+          "Zihao Ma",
+          "Wenwen Qiang",
+          "Changwen Zheng",
+          "Gang Hua"
+        ],
+        "venue_hint": "Preprint (arXiv, Feb 2026); likely targeting ICML/NeurIPS",
+        "field": "LLM reasoning / inference-time scaling / uncertainty estimation",
+        "abstract": "The paper addresses epistemic uncertainty in Process Reward Models (PRMs) used in external search for LLM reasoning. The authors provide empirical evidence that PRMs are unreliable on out-of-distribution (OOD) reasoning traces, develop a theoretical framework showing linear regret for greedy search vs sublinear regret for uncertainty-aware search, and propose Uncertainty-Aware Tree Search (UATS) that estimates uncertainty via Monte Carlo Dropout and uses an RL-trained controller for adaptive compute budget allocation. Experiments on MATH-500 and AIME24 show consistent improvements over baselines.",
+        "sections": {
+          "introduction": "CoT prompting and inference-time scaling have improved LLM reasoning. External reasoning frameworks (policy + search + PRM) are popular but vulnerable because PRMs trained on fixed distributions exhibit high epistemic uncertainty on OOD reasoning traces, causing overconfident errors. The authors motivate analyzing this uncertainty and propose UATS with MC Dropout uncertainty estimation and an RL-based budget controller.",
+          "related_work": "Discusses inference-time reasoning (CoT, o1, Tree-of-Thoughts, REBASE), and Process Reward Models vs Outcome Reward Models, citing Math-Shepherd, Qwen2.5-Math-PRM, etc. PRMs are shown more effective than ORMs for guiding search.",
+          "method": "UATS framework has three components: (1) Estimate epistemic uncertainty via K Monte Carlo Dropout forward passes of the PRM, computing mean R̄(h), variance σ_R(h), and UCB R̂(h)=R̄(h)+α√(2 ln t / K). (2) Heuristic UATS (H-UATS): split candidates into ID/OOD via threshold τ on σ_R, retain OOD candidates whose optimistic estimate is within margin δ of best ID, allocate re-evaluation budget B via softmax(R̂/ν1) and expansion budget C via softmax(R̄/ν2) (REBASE-style). (3) Adaptive UATS (A-UATS): formulate budget allocation as MDP with state (score stats, uncertainty stats, depth, remaining budget) and action vector [β,γ,τ,δ,ν1,ν2]; train controller via REINFORCE with batch-mean baseline, behavioral cloning initialization, then fine-tune with reward = correctness - λ·cost ratio.",
+          "theory": "Two propositions in simplified bandit-like setting. Prop 4.1: greedy selection with OOD probability ε per step gives E[Acc_T] ≤ R*(h_0) - Tε∆ρ (linear degradation). Prop 4.2: with K_t MC samples and UCB selection (assuming unbiased estimator), E[Acc_T] ≥ R*(h_0) - 2ε Σ √(2 ln t / K_t) - O(1); if K_t=Ω(t), degradation is O(ε√(T ln T)) (sublinear). Proofs in appendix use Hoeffding + union bound.",
+          "experiments": "Evaluated on MATH-500 and AIME24 with policy models LLaMA3.1-Instruct-8B, LLaMA3.2-Instruct-1B, Qwen2.5-Instruct (0.5B/3B/7B), and PRMs Math-Shepherd-PRM-7B, Skywork-PRM-1.5B, Qwen2.5-Math-PRM-7B. Compared with Best-of-N, Beam Search, REBASE, DORA, DVTS, with N ∈ {4,...,256}. Compute matched by treating one generation step ≈ 18 PRM passes. A-UATS controller trained with REINFORCE for 500 rounds on MATH training split. Ablations on dropout rate p, initial samples K0, threshold τ, optimism margin δ, controller architecture, and uncertainty ablation.",
+          "results": "H-UATS and A-UATS consistently outperform baselines across all 15 policy-PRM combinations on both datasets. On AIME, A-UATS averages 17.37% vs DoRA 13.58% (best baseline). On MATH-500, A-UATS averages 73.73% vs DoRA 68.81%. Ablations show optimal dropout p≈0.07-0.10, K0≈7, τ≈0.003, δ≈0.04. Removing uncertainty signal degrades performance significantly (e.g., -6.76% on MATH for LLaMA3.1+Math-Shepherd).",
+          "limitations": "Not explicitly discussed in the main paper. The Impact Statement is generic. Theoretical analysis relies on simplifying assumptions (fixed ε, conditional error rate ρ, unbiased PRM estimator, no regret in ID case).",
+          "conclusion": "Identifies epistemic uncertainty as a critical issue in PRM-based external reasoning, provides theory showing uncertainty-awareness reduces regret from linear to sublinear, proposes UATS framework, and demonstrates consistent empirical improvements."
+        },
+        "main_claims": [
+          "PRMs exhibit significant accuracy drops and high score variance on OOD reasoning traces, with degradation correlated with epistemic uncertainty spikes.",
+          "Uncertainty-agnostic greedy search incurs linear regret accumulation under OOD occurrence; UCB-style uncertainty-aware selection achieves sublinear (O(ε√(T ln T))) regret.",
+          "Monte Carlo Dropout on PRMs provides a tractable estimate of epistemic uncertainty for guiding tree search.",
+          "An RL-trained adaptive controller that allocates re-evaluation and expansion budgets based on uncertainty outperforms static heuristics and uncertainty-agnostic baselines.",
+          "UATS achieves higher accuracy than Best-of-N, Beam Search, REBASE, DORA, DVTS under compute-matched settings on MATH-500 and AIME24."
+        ],
+        "key_contributions": [
+          "Identification and empirical demonstration of epistemic uncertainty issue in PRM-based external reasoning under policy-PRM distribution shift.",
+          "Theoretical analysis with regret bounds: linear degradation for greedy and sublinear for uncertainty-aware UCB-style selection.",
+          "UATS framework combining MC Dropout uncertainty estimation, heuristic budget allocation (H-UATS), and RL-trained adaptive controller (A-UATS).",
+          "Extensive empirical validation across multiple policy models, PRMs, and compute budgets on MATH-500 and AIME24."
+        ],
+        "experimental_results": [
+          "Figure 2: PRMs show much higher MC Dropout score variance on OOD policy traces (e.g., Math-Shepherd-7B on Qwen2.5 policy) and corresponding accuracy drops.",
+          "Figure 4 (MATH-500): H-UATS and A-UATS consistently beat Best-of-N, Beam Search, REBASE, DORA, DVTS across N ∈ {4,...,256} for Qwen2.5-7B and LLaMA3.1-8B with Skywork-PRM-1.5B and Qwen2.5-Math-PRM-7B.",
+          "Table 2: Averaged across budgets, A-UATS gives ~3.8% absolute gain over DoRA on AIME, ~5% gain on MATH-500.",
+          "Ablation: dropout rate p≈0.07-0.10 is optimal; K0≈7 sufficient; τ≈0.003, δ≈0.04 optimal.",
+          "Ablation Table 3: Removing uncertainty estimation reduces H-UATS accuracy by 2-7% on MATH-500 and 3-7% on AIME24; A-UATS w/o uncertainty also significantly underperforms full A-UATS.",
+          "Implementation calibration: one generation step (571ms) ≈ 18 PRM forward passes (32ms each) on A100."
+        ],
+        "assumptions_and_limitations": [
+          "Theoretical analysis assumes fixed OOD probability ε per step, identical across steps.",
+          "Assumes P(ĥ_t ≠ h*_t | O_t^c) = 0 (perfect in-distribution selection), which is unrealistic.",
+          "Prop 4.2 assumes unbiased PRM estimator E[R̄_t(h)] = R*(h); MC Dropout does not necessarily provide unbiased estimates of true reward.",
+          "MC Dropout is a coarse approximation of the parameter posterior p(ϕ|D_PRM).",
+          "Empirical OOD analysis only uses 50 randomly sampled MATH500 questions for Figure 2.",
+          "Hyperparameters (τ, δ, ν1, ν2) need careful tuning, with optimal values depending on PRM architecture.",
+          "Compute matching via wall-clock latency is implementation-specific (depends on batching/hardware).",
+          "No explicit limitations section in main paper; Impact Statement is boilerplate."
+        ],
+        "figures_tables": [
+          "Figure 1: Motivating example showing PRM assigning higher score (0.85) to incorrect OOD step with high variance (σ²=0.032) vs correct ID step (0.76, σ²=0.001).",
+          "Figure 2: Bar/box plots of search accuracy and MC Dropout score variance across PRM-policy combinations showing OOD degradation.",
+          "Figure 3: Overview diagram of UATS three-phase pipeline (uncertainty estimation, heuristic search, adaptive controller).",
+          "Figure 4: Main MATH-500 accuracy curves vs N for four policy-PRM pairs comparing UATS variants with baselines and Oracle.",
+          "Figure 5: Ablation plots for dropout rate p and initial sampling count K0.",
+          "Figures 6-7: Full MATH-500 and AIME24 results across all 15 policy-PRM combinations.",
+          "Figure 8: Ablations for optimism margin δ and uncertainty threshold τ.",
+          "Figures 9-12: Qualitative examples of four score/uncertainty regimes (high/low score × high/low uncertainty).",
+          "Table 1: Hyperparameter settings (dropout 0.07-0.10, K0=7, τ=0.003, δ=0.04, ν1=0.5, ν2=0.2, lr=1e-4, λ=0.05).",
+          "Table 2: Aggregate accuracy across all combinations and budgets showing UATS variants dominating baselines.",
+          "Table 3: Uncertainty ablation across three policy-PRM combinations.",
+          "Table 4: Controller network architecture ablation (2 layers × 256 dim optimal)."
+        ],
+        "equations_algorithms": [
+          "Eq. 3: Law of total variance decomposing PRM predictive uncertainty into aleatoric and epistemic components.",
+          "Eq. 4 (Prop 4.1): E[Acc_T] ≤ R*(h_0) - Tε∆ρ — linear regret accumulation for greedy search.",
+          "Eq. 5-6 (Prop 4.2): E[Acc_T] ≥ R*(h_0) - 2ε Σ √(2 ln t/K_t) - O(1), giving O(ε√(T ln T)) sublinear regret with K_t=Ω(t).",
+          "Eq. 7: MC Dropout empirical mean and variance R̄(h), σ²_R(h) from K stochastic passes.",
+          "Eq. 8: UCB estimate R̂(h) = R̄(h) + α√(2 ln t/K).",
+          "Eq. 9: Softmax allocation of re-evaluation budget K_i = Round(B · exp(R̂(h_i)/ν1)/Σ exp(R̂(h_j)/ν1)) over OOD candidates passing the optimism filter.",
+          "Eq. 10: REBASE-style expansion budget N_i = Round(C · exp(R̄(h_i)/ν2)/Σ exp(R̄(h_j)/ν2)).",
+          "REINFORCE update with batch-mean baseline for training A-UATS controller; reward = 1(â=a*) - λ·(Cost_used/Cost_total)."
+        ]
+      },
+      "usage": {
+        "input_tokens": 354,
+        "output_tokens": 4430,
+        "cache_creation_input_tokens": 62742,
+        "cache_read_input_tokens": 0
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_1": {
+      "parsed": {
+        "field_and_subfield": "Large Language Model reasoning / inference-time compute scaling and uncertainty-aware search with process reward models",
+        "problem_addressed": "Process Reward Models (PRMs) used to guide external tree search for LLM reasoning are trained on fixed distributions and exhibit unreliable, overconfident scoring on out-of-distribution reasoning traces produced by different policy models, degrading search-based reasoning accuracy.",
+        "research_question": "Can explicitly modeling epistemic uncertainty of PRMs during tree search—both theoretically and via a practical algorithm—mitigate the impact of OOD scoring errors and improve compute-efficient reasoning accuracy?",
+        "one_paragraph_summary": "The paper argues that PRMs guiding external reasoning search are vulnerable to epistemic uncertainty when scoring reasoning traces that deviate from their training distribution. Empirically, the authors show that MC-Dropout score variance spikes and search accuracy drops for OOD policy-PRM pairs on MATH500. Theoretically, they formalize a simplified bandit-like model and prove that greedy PRM-based selection accumulates linear regret in the OOD probability ε, while a UCB-style uncertainty-aware selection achieves O(ε√(T ln T)) sublinear regret. Building on this, they propose UATS: (i) MC-Dropout to estimate PRM mean, variance, and a UCB-augmented score; (ii) a heuristic search (H-UATS) that filters candidates into ID/OOD via a variance threshold, retains optimistic OOD candidates, and distributes re-evaluation and expansion budgets via temperature-controlled softmaxes; and (iii) an adaptive controller (A-UATS) trained with REINFORCE that dynamically modulates thresholds, temperatures, and budgets. On MATH-500 and AIME24 across 15 policy-PRM combinations and compute-matched budgets, H-UATS and A-UATS consistently outperform Best-of-N, Beam Search, REBASE, DORA, and DVTS, with ablations confirming the importance of the uncertainty signal.",
+        "problem_statement": "External reasoning systems that use PRMs to rerank or guide search become unreliable when reasoning traces lie outside the PRM's training distribution; existing search algorithms ignore this epistemic uncertainty and consequently misallocate inference-time compute, accepting overconfident-but-wrong steps and pruning correct-but-low-scored steps.",
+        "main_contributions": [
+          "Empirical demonstration that open-source PRMs (Math-Shepherd-7B, Qwen2.5-Math-PRM-7B) suffer accuracy degradation and elevated MC-Dropout score variance when scoring traces from distributionally distinct policy models.",
+          "A theoretical regret analysis showing that greedy PRM selection accumulates linear regret Tε∆ρ under OOD occurrence, while UCB-style uncertainty-aware selection yields sublinear O(ε√(T ln T)) regret when sample budget scales as K_t=Ω(t).",
+          "The UATS framework: MC-Dropout-based epistemic uncertainty estimation, a heuristic budget allocation (H-UATS) that selectively re-evaluates optimistic-but-uncertain candidates, and an RL-trained adaptive controller (A-UATS) modulating six search hyperparameters.",
+          "Extensive empirical evaluation on MATH-500 and AIME24 across 5 policy models, 3 PRMs, and budgets N∈{4,...,256}, with compute matched via wall-clock latency, plus ablations on dropout rate, K0, τ, δ, controller architecture, and the uncertainty signal itself."
+        ],
+        "claim_evidence_map": [
+          {
+            "claim": "PRMs exhibit higher epistemic uncertainty and lower accuracy on OOD reasoning traces.",
+            "evidence_in_paper": "Figure 2 reports search accuracy and MC-Dropout score variance for two PRMs × two policies on 50 MATH500 problems; cross-distribution pairs show markedly higher variance and lower Pass@1. Figure 1 provides a qualitative example with σ²=0.032 (OOD wrong) vs 0.001 (ID correct)."
+          },
+          {
+            "claim": "Greedy uncertainty-agnostic search incurs linear regret in OOD probability.",
+            "evidence_in_paper": "Proposition 4.1 and its proof in Appendix A apply the law of total probability with assumptions P(O_t)=ε, P(error|O_t)≥ρ, P(error|O_t^c)=0, ∆-loss per error, yielding E[Acc_T] ≤ R*(h_0) − Tε∆ρ."
+          },
+          {
+            "claim": "UCB-style uncertainty-aware selection achieves sublinear regret.",
+            "evidence_in_paper": "Proposition 4.2 and proof in Appendix B use Hoeffding + union bound on the K_t MC samples to bound per-step regret by 2ε U_t plus a vanishing failure term, giving O(ε√(T ln T)) when K_t=Ω(t)."
+          },
+          {
+            "claim": "Monte Carlo Dropout provides a tractable epistemic uncertainty estimate for PRMs.",
+            "evidence_in_paper": "Section 5.1 (Eq. 7-8) defines empirical mean, variance, and UCB from K stochastic forward passes; Figure 2(b) shows variance correlates with OOD-induced accuracy drops; Figure 3 visualizes the pipeline."
+          },
+          {
+            "claim": "The heuristic uncertainty-aware allocation (H-UATS) outperforms uncertainty-agnostic baselines.",
+            "evidence_in_paper": "Figure 4 and Figures 6-7 show H-UATS above Beam Search, Best-of-N, DVTS, REBASE, DORA across budgets; Table 2 reports H-UATS averaging higher accuracy than DORA on both AIME and MATH-500."
+          },
+          {
+            "claim": "Learned adaptive control (A-UATS) further improves over the static heuristic.",
+            "evidence_in_paper": "Figure 4 shows A-UATS curves above H-UATS in most configurations; Table 2 reports A-UATS averages 17.37% on AIME vs H-UATS 15.87%, and 73.73% vs 70.58% on MATH-500."
+          },
+          {
+            "claim": "The uncertainty signal is the critical component of UATS.",
+            "evidence_in_paper": "Table 3 ablation: removing uncertainty (H-UATS w/o Uncert., A-UATS w/o Uncert.) drops accuracy by ~2-7% on MATH-500 and 3-7% on AIME24 across three policy-PRM combinations."
+          },
+          {
+            "claim": "Comparisons are compute-matched.",
+            "evidence_in_paper": "Section 6.1 calibrates one generation step (571ms) ≈ 18 PRM forward passes (32ms) on A100 with batch size 4 and 56-token average step, and equates total budget for all methods."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4634,
+        "output_tokens": 2483,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 62742
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_2": {
+      "parsed": {
+        "sections": [
+          {
+            "name": "Abstract",
+            "summary": "Identifies PRM epistemic uncertainty on OOD reasoning paths as a fundamental limitation; claims empirical evidence of PRM unreliability, a regret-based theoretical justification (linear vs sublinear), and proposes UATS using MC Dropout and an RL-trained budget controller.",
+            "key_claims": [
+              "PRMs exhibit high uncertainty and unreliable scoring on OOD samples.",
+              "Standard search incurs linear regret while uncertainty-aware search achieves sublinear regret.",
+              "Proposed UATS effectively mitigates OOD errors."
+            ],
+            "supporting_evidence": [
+              "References to empirical study and theoretical framework in body and appendices.",
+              "Mentions extensive experiments."
+            ],
+            "issues": [
+              "Abstract does not quantify gains or specify benchmarks, making the empirical claim vague.",
+              "Conflates 'regret' with 'accuracy degradation' without defining terms here."
+            ],
+            "missing_information": [
+              "Concrete datasets, baselines, and improvement magnitudes.",
+              "Cost/compute setting under which improvements are claimed."
+            ],
+            "ambiguous_or_unsupported": [
+              "'Effectively mitigates OOD errors' is a qualitative claim without metric."
+            ]
+          },
+          {
+            "name": "Introduction",
+            "summary": "Motivates external reasoning with PRMs, identifies epistemic uncertainty under distribution shift as a vulnerability, summarizes empirical findings on Math-Shepherd/Qwen-PRM with LLemma/Qwen policies, and previews theoretical regret bounds plus the proposed UATS method.",
+            "key_claims": [
+              "PRMs trained on a fixed distribution exhibit high epistemic uncertainty when scoring OOD reasoning steps.",
+              "PRM accuracy drops and variance spikes are correlated, with a real example showing PRM misranking.",
+              "An uncertainty-aware MDP-based controller can balance exploration/exploitation under budget."
+            ],
+            "supporting_evidence": [
+              "Figure 1 example with σ²=0.032 vs 0.001 between OOD and ID steps.",
+              "Empirical results on MATH500 referenced from Section 4."
+            ],
+            "issues": [
+              "The notion of 'OOD' is conflated between (a) policy distribution differing from PRM training and (b) particular reasoning steps being OOD; never formally defined.",
+              "Figure 1 is anecdotal and presents a single hand-picked example; statistical generality is asserted but not yet shown."
+            ],
+            "missing_information": [
+              "Operational definition of OOD with respect to PRM training distribution.",
+              "Discussion of why distribution shift between policy and PRM (rather than question difficulty) is the dominant failure mode."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that 'neglecting such samples causes the PRM to yield overconfident errors, leading to the rejection of valid paths' — overconfidence is not actually evidenced by the variance metric used."
+            ]
+          },
+          {
+            "name": "Related Work",
+            "summary": "Covers inference-time reasoning (CoT, o1, Tree-of-Thoughts, REBASE) and PRMs vs ORMs, noting PRMs are widely used. Appendix C adds comparisons to REBASE, DORA, and MCTS.",
+            "key_claims": [
+              "PRMs are more effective than ORMs for guided search.",
+              "UATS is orthogonal/complementary to REBASE, DORA, and MCTS."
+            ],
+            "supporting_evidence": [
+              "Citations of Lightman et al. 2023, Wang et al. 2024, etc."
+            ],
+            "issues": [
+              "No discussion of prior work on uncertainty/calibration of reward models or verifiers (e.g., ensembles, Bayesian RL, conservative RL with uncertainty bonuses) despite the paper's core thesis being uncertainty estimation.",
+              "No discussion of MC Dropout as a posterior approximation in the LLM/RM context or its known limitations.",
+              "Missing comparison to recent works on RM ensembles, conformal prediction for LLM verification, and self-consistency under uncertainty."
+            ],
+            "missing_information": [
+              "Positioning relative to existing uncertainty-aware search or bandit-style reasoning methods (e.g., UCB-based MCTS variants in LLM reasoning).",
+              "Comparison to prior step-level verifier calibration work."
+            ],
+            "ambiguous_or_unsupported": [
+              "The orthogonality claim with DORA is asserted but never empirically tested (no DORA+UATS combination experiment)."
+            ]
+          },
+          {
+            "name": "Method (Preliminary + UATS)",
+            "summary": "Formalizes external reasoning with policy πθ, PRM Rϕ, search Alg, and answer extractor. Decomposes PRM predictive uncertainty into aleatoric and epistemic via law of total variance. UATS estimates epistemic uncertainty via K MC Dropout passes, partitions candidates by τ on σ_R, retains promising OOD ones within optimism margin δ, and allocates re-evaluation budget B (softmax over R̂/ν1) and expansion budget C (softmax over R̄/ν2). A-UATS replaces static hyperparameters with a policy network trained via REINFORCE with behavioral cloning init.",
+            "key_claims": [
+              "MC Dropout approximates posterior sampling from p(ϕ|D_PRM).",
+              "Selective re-evaluation of uncertain-but-promising OOD candidates mitigates premature elimination of correct paths.",
+              "An RL-trained controller adapts hyperparameters dynamically and outperforms static heuristics."
+            ],
+            "supporting_evidence": [
+              "Eq. 3 law of total variance decomposition.",
+              "Eqs. 7-10 give explicit formulas for estimates and budget allocation.",
+              "Figure 3 pipeline diagram.",
+              "Ablation Table 3 showing uncertainty matters."
+            ],
+            "issues": [
+              "MC Dropout is presented as an 'approximation to p(ϕ|D_PRM)' but the PRMs used (Math-Shepherd, Qwen2.5-Math-PRM, Skywork-PRM) are not trained with Bayesian objectives; dropout layers are inserted at inference, which does not correspond to a well-defined posterior. This gap between theory (Eq. 3) and practice (MC Dropout) is not acknowledged.",
+              "Whether the open-source PRMs actually have dropout layers and at what rates is not discussed; the dropout rate ablation suggests rates are imposed externally, but architectural details are absent.",
+              "The OOD/ID split based on a fixed threshold τ on σ_R is heuristic; no calibration justification is provided.",
+              "The expansion budget allocation N_i (Eq. 10) is described as REBASE-style but is computed over the full set H (including OOD candidates that may have failed the optimism filter); the relationship between filtered set and expansion is unclear.",
+              "The state vector for A-UATS includes only summary statistics; the controller has no information about the question itself, which seems limiting.",
+              "REINFORCE training details are sparse: episode length, batch size M, exploration policy (Gaussian head, clipping?), and how continuous action vectors are produced are not specified.",
+              "Behavioral cloning target for A-UATS is the static heuristic, but the heuristic depends on τ, δ, etc., which are themselves controller outputs — circularity is not addressed."
+            ],
+            "missing_information": [
+              "Architecture of the controller (Table 4 gives layer/dim but not input/output parameterization or output distribution family).",
+              "Stochastic policy form and entropy regularization, if any.",
+              "Whether ν1, ν2 etc. are produced via softplus/sigmoid to enforce positivity.",
+              "Compute overhead of K stochastic forward passes vs serial generation; while Section 6.1 calibrates one number, per-question wall-clock comparisons are missing.",
+              "Discussion of variance reduction techniques beyond batch-mean baseline."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that R̄(h) is a 'posterior-averaged estimate' is unjustified without showing the dropout induces a valid posterior approximation for these PRMs.",
+              "Claim that the controller learns to 'dynamically adjust under high uncertainty' is asserted but not analyzed (no visualization of action vs state)."
+            ]
+          },
+          {
+            "name": "Theory (Section 4.2 + Appendices A, B)",
+            "summary": "Two propositions in a simplified per-step selection setting. Prop 4.1 derives a linear upper bound on expected accuracy under greedy selection with fixed OOD rate ε. Prop 4.2 derives a sublinear lower bound under UCB-style selection with MC samples K_t, requiring unbiased empirical mean.",
+            "key_claims": [
+              "Greedy: E[Acc_T] ≤ R*(h0) − Tε∆ρ.",
+              "UCB-style: E[Acc_T] ≥ R*(h0) − O(ε√(T ln T)) when K_t = Ω(t)."
+            ],
+            "supporting_evidence": [
+              "Proofs in Appendices A and B using law of total probability and Hoeffding's inequality plus union bound."
+            ],
+            "issues": [
+              "Strong/unrealistic assumptions: (i) P(ĥ_t ≠ h*_t | O_t^c) = 0 — i.e., PRM never errs in-distribution — eliminates most realistic failure modes and inflates the contrast between the two regimes.",
+              "Assumption that empirical mean is unbiased (E_ϕ[R̄_t(h)] = R*(h)) is unrealistic for MC Dropout, which estimates the predictive mean of the dropout model — not the true reward R*. This invalidates the Hoeffding-style concentration around R* used in Prop 4.2.",
+              "'Accuracy' AccT ≜ R*(ĥ_T) is treated as both a reward and a probability; the definition mixing a single-step reward with cumulative loss across T steps is inconsistent (the cumulative loss summation in Eq. 15 requires additive losses, not a single terminal reward).",
+              "Prop 4.1 derivation: Eq. 13 assumes the per-step loss is at least ∆ when error occurs and zero otherwise, then sums losses across T steps as if independent — this implicitly treats success probability as additively decomposable, which is not justified.",
+              "Prop 4.2 'Case 1: No OOD' is hand-waved as 'negligible regret' rather than rigorously bounded; this glosses over a major source of regret.",
+              "The OOD event O_t is treated as i.i.d. Bernoulli with fixed ε; in practice OOD-ness is correlated across steps within a trace.",
+              "The point of Proposition 4.2 — that K_t=Ω(t) yields sublinear regret — is not used in the algorithm: the method does not grow K with t but instead uses a small fixed K_0 plus heuristic reallocation.",
+              "The connection between MC Dropout variance σ_R and the parameter posterior used in the theory is not formalized; the theory uses ϕ_k ~ p(ϕ|D_PRM) but the algorithm uses dropout masks."
+            ],
+            "missing_information": [
+              "Discussion of how violations of unbiasedness or perfect ID selection affect the conclusions.",
+              "Lower bound matching upper bound to show the linear-vs-sublinear gap is genuinely necessary, not a proof artifact.",
+              "Connection between the theoretical 'sample size K_t' and the practical budget B in the algorithm."
+            ],
+            "ambiguous_or_unsupported": [
+              "Statement that uncertainty-aware selection 'provably minimizes' search regret — the proof gives only an upper bound on cumulative loss; minimality (lower-bound matching) is not shown.",
+              "The interpretation of U_ood referenced in the discussion text after Prop 4.1 was never defined in the proposition statement."
+            ]
+          },
+          {
+            "name": "Experiments",
+            "summary": "Evaluates H-UATS and A-UATS on MATH-500 and AIME24 with multiple policy-PRM combinations and budget levels N∈{4,...,256}. Compute matched by converting generation step cost (~571ms) to ~18 PRM dropout passes (~32ms). Reports curves and aggregate tables, with ablations on dropout rate, K0, τ, δ, network size, and uncertainty signal.",
+            "key_claims": [
+              "UATS consistently outperforms baselines across all combinations and budgets.",
+              "Uncertainty signal is essential — removing it drops accuracy substantially.",
+              "Adaptive controller outperforms static heuristic."
+            ],
+            "supporting_evidence": [
+              "Figure 4 main results, Table 2 aggregate averages, Figures 6-7 full results, Tables 3-4 ablations."
+            ],
+            "issues": [
+              "Compute calibration (18 PRM passes per generation step) is implementation- and batch-specific; it does not isolate algorithmic compute (e.g., MC Dropout passes are amortized through batching but baselines could also batch generation). The fairness of the budget-matching protocol is unclear.",
+              "Baselines' search hyperparameters (beam width, REBASE temperature, DVTS settings) are not specified, raising concern that they may be undertuned.",
+              "Pass@K Oracle is reported as 'performance upper bound', but Oracle for many configurations matches/exceeds A-UATS by large margins (e.g., Figure 4) — gaps suggest substantial headroom and call for analysis of where UATS still fails.",
+              "No statistical significance tests or confidence intervals on the main accuracy curves; given small variance in MATH-500/AIME24, this is important.",
+              "AIME24 has only 30 problems; reporting accuracy to two decimals (e.g., 21.52 vs 22.95) suggests averaging over multiple seeds, but the seed/run protocol is not described.",
+              "A-UATS controller is trained on MATH using LLaMA-3.1-8B and Qwen-2.5-3B with two PRMs, then tested on combinations including LLaMA-3.2-1B, Qwen-2.5-0.5B/7B, Skywork-PRM — generalization across unseen combinations is implied but not explicitly evaluated, and the training/eval split overlap is unclear.",
+              "The empirical OOD analysis in Section 4.1 uses only 50 randomly sampled MATH-500 questions; the OOD/ID labeling is implicit (defined by which policy generated the trace), conflating policy distribution shift with intrinsic OOD-ness of reasoning steps.",
+              "Wall-clock end-to-end runtime comparisons (which would directly validate the compute-matched claim) are not provided.",
+              "Why dropout is enabled at inference for off-the-shelf PRMs that may not have meaningful dropout layers is unaddressed; if dropout layers were added/modified, this conflicts with the 'frozen PRM' setup."
+            ],
+            "missing_information": [
+              "Seeds, number of runs, and variance/standard error.",
+              "Search hyperparameters for baselines.",
+              "Compute cost in wall-clock or FLOPs.",
+              "Generalization analysis for A-UATS (held-out policy-PRM pairs).",
+              "Per-problem-difficulty breakdown to show whether UATS helps mainly on hard or easy problems."
+            ],
+            "ambiguous_or_unsupported": [
+              "'Strong empirical support for our theoretical analysis' — the experiments do not directly test the linear-vs-sublinear scaling claim (no plot of regret vs T or N showing functional form).",
+              "Claim that A-UATS surpasses H-UATS due to dynamic adaptation lacks an analysis of the controller's learned policy (e.g., does it actually vary τ over depth?)."
+            ]
+          },
+          {
+            "name": "Results / Ablations",
+            "summary": "Ablations probe dropout rate (optimal 0.07-0.10), K0 (saturates near 7), uncertainty-on vs off (large drops without uncertainty), thresholds τ and δ, and controller architecture (2x256 best).",
+            "key_claims": [
+              "Performance is sensitive to dropout rate and depends on the PRM architecture.",
+              "Uncertainty signal contributes 2-7% absolute gain.",
+              "A modest K0≈7 suffices for ID/OOD discrimination."
+            ],
+            "supporting_evidence": [
+              "Figure 5, Figure 8, Table 3, Table 4."
+            ],
+            "issues": [
+              "The sensitivity to τ and δ is concerning given that A-UATS is supposed to obviate static tuning; the relationship between H-UATS hyperparameter sweeps and A-UATS robustness is not discussed.",
+              "Table 4 (architecture ablation) shows narrow accuracy range (84.7-86.5%), suggesting variance might dominate; no significance test.",
+              "Uncertainty ablation 'A-UATS w/o uncertainty' is shown to underperform A-UATS, but the controller's effective action space changes when uncertainty features are removed — this is not a clean ablation of just the signal.",
+              "The 'H-UATS w/o Uncert.' baseline is described as similar to REBASE, but Table 3 numbers differ from the REBASE rows in Table 2 (e.g., REBASE on Qwen-7B + Qwen-PRM averages 84.83 in Table 2 vs 85.62 here); the inconsistency suggests the ablation isn't a direct REBASE reproduction."
+            ],
+            "missing_information": [
+              "Ablation on number of MC samples K beyond initial K0 (e.g., does increasing K_t improve as theory predicts?).",
+              "Ablation on the reward sparsity / cost penalty λ.",
+              "Sensitivity to behavioral cloning warmup."
+            ],
+            "ambiguous_or_unsupported": [
+              "Architecture-dependent optimal dropout rate claim is interesting but only two PRMs are compared; the generality is unsupported."
+            ]
+          },
+          {
+            "name": "Conclusion",
+            "summary": "Reiterates the identified problem, theoretical contribution (linear→sublinear regret), and empirical superiority of UATS.",
+            "key_claims": [
+              "Uncertainty calibration is vital for reliable reasoning.",
+              "UATS effectively mitigates OOD errors."
+            ],
+            "supporting_evidence": [
+              "Refers back to theory and experiments."
+            ],
+            "issues": [
+              "No discussion of limitations, failure modes, or future work.",
+              "Does not acknowledge the gap between theoretical assumptions and practical instantiation (especially MC Dropout vs true posterior, and unbiasedness assumption)."
+            ],
+            "missing_information": [
+              "Limitations section with assumption discussion.",
+              "Discussion of scalability to longer reasoning chains and to PRMs without dropout layers."
+            ],
+            "ambiguous_or_unsupported": [
+              "'Effectively mitigates OOD errors' restated without metrics."
+            ]
+          },
+          {
+            "name": "Supplementary (Appendices A-G)",
+            "summary": "Appendices A-B contain proofs; C discusses related work (REBASE/DORA/MCTS); D lists hyperparameters; E-F give full results and additional ablations; G provides qualitative examples for the four score/uncertainty regimes.",
+            "key_claims": [
+              "Proofs of Props 4.1 and 4.2 are valid.",
+              "UATS is complementary to REBASE/DORA/MCTS.",
+              "Qualitative examples illustrate the value of uncertainty for distinguishing reliable from unreliable PRM judgments."
+            ],
+            "supporting_evidence": [
+              "Appendix derivations; Tables 1-4; Figures 6-12."
+            ],
+            "issues": [
+              "Proof of Prop 4.1 (Eq. 15) implicitly assumes per-step losses are additively combined into terminal accuracy, but AccT was defined as a single terminal value R*(ĥ_T) — the link from per-step ∆ to terminal accuracy is not derived rigorously.",
+              "Proof of Prop 4.2 handles 'Case 1: No OOD' by assertion rather than bound; the O(1) term in Eq. 23 absorbs an unbounded contribution unless ID regret is identically zero.",
+              "Qualitative figures (9-12) confirm the existence of the four regimes but provide no aggregate statistics on how often each regime occurs or how UATS handles them on average.",
+              "Hyperparameter table does not specify A-UATS controller action ranges, exploration noise, or training horizon details.",
+              "Appendix C asserts UATS is complementary to DORA but provides no joint experiment, only conceptual differentiation."
+            ],
+            "missing_information": [
+              "Pseudocode for the full H-UATS and A-UATS algorithms (search loop, controller invocation, budget bookkeeping).",
+              "Reproducibility details: random seeds, code availability statement.",
+              "Quantitative confusion matrix for the four (score, uncertainty) regimes.",
+              "Training curves for the REINFORCE controller and discussion of stability."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that MC Dropout corresponds to drawing parameter samples from p(ϕ|D_PRM) for these off-the-shelf PRMs is not justified theoretically or empirically (e.g., calibration plot)."
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4693,
+        "output_tokens": 7559,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 62742
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_3": {
+      "parsed": {
+        "claims": [
+          {
+            "claim": "PRMs exhibit high epistemic uncertainty and unreliable scoring on OOD reasoning traces.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 2 shows accuracy drops and elevated MC-Dropout variance for cross-distribution PRM-policy pairs on 50 MATH500 problems; Figure 1 illustrates an OOD step with σ²=0.032 vs ID σ²=0.001.",
+            "evidence_strength": "weak",
+            "notes": "Empirical study restricted to only 50 problems and 2×2 PRM-policy combinations; sample size is small for the strong claims made. The 'OOD' status is implicit (cross-model) rather than formally characterized."
+          },
+          {
+            "claim": "Uncertainty-agnostic greedy search incurs linear regret accumulation under OOD probability ε.",
+            "category": "theoretical",
+            "evidence_in_paper": "Proposition 4.1 and proof in Appendix A under assumptions P(O_t)=ε, P(error|O_t)≥ρ, P(error|O_t^c)=0, and at-least-∆ loss per error.",
+            "evidence_strength": "weak",
+            "notes": "Proof is mathematically correct but trivial: the result follows almost directly from the assumptions. Assumption P(error|O_t^c)=0 (zero error on ID) is unrealistic and makes the comparison with the uncertainty-aware regime artificial."
+          },
+          {
+            "claim": "UCB-style uncertainty-aware selection achieves sublinear O(ε√(T ln T)) regret.",
+            "category": "theoretical",
+            "evidence_in_paper": "Proposition 4.2 and Appendix B proof using Hoeffding's inequality and union bound over MC-Dropout samples, assuming K_t=Ω(t).",
+            "evidence_strength": "weak",
+            "notes": "Proof assumes unbiased estimators Eφ[R̄_t(h)]=R*(h), but the paper itself argues PRMs are systematically biased on OOD data—so MC-Dropout samples will not have R* as their mean. This is a substantive inconsistency between the theoretical assumption and the motivating empirical claim. Also, the linear-vs-sublinear comparison conflates the two regimes' assumptions about ID error rates."
+          },
+          {
+            "claim": "Monte Carlo Dropout provides a meaningful approximation to the PRM posterior for uncertainty estimation.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Section 5.1 cites Gal & Ghahramani (2016); empirical correlation between dropout variance and accuracy drops in Figure 2(b).",
+            "evidence_strength": "weak",
+            "notes": "MC-Dropout as Bayesian approximation is known to be limited (often captures aleatoric+architectural noise more than true epistemic uncertainty), and the paper uses small dropout rates (0.01-0.20) added at inference to networks not trained with that dropout pattern. Whether this approximates p(φ|D_PRM) is not validated."
+          },
+          {
+            "claim": "H-UATS consistently outperforms baselines (Beam Search, Best-of-N, DVTS, REBASE, DORA) across budgets and model combinations.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 4, Figures 6-7 (full results), Table 2 averages over 15 policy-PRM combinations on MATH-500 and AIME24.",
+            "evidence_strength": "strong",
+            "notes": "Broad coverage of model pairs and budgets is a strength. However, no confidence intervals or significance tests are reported on the main benchmark results."
+          },
+          {
+            "claim": "A-UATS further outperforms H-UATS by learning dynamic budget allocation.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 2 shows A-UATS averages 17.37% vs H-UATS 15.87% on AIME24, and 73.73% vs 70.58% on MATH-500; Figure 4 curves.",
+            "evidence_strength": "weak",
+            "notes": "A-UATS is trained on MATH training split with specific policy/PRM pairs and evaluated on the same dataset families; potential train-test overlap and limited generalization evidence. Training detail of only 500 update rounds is sparse, and reward shaping/baseline details are minimal."
+          },
+          {
+            "claim": "The uncertainty signal is the critical contributor to performance gains.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 3 ablation removing MC-Dropout from H-UATS and uncertainty features from A-UATS state shows 2-7 percentage point drops.",
+            "evidence_strength": "strong",
+            "notes": "Ablation is well-designed and covers three policy-PRM pairs. Confirms uncertainty plays a functional role beyond raw scores."
+          },
+          {
+            "claim": "Comparisons are compute-matched via wall-clock latency calibration.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Section 6.1: generation step ~571ms vs PRM forward ~32ms, ratio ≈18, so 1 generation = 18 PRM passes equivalent budget.",
+            "evidence_strength": "weak",
+            "notes": "The calibration is plausible but depends heavily on batch size, sequence length, hardware, and the specific PRM size. Different baselines (e.g., Best-of-N with 256 samples) may not benefit equally from this trade-off. The mapping between 'budget units' and the x-axis N in plots is not fully transparent."
+          },
+          {
+            "claim": "UATS framework is novel relative to REBASE, DORA, and MCTS-based approaches.",
+            "category": "novelty",
+            "evidence_in_paper": "Appendix C contrasts UATS with REBASE (point-estimate scoring), DORA (macro-level allocation), and MCTS (lookahead).",
+            "evidence_strength": "weak",
+            "notes": "The novelty is incremental: REBASE provides the expansion mechanism, MC-Dropout is standard, UCB is standard, and adding a learned controller via REINFORCE is a known pattern. The contribution is mainly in the combination."
+          },
+          {
+            "claim": "Findings generalize across diverse policy models and PRMs.",
+            "category": "generalization",
+            "evidence_in_paper": "Evaluation on 5 policies (Qwen2.5-0.5/3/7B, Llama3.1-8B, Llama3.2-1B) × 3 PRMs (Math-Shepherd-7B, Skywork-PRM-1.5B, Qwen2.5-Math-PRM-7B) on MATH-500 and AIME24.",
+            "evidence_strength": "strong",
+            "notes": "The matrix of 15 model combinations on two benchmarks provides strong coverage; AIME24 has only 30 problems though, limiting reliability of those numbers."
+          },
+          {
+            "claim": "The optimal dropout rate depends on the verifier architecture (e.g., 0.10 for Qwen2.5-Math-PRM, 0.07 for Math-Shepherd-PRM).",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 5a ablation on dropout rate across 4 policy-PRM pairs.",
+            "evidence_strength": "weak",
+            "notes": "Curves are close and absent error bars; the architecture-dependence conclusion may be over-interpreted from small differences."
+          },
+          {
+            "claim": "Theoretical insights directly motivate and justify the UATS algorithmic design.",
+            "category": "theoretical",
+            "evidence_in_paper": "Section 4.3 connects Propositions 4.1-4.2 to the choice of MC-Dropout + UCB + adaptive budget.",
+            "evidence_strength": "weak",
+            "notes": "The connection is qualitative: the theory uses a simple bandit-style model with i.i.d. assumptions and unbiased estimators, whereas the practical algorithm operates in a tree-structured, biased, correlated setting. The 'theory → method' link is suggestive rather than rigorous."
+          }
+        ],
+        "unsupported_claims": [
+          "MC-Dropout sample variance faithfully captures the epistemic uncertainty arising from PRM posterior p(φ|D_PRM) on OOD inputs (no calibration study).",
+          "Assumption that MC-Dropout estimators are unbiased (Eφ[R̄_t(h)] = R*(h)) used in Proposition 4.2—directly contradicted by the paper's own claim that PRMs systematically err on OOD data.",
+          "Assumption P(error|O_t^c)=0 in Proposition 4.1 is unjustified; PRMs also misrank ID candidates.",
+          "Claim that A-UATS generalizes to unseen policy/PRM combinations (training and evaluation use overlapping model families with no held-out generalization split reported).",
+          "The compute-matching ratio (18 PRM passes ≈ 1 generation step) holds across all baselines and budget regimes; depends on implementation choices that may favor UATS."
+        ],
+        "overstated_claims": [
+          "'Provably minimizes search regret' — the theoretical model is simplified (i.i.d. OOD events, unbiased estimators, zero ID error) and does not establish optimality in the practical setting.",
+          "'Extensive theoretical framework' — Propositions 4.1 and 4.2 are short, standard applications of total probability and Hoeffding+UCB analysis.",
+          "'Effectively mitigates the impact of OOD errors' — the paper never explicitly identifies which traces are OOD nor measures error reduction specifically on OOD subsets; conclusions are inferred from aggregate accuracy.",
+          "'Dynamically optimizes compute allocation via a learned controller' — the controller is trained for only 500 REINFORCE updates with minimal detail; whether it learns nontrivial dynamic behavior vs initialization (behavioral cloning of heuristic) is not isolated.",
+          "Conclusion that 'uncertainty calibration' is the underlying mechanism—the paper measures uncertainty proxies but never validates PRM calibration."
+        ],
+        "claims_requiring_external_verification": [
+          "Wall-clock latency numbers (571ms generation, 32ms PRM pass) and the 18:1 ratio under stated A100 conditions.",
+          "Reported baseline accuracies for Beam Search, Best-of-N, REBASE, DVTS, and DORA—whether they match published numbers or proper reimplementations under matched budget.",
+          "AIME24 numerical results: with only ~30 problems, reported percentages (e.g., 26.19 vs 24.29) need statistical significance verification.",
+          "Whether DORA (Wang et al., 2025) and DVTS were re-implemented faithfully, since they are central baselines.",
+          "Validity of MC-Dropout as an epistemic uncertainty estimator when dropout is applied at inference to networks not originally trained with the same dropout configuration."
+        ]
+      },
+      "usage": {
+        "input_tokens": 2727,
+        "output_tokens": 3856,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 62742
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_4": {
+      "parsed": {
+        "novelty_axes": [
+          {
+            "axis": "problem",
+            "claimed_contribution": "Framing PRM epistemic uncertainty under policy-PRM distribution shift as a primary failure mode of external/PRM-guided reasoning, and arguing that ignoring it produces overconfident OOD selection errors.",
+            "why_it_matters": "If PRM uncertainty/calibration has already been studied in the LLM-reasoning or RLHF literature as a search-time failure mode, the problem framing is repackaged rather than new.",
+            "search_keywords": [
+              "PRM uncertainty out-of-distribution LLM reasoning",
+              "reward model overoptimization uncertainty",
+              "verifier calibration tree search math reasoning"
+            ],
+            "search_question": "Has prior work explicitly identified PRM epistemic uncertainty / OOD policy-PRM mismatch as the dominant failure mode of search-based LLM reasoning?",
+            "closest_prior_work_ref": "Coste et al. 2023 [similar_prior_work #1]; Mo & Xin 2023 [similar_prior_work #2]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "method",
+            "claimed_contribution": "UATS: a three-component pipeline combining (a) MC-Dropout on PRMs for epistemic uncertainty, (b) heuristic UCB-style selective re-evaluation of OOD candidates plus REBASE-style expansion, and (c) a REINFORCE-trained controller that adapts thresholds and temperatures.",
+            "why_it_matters": "Each ingredient (MC-Dropout, UCB, softmax-allocation REBASE-style expansion, REINFORCE controller) is standard; novelty rests on the specific integration and the dual budget (re-evaluation vs expansion) under uncertainty.",
+            "search_keywords": [
+              "Monte Carlo Dropout reward model tree search reasoning",
+              "UCB process reward model LLM math",
+              "adaptive controller test-time compute REINFORCE reasoning"
+            ],
+            "search_question": "Has any prior work used MC-Dropout on a PRM together with UCB-style selection and a learned controller for tree-search-based LLM reasoning?",
+            "closest_prior_work_ref": "Mo & Xin 2023 [similar_prior_work #2]; Wu et al. 2024 REBASE [similar_prior_work #3]; Wang et al. 2025 DORA [similar_prior_work #4]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "theory",
+            "claimed_contribution": "Two propositions: greedy PRM-guided search incurs linear regret accumulation under per-step OOD probability ε, whereas UCB-based selection with MC samples K_t=Ω(t) achieves sublinear O(ε√(T ln T)) regret.",
+            "why_it_matters": "If presented as a meaningful theoretical contribution, it must add something beyond standard UCB regret analysis (e.g., Auer 2002; Lattimore & Szepesvári).",
+            "search_keywords": [
+              "UCB regret bound bandits Hoeffding sublinear",
+              "regret analysis tree search LLM reasoning",
+              "best-arm identification reward model uncertainty"
+            ],
+            "search_question": "Do the propositions go beyond textbook UCB/Hoeffding regret bounds adapted to a PRM relabeling, or are they straightforward applications under unrealistic assumptions?",
+            "closest_prior_work_ref": "Auer 2002 / Lattimore & Szepesvári 2020 [similar_prior_work #5]",
+            "axis_verdict": "derivative"
+          },
+          {
+            "axis": "training",
+            "claimed_contribution": "Formulating budget regulation as an MDP and training a small controller via REINFORCE (with batch-mean baseline + behavioral cloning warm-start) to dynamically output six hyperparameters (β, γ, τ, δ, ν₁, ν₂).",
+            "why_it_matters": "Using RL to control inference-time hyperparameters is itself an established pattern (learned schedulers, meta-controllers). Novelty rests on the specific state/action design tailored to uncertainty-aware search.",
+            "search_keywords": [
+              "learned controller inference time hyperparameters reinforcement learning",
+              "adaptive sampling budget controller LLM",
+              "REINFORCE search hyperparameter tuning"
+            ],
+            "search_question": "Has prior work trained an RL controller to allocate inference-time search budget for LLM reasoning?",
+            "closest_prior_work_ref": "Snell et al. 2024 [similar_prior_work #6]; Wang et al. 2025 DORA [similar_prior_work #4]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "empirical",
+            "claimed_contribution": "Demonstrating consistent gains over Beam Search, Best-of-N, REBASE, DVTS, and DoRA across 15 policy-PRM pairs and two benchmarks under wall-clock-matched compute, with ~3-5pp average gains.",
+            "why_it_matters": "Even if individual components are standard, robust empirical wins across many model pairs would be a substantive contribution.",
+            "search_keywords": [
+              "MATH-500 AIME24 process reward model search benchmark",
+              "PRM-guided beam search REBASE DORA comparison"
+            ],
+            "search_question": "Are the reported absolute numbers and the magnitude of gains substantially better than the strongest published PRM-guided reasoning methods at compute-matched budgets?",
+            "closest_prior_work_ref": "Wu et al. 2024 REBASE [similar_prior_work #3]; Beeching et al. DVTS [similar_prior_work #7]",
+            "axis_verdict": "incremental"
+          }
+        ],
+        "novelty_axes_searched": [],
+        "similar_prior_work": [
+          {
+            "title": "Reward Model Ensembles Help Mitigate Overoptimization",
+            "venue_or_source": "ICLR 2024 (Coste, Anwar, Kirk, Krueger)",
+            "year": "2023/2024",
+            "similarity_summary": "Uses ensembles of reward models to estimate uncertainty and apply conservative/pessimistic aggregation to mitigate reward hacking and OOD overoptimization in RLHF, directly analogous to the PRM-uncertainty problem identified here.",
+            "key_difference": "Coste et al. operate at RLHF/policy-optimization time with outcome reward models and full ensembles; UATS targets test-time tree search with MC-Dropout on a single PRM and adds a learned budget controller. The diagnosis of overconfident OOD reward-model errors is essentially the same."
+          },
+          {
+            "title": "Tree of Uncertain Thoughts (TouT): A Monte Carlo Dropout Reasoning Framework for Large Language Models",
+            "venue_or_source": "Mo & Xin, arXiv 2309.07694 / EMNLP-related",
+            "year": "2023",
+            "similarity_summary": "Proposes augmenting Tree-of-Thoughts with Monte Carlo Dropout to estimate local uncertainty of LLM self-evaluations and uses this to guide expansion in tree search for reasoning tasks. The core mechanism — MC-Dropout uncertainty added to a tree-search-with-scoring framework — is essentially identical at the conceptual level.",
+            "key_difference": "TouT applies MC-Dropout to the LLM's own self-evaluation scores in ToT-style search; UATS applies it specifically to an external PRM and adds (i) a UCB optimism-margin filter, (ii) a separation between re-evaluation and expansion budgets, and (iii) a REINFORCE-trained controller. The paper does not cite TouT, which is a notable omission."
+          },
+          {
+            "title": "Inference Scaling Laws: An Empirical Analysis of Compute-Optimal Inference for LLM Problem-Solving (REBASE)",
+            "venue_or_source": "Wu, Sun, Li, Welleck, Yang — ICLR 2025",
+            "year": "2024",
+            "similarity_summary": "Introduces score-proportional softmax allocation of expansion budget given PRM scores; UATS uses literally the same Eq. (10) for expansion and is cited.",
+            "key_difference": "REBASE trusts the PRM as a point estimate; UATS adds an uncertainty layer and a re-evaluation budget on top of the same softmax expansion. Properly cited and contrasted in Appendix C."
+          },
+          {
+            "title": "Every Rollout Counts: Optimal Resource Allocation for Efficient Test-Time Scaling (DoRA)",
+            "venue_or_source": "Wang et al., arXiv 2506.15707",
+            "year": "2025",
+            "similarity_summary": "Allocates rollout budget across distinct reasoning directions/clusters at test time; addresses adaptive compute allocation for PRM-guided search.",
+            "key_difference": "DoRA targets macro-level direction-diversity allocation; UATS targets micro-level per-candidate uncertainty filtering and learns a controller. Cited and contrasted."
+          },
+          {
+            "title": "Finite-time Analysis of the Multiarmed Bandit Problem (UCB1) / Bandit Algorithms",
+            "venue_or_source": "Auer, Cesa-Bianchi, Fischer 2002; Lattimore & Szepesvári textbook 2020",
+            "year": "2002/2020",
+            "similarity_summary": "Provides the canonical Hoeffding+union-bound UCB regret analysis that the paper's Proposition 4.2 essentially adapts (with ε weighting for OOD events and K_t=Ω(t) samples per round).",
+            "key_difference": "The paper does not extend UCB analysis to tree-structured / correlated / biased-estimator settings; the proof is a direct rewriting of the textbook UCB regret bound under an OOD-event reweighting. The theoretical contribution is therefore largely expository."
+          },
+          {
+            "title": "Scaling LLM Test-Time Compute Optimally Can Be More Effective than Scaling Model Parameters",
+            "venue_or_source": "Snell, Lee, Xu, Kumar — ICLR 2025",
+            "year": "2024",
+            "similarity_summary": "Studies adaptive PRM-guided search budget allocation and shows compute-optimal inference can outperform larger models; sets the framing of adaptive test-time compute that UATS plugs into.",
+            "key_difference": "Snell et al. use difficulty-conditioned static allocation; UATS adds explicit uncertainty signals and a learned controller. Cited."
+          },
+          {
+            "title": "Scaling test-time compute with open models (DVTS / Diverse Verifier Tree Search)",
+            "venue_or_source": "Beeching, Tunstall, Rush — HuggingFace blogpost",
+            "year": "2024",
+            "similarity_summary": "Establishes the DVTS baseline as a diverse beam-style PRM-guided tree search, directly compared against in this paper.",
+            "key_difference": "DVTS is a search-strategy baseline, not an uncertainty-aware method; UATS adds the uncertainty layer on top of a similar tree-search backbone."
+          },
+          {
+            "title": "Q*: Improving Multi-step Reasoning for LLMs with Deliberative Planning / AlphaMath Almost Zero (PRM+MCTS)",
+            "venue_or_source": "Various 2024 arXiv works (e.g., Wang et al., Chen et al.)",
+            "year": "2024",
+            "similarity_summary": "Uses PRMs as value/heuristic functions inside MCTS-style search with UCB-based selection for LLM math reasoning.",
+            "key_difference": "These methods use point-estimate PRM values inside MCTS UCB; UATS replaces single-pass PRM with MC-Dropout-derived posterior estimates and explicitly separates evaluation vs expansion budgets. Not cited; could be a missing comparison."
+          }
+        ],
+        "potential_missing_citations": [
+          "Mo & Xin 2023, 'Tree of Uncertain Thoughts: A Monte Carlo Dropout Reasoning Framework' — arguably the most direct prior art (MC-Dropout uncertainty inside LLM tree search) and not cited.",
+          "Coste, Anwar, Kirk, Krueger 2023/2024, 'Reward Model Ensembles Help Mitigate Overoptimization' (ICLR 2024) — directly identifies and addresses reward-model epistemic uncertainty / overoptimization, the same diagnosis UATS makes for PRMs.",
+          "Eisenstein et al. 2023/2024, 'Helping or Herding? Reward Model Ensembles Mitigate but Do Not Eliminate Reward Hacking' — same family of uncertainty-over-reward-models work.",
+          "Ramé et al. 2024, 'WARM: On the Benefits of Weight-Averaged Reward Models' — alternative tractable approach to reward-model posterior approximation.",
+          "AlphaMath / MCTS-PRM line of work (e.g., Chen et al. 2024 'AlphaMath Almost Zero', Xie et al. 2024 'Monte Carlo Tree Search Boosts Reasoning via Iterative Preference Learning') — directly relevant MCTS+PRM baselines that use UCB-style selection.",
+          "Kang et al. 2024 / 'Process Reward Model with Q-value Rankings' and recent step-level verifier calibration papers that explicitly study PRM calibration."
+        ],
+        "novelty_type": "technical",
+        "novelty_assessment": "incremental",
+        "novelty_risk_level": "high",
+        "rationale": "Decomposing per axis: (1) Problem framing — recognizing that PRMs are unreliable on OOD reasoning traces and that this should be addressed at search time is a sensible but not new observation; essentially the same diagnosis underlies the RLHF reward-model-overoptimization literature (Coste et al. 2023) and, more directly, Tree of Uncertain Thoughts (Mo & Xin 2023). (2) Method — every individual component is standard: MC-Dropout (Gal & Ghahramani 2016), UCB-style optimism, softmax expansion (Wu et al. 2024 REBASE, explicitly reused as Eq. 10), and a REINFORCE-trained controller. The integration into a two-budget (re-evaluation vs expansion) scheme is the most genuinely new piece, but conceptually close to TouT's MC-Dropout-in-tree-search. (3) Theory — Propositions 4.1 and 4.2 are short, direct applications of total probability and Hoeffding+union-bound UCB analysis under strong simplifying assumptions (fixed ε, zero ID error, unbiased PRM estimator that the paper's own empirics contradict); they do not extend UCB analysis to the tree-structured, biased-estimator setting actually used. This axis is derivative. (4) Training — using RL to control search hyperparameters is a known meta-controller pattern; the specific state/action design is mildly novel but not load-bearing. (5) Empirical — broad coverage (15 policy-PRM pairs × two benchmarks) is a strength, and the consistent ~3-5pp gains over DoRA/REBASE are reasonable, but the comparison is missing the closest conceptual baselines (TouT, reward-model-ensemble-based PRMs, MCTS-PRM with explicit uncertainty). Overall, the package is a sensible recombination of well-known building blocks applied to the PRM-guided tree-search setting, with the most direct prior art (TouT) uncited. This earns an 'incremental' verdict with high novelty risk, primarily driven by the missing TouT/reward-ensemble citations and the textbook-grade theory.",
+        "source_of_judgment": "model_knowledge"
+      },
+      "usage": {
+        "input_tokens": 10215,
+        "output_tokens": 7867,
+        "cache_creation_input_tokens": 80395,
+        "cache_read_input_tokens": 229101
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_5": {
+      "parsed": {
+        "perspectives": {
+          "domain_expert": {
+            "add_to_field": "Frames PRM unreliability under policy-PRM distribution mismatch as an epistemic uncertainty problem and connects it to bandit-style regret analysis, adding a principled lens to the growing literature on PRM-guided inference-time reasoning.",
+            "beneficiaries": "Researchers working on test-time scaling, PRM design, and verifier-guided search for LLM reasoning; practitioners pairing open-source policies with off-the-shelf PRMs.",
+            "importance": "The PRM-policy mismatch problem is a real and increasingly relevant pain point given the proliferation of mix-and-match policy/PRM combinations; identifying it explicitly is valuable.",
+            "improvement_meaningful": "Yes—consistent gains across 15 policy-PRM pairs and budgets, with ablations isolating the uncertainty signal, suggest the contribution is more than incremental tuning.",
+            "future_influence": "Likely to motivate uncertainty-calibrated PRMs and uncertainty-aware variants of MCTS/REBASE/beam search in subsequent work."
+          },
+          "methodology_expert": {
+            "add_to_field": "A unified pipeline combining MC-Dropout uncertainty for PRMs, a UCB-style heuristic search, and an RL-trained controller over search hyperparameters; plus a regret-style theoretical justification.",
+            "beneficiaries": "Researchers designing inference-time search algorithms and those studying Bayesian/epistemic uncertainty in reward modeling.",
+            "importance": "Methodologically interesting because it bridges bandit theory with PRM-guided search; the MDP formulation of budget allocation is a useful framing.",
+            "improvement_meaningful": "The methodology is sound but largely composes known ingredients (MC-Dropout, UCB, REINFORCE, REBASE-style allocation); the theory rests on strong simplifying assumptions (P(error|ID)=0, unbiased estimators) that limit its tightness.",
+            "future_influence": "The MDP+controller framing for adaptive search hyperparameters could inspire learned controllers in other test-time compute settings; the theoretical template is reusable."
+          },
+          "empirical_evaluation_expert": {
+            "add_to_field": "Broad empirical sweep over 5 policies × 3 PRMs × 7 budgets on MATH-500 and AIME24, with compute-matched comparison and multiple ablations (dropout rate, K0, τ, δ, uncertainty signal, architecture).",
+            "beneficiaries": "Practitioners benchmarking external reasoning methods; authors of future PRM-guided search papers seeking a comparison protocol.",
+            "importance": "Strong empirical coverage on standard math reasoning benchmarks; addresses a relevant scaling axis.",
+            "improvement_meaningful": "Gains over REBASE/DORA appear consistent (1-5% on MATH-500, 2-4% on AIME24 averaged). However, AIME24 has only 30 problems making absolute numbers noisy; no statistical significance reporting; the compute-matching heuristic (1 step ≈ 18 PRM passes) is implementation-specific and may favor UATS.",
+            "future_influence": "The compute-matched protocol and breadth of policy-PRM combinations could become a useful evaluation template, though the AIME24 sample size limits confidence."
+          },
+          "skeptical_reviewer": {
+            "add_to_field": "Modest theoretical contribution dressed up with strong assumptions, plus an engineered combination of known techniques (MC-Dropout + UCB + REINFORCE controller).",
+            "beneficiaries": "Mainly authors of follow-up papers who can borrow the framing; unclear if the gains transfer beyond MATH/AIME or to stronger PRMs.",
+            "importance": "The OOD-PRM problem is real but somewhat acknowledged in prior literature; the paper's empirical 'OOD analysis' uses only 50 problems and two policy-PRM pairs, which is thin evidence for the central motivating claim.",
+            "improvement_meaningful": "Improvements over DORA are often within a few percentage points and rely on tuned hyperparameters (τ, δ, dropout rate, K0) per PRM; AIME24 numbers fluctuate substantially. The theoretical assumption that ID errors are zero is unrealistic and makes the linear-regret claim vacuous in practice. MC-Dropout is known to be a poor approximation to true epistemic uncertainty.",
+            "future_influence": "Moderate at best—the controller adds complexity (training per setup, RL instability) that limits adoption; the conceptual takeaway (use uncertainty) may outlast the specific method."
+          },
+          "practical_impact_expert": {
+            "add_to_field": "A drop-in-ish recipe that uses MC-Dropout passes on existing PRMs to improve search robustness without retraining the PRM or policy.",
+            "beneficiaries": "Engineers deploying test-time reasoning with frozen open-source PRMs/policies where retraining is infeasible; cost-sensitive inference pipelines.",
+            "importance": "Practically relevant: PRM/policy mismatch is common in production, and the method does not require new training data for the PRM.",
+            "improvement_meaningful": "Yes, modest but consistent accuracy gains under matched compute are useful. However, MC-Dropout requires K forward passes (extra latency), and A-UATS requires per-deployment RL training of the controller, which adds operational complexity.",
+            "future_influence": "H-UATS variant is plausibly adoptable as a lightweight upgrade to REBASE-style pipelines; A-UATS's added complexity may limit production uptake unless the controller transfers across settings."
+          }
+        },
+        "consensus": [
+          "The PRM OOD/epistemic uncertainty problem is real and worth addressing.",
+          "H-UATS and A-UATS yield consistent, if modest, gains over strong baselines across many policy-PRM combinations.",
+          "The uncertainty signal is empirically critical (Table 3 ablation is convincing).",
+          "The work combines known components (MC-Dropout, UCB, REINFORCE, REBASE) rather than introducing fundamentally new techniques."
+        ],
+        "disagreement": [
+          "Whether the theoretical analysis is meaningful or trivialized by strong assumptions (methodology/skeptic vs domain expert).",
+          "Whether empirical evidence for the OOD-PRM phenomenon is sufficient (50 problems, 2x2 grid) — skeptic finds it thin while empirical expert finds the overall sweep adequate.",
+          "Whether A-UATS's added complexity is worth its marginal gain over H-UATS for practical deployment."
+        ],
+        "significance_score_1_to_10": 6,
+        "impact_assessment": "moderate"
+      },
+      "usage": {
+        "input_tokens": 2915,
+        "output_tokens": 2235,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 62742
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_6": {
+      "parsed": {
+        "problem_and_solution_formulation": {
+          "definitions_clear": [
+            "External reasoning framework is formally defined with policy πθ, PRM Rϕ, search Alg, and answer extractor E (Section 3.1).",
+            "PRM training objective (Eq. 2) and the law-of-total-variance decomposition into aleatoric and epistemic uncertainty (Eq. 3) are stated clearly.",
+            "Empirical uncertainty estimators (R̄, σ_R, K, R̂) and the budget allocation formulas (Eqs. 7-10) are explicitly defined."
+          ],
+          "assumptions_clear": [
+            "Propositions 4.1 and 4.2 explicitly list their assumptions (fixed ε, ∆-loss, ρ-bound, unbiased estimators, UCB selection rule).",
+            "MC-Dropout is explicitly identified as the approximation used in place of sampling from p(ϕ|D_PRM)."
+          ],
+          "derivations_algorithms_clear": [
+            "Heuristic UATS is described step-by-step with the filtering rule (τ, δ) and softmax budget allocations.",
+            "A-UATS MDP state, action vector, reward, and REINFORCE update are stated."
+          ],
+          "suggested_improvements_for_formulation": [
+            "Provide a precise operational definition of 'OOD' at the level of reasoning steps; the paper conflates policy distribution shift with step-level OOD-ness.",
+            "Acknowledge the gap between the Bayesian formulation (sampling from p(ϕ|D_PRM)) and inserting dropout at inference into PRMs not necessarily trained with that dropout pattern.",
+            "Specify the controller's stochastic policy form (output distribution, bounding via softplus/sigmoid, exploration noise) and the precise behavioral-cloning target, since the heuristic depends on the same parameters the controller outputs.",
+            "Provide pseudocode for the full H-UATS and A-UATS loops including budget bookkeeping and interaction between filtered set and expansion.",
+            "Clarify the relationship between the H-UATS-filtered subset S and the expansion set in Eq. 10 (which currently is taken over the full H)."
+          ]
+        },
+        "theoretical_support": {
+          "correct": [
+            "Proposition 4.1's algebraic chain (lower-bounding error probability by ερ and summing across T steps) is internally consistent given its assumptions.",
+            "Proposition 4.2's use of Hoeffding's inequality + union bound to derive concentration of R̄_t around R* and the resulting Σ√(ln t / K_t) sum is standard and technically correct."
+          ],
+          "partially_correct": [
+            "Proposition 4.1: the decomposition from per-step error to cumulative accuracy loss (Eq. 15) implicitly treats AccT as additively decomposable across T steps, but AccT was defined as the terminal R*(ĥ_T); the link from per-step ∆ to terminal accuracy is not rigorously established.",
+            "Proposition 4.2 makes the unbiasedness assumption Eϕ[R̄_t(h)] = R*(h), which directly contradicts the paper's own motivating claim that PRMs systematically err on OOD inputs. Concentration is thus around the PRM's biased predictive mean, not R*.",
+            "Proposition 4.2's 'Case 1: No OOD' is dismissed as 'negligible regret' rather than bounded; if ID error is nonzero (as is realistic) this contributes a linear term that the O(1) cannot absorb.",
+            "The OOD event O_t is treated as i.i.d. with fixed ε; in practice OOD-ness across steps within a trace is highly correlated, weakening the union-bound argument.",
+            "The theoretical recommendation K_t = Ω(t) is not actually implemented by the algorithm (which uses a fixed K_0 plus heuristic reallocation), so the 'theory motivates the algorithm' link is qualitative.",
+            "The MC-Dropout samples are not formally connected to ϕ_k ~ p(ϕ|D_PRM); the theory and the algorithm reside in different probabilistic regimes.",
+            "Wording such as 'provably minimizes regret' overstates the result, which gives only an upper bound, with no matching lower bound or optimality guarantee."
+          ],
+          "suggested_improvements_for_theoretical_support": [
+            "Replace the unbiasedness assumption with a bias-plus-variance decomposition, explicitly carrying a bias term b(h) and showing that uncertainty-aware selection still helps under bounded bias.",
+            "Rigorously derive the link between per-step selection error and terminal accuracy (e.g., via a Markovian success model or chained probability), or restate the result as cumulative per-step regret rather than terminal accuracy.",
+            "Bound the ID-error contribution explicitly in Proposition 4.2 rather than dismissing it.",
+            "Provide a matching lower bound or impossibility result to substantiate the 'sublinear is necessary' claim.",
+            "Either implement K_t = Ω(t) and verify the predicted scaling empirically, or justify why the practical fixed-K instantiation inherits the theoretical guarantee.",
+            "Justify (theoretically or empirically) that MC-Dropout variance on off-the-shelf PRMs approximates the posterior assumed in the theory."
+          ]
+        },
+        "experimental_support": {
+          "supported": [
+            "H-UATS and A-UATS outperform Beam Search, Best-of-N, DVTS, REBASE, and DoRA across the matrix of 15 policy-PRM combinations on MATH-500 (Figure 6, Table 2).",
+            "The uncertainty signal contributes meaningfully to performance, as removing MC-Dropout from H-UATS or uncertainty features from A-UATS produces consistent drops (Table 3).",
+            "Generality across policy sizes (0.5B–8B) and three different PRMs is demonstrated."
+          ],
+          "partially_supported": [
+            "Claim that PRMs degrade on OOD reasoning traces: evidenced by only 50 problems with two PRMs × two policies (Figure 2); OOD-ness is operationalized as cross-model rather than directly measured at the step level.",
+            "A-UATS outperforms H-UATS via 'dynamic adaptation': numerical advantage exists in Table 2, but no analysis isolates whether the controller learned nontrivial dynamic behavior beyond the behavioral-cloning init.",
+            "Compute-matched comparison: latency ratio 18:1 is implementation- and batch-specific; end-to-end wall-clock or FLOPs results that would directly validate fairness are not provided.",
+            "Findings on AIME24: with only ~30 problems, small absolute differences (e.g., 21.52 vs 22.95) have wide uncertainty that is not quantified.",
+            "PRM-architecture-dependent optimal dropout rate (Figure 5a): differences are small, no error bars; conclusion is suggestive."
+          ],
+          "unsupported_or_overstated": [
+            "'Provably minimizes search regret' — theory establishes upper bounds under strong/unrealistic assumptions, not optimality.",
+            "'Effectively mitigates OOD errors' — there is no evaluation on an explicitly OOD-labeled subset; gains are inferred from aggregate accuracy.",
+            "Empirical experiments do not test the theoretical linear-vs-sublinear scaling (no regret-vs-T curve or functional fit).",
+            "Claim that MC-Dropout on off-the-shelf PRMs approximates p(ϕ|D_PRM) is not validated (no calibration plot, reliability diagram, or comparison against an ensemble baseline).",
+            "Claim of generalization of A-UATS to unseen policy/PRM combinations: training pairs overlap heavily with evaluation pairs; no held-out policy/PRM generalization experiment.",
+            "H-UATS w/o Uncertainty being equivalent to REBASE: Table 3 numbers differ from Table 2 REBASE numbers, suggesting the comparison is not a clean reproduction."
+          ],
+          "suggested_improvements_for_claim_support": [
+            "Add experiments that explicitly label OOD vs ID reasoning steps and report per-subset accuracy improvement.",
+            "Provide a regret-vs-budget plot to test the predicted O(√T) scaling.",
+            "Report wall-clock and FLOPs comparisons under the same hardware to substantiate compute-matched claims.",
+            "Hold out a policy-PRM pair entirely from A-UATS training and report transfer performance.",
+            "Calibration evaluation (e.g., expected calibration error, reliability diagrams) of MC-Dropout uncertainty vs true error.",
+            "Include statistical significance tests (paired bootstrap or sign test) on the main accuracy curves, especially AIME24.",
+            "Visualize the learned controller's actions across depth and uncertainty levels to demonstrate genuine adaptive behavior beyond the cloned heuristic."
+          ]
+        },
+        "experimental_rigor": {
+          "baseline_quality": "Reasonable coverage of relevant baselines (Beam Search, Best-of-N, REBASE, DVTS, DoRA, Oracle/Pass@K), but baseline hyperparameters (beam width, REBASE temperature, DVTS settings, DoRA configuration) are not specified, raising concerns about whether baselines are tuned comparably. The 'H-UATS w/o Uncert.' variant is not consistent with REBASE numbers reported elsewhere.",
+          "missing_baselines": [
+            "PRM ensemble baseline (a natural alternative way to obtain epistemic uncertainty without dropout).",
+            "Self-consistency / majority voting baseline.",
+            "UCB-MCTS or other uncertainty-aware tree search baselines from the LLM reasoning literature.",
+            "A simple temperature-scaled or calibrated PRM baseline to disentangle calibration from search adaptation.",
+            "An ablation that uses a UCB term but no MC-Dropout (e.g., bootstrapping or score-noise) to isolate the contribution of MC-Dropout specifically."
+          ],
+          "dataset_quality": "MATH-500 is a standard benchmark and the per-policy-PRM evaluation matrix is broad. AIME24 has only ~30 problems, which is too small to support claims about small percentage differences.",
+          "better_datasets": [
+            "GSM8K or OlympiadBench for broader mathematical coverage.",
+            "GPQA or MMLU-Pro for non-math reasoning generalization.",
+            "A dedicated OOD-stress benchmark where reasoning traces are explicitly synthesized from policies unseen by the PRM."
+          ],
+          "metric_appropriateness": "Pass@1 accuracy is appropriate; Pass@K is used as an oracle upper bound. However, no efficiency metric (wall-clock or FLOPs) is reported, despite the paper's compute-efficiency claims.",
+          "better_metric": [
+            "FLOPs or wall-clock seconds per problem to directly substantiate compute-matched comparisons.",
+            "Per-step PRM ranking accuracy / Spearman correlation with ground-truth correctness, to directly measure the verifier quality improvement.",
+            "Expected Calibration Error (ECE) or AUROC of σ_R as an OOD detector to validate the uncertainty signal."
+          ],
+          "missing_ablations": [
+            "Ablation that grows K_t with t (as the theory requires) versus fixed K_0.",
+            "Ablation on the cost penalty λ in the A-UATS reward.",
+            "Ablation isolating behavioral-cloning init vs RL fine-tuning (does RL actually contribute beyond initialization?).",
+            "Ablation replacing MC-Dropout with a PRM ensemble or input-perturbation uncertainty proxy.",
+            "Ablation across reasoning depth to verify the predicted dependence on T."
+          ],
+          "statistical_significance": "No confidence intervals, standard errors, or significance tests are reported for the main accuracy results. AIME24 with ~30 problems is particularly susceptible to noise.",
+          "better_significance_test_or_confidence_interval": [
+            "Paired bootstrap intervals over problems for each method pair.",
+            "McNemar's test or paired sign test for binary correctness comparisons.",
+            "Multiple seeds per configuration with reported mean ± std."
+          ],
+          "hyperparameter_clarity": "H-UATS hyperparameters are listed in Table 1, but baseline hyperparameters are not. A-UATS controller architecture is partially specified (Table 4), but action parameterization (e.g., output activation, bounded ranges), exploration noise, batch size M, episode length, and training horizon details are missing.",
+          "negative_results_discussed": "no",
+          "possible_confounders": [
+            "Differences between baselines in batching and parallelism may inflate the apparent budget advantage of UATS (parallelized PRM passes vs sequential generation).",
+            "MC-Dropout passes may interact differently with PRMs that have different intrinsic dropout layers — confound with PRM-architecture.",
+            "A-UATS training and evaluation overlap in policy-PRM families, conflating learned adaptation with memorization of MATH-500-style distributions.",
+            "The 'H-UATS w/o Uncert.' ablation simultaneously removes the signal and changes the budget allocation flow, conflating uncertainty signal with budget mechanism.",
+            "The compute-matching ratio is calibrated on a specific (Qwen, batch=4, 56-token) setup and applied uniformly across model sizes, which may systematically favor UATS."
+          ],
+          "confounder_reduction_alternatives": [
+            "Match budgets by FLOPs and wall-clock simultaneously, with both reported.",
+            "Train A-UATS on one policy-PRM family and test on a fully held-out family.",
+            "Run a controlled ablation where the only change is replacing point-estimate scores with MC-Dropout mean (no budget reallocation) to isolate the score-quality contribution.",
+            "Verify dropout layers are intrinsic to each PRM, or document the modifications made to insert them."
+          ],
+          "reproducibility_score_1_to_10": 4,
+          "suggestions_for_improving_reproducibility": [
+            "Release code and the trained A-UATS controller checkpoint.",
+            "Provide pseudocode for H-UATS and A-UATS including budget bookkeeping.",
+            "Specify all baseline hyperparameters (beam widths, REBASE/DVTS/DoRA temperatures).",
+            "Report seeds, number of runs, and per-cell variance.",
+            "Document the dropout configuration applied to each PRM (which layers, what training-time dropout existed).",
+            "Provide REINFORCE training details: batch size, episode count, action distribution and bounds, learning curves, and reward statistics."
+          ]
+        }
+      },
+      "usage": {
+        "input_tokens": 12284,
+        "output_tokens": 5167,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 62742
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_7": {
+      "parsed": {
+        "strengths": [
+          "Identifies and frames a genuine and increasingly relevant problem: PRMs trained on one distribution become unreliable when scoring reasoning traces from a different policy, leading to overconfident misranking during search.",
+          "Provides a unified pipeline that combines epistemic uncertainty estimation (MC-Dropout), uncertainty-aware budget allocation (H-UATS), and a learned adaptive controller (A-UATS), connecting bandit-style theory with a concrete inference-time algorithm.",
+          "Empirical evaluation matrix is broad: 5 policy models (0.5B–8B) × 3 PRMs × 7 budgets on MATH-500 plus AIME24, with consistent gains over Beam Search, Best-of-N, REBASE, DVTS, and DoRA reported in Table 2 and Figures 4, 6, 7.",
+          "The ablation in Table 3 cleanly demonstrates that the uncertainty signal—not merely the budget-reallocation mechanism—contributes substantially to performance (drops of 2–7 points across three policy-PRM pairs when uncertainty is removed).",
+          "Compute is matched via wall-clock latency calibration (1 generation step ≈ 18 PRM passes), enabling at least a more meaningful comparison than naive N-matched evaluation.",
+          "The qualitative case studies (Figures 9–12) clearly illustrate the four-quadrant behavior of PRM score vs uncertainty and convincingly motivate uncertainty-aware filtering."
+        ],
+        "weaknesses": [
+          "The theoretical analysis is built on assumptions that contradict the paper's own empirical motivation. Proposition 4.2 assumes Eϕ[R̄_t(h)] = R*(h) (unbiased estimators), while the empirical narrative is that PRMs are systematically biased on OOD inputs—so MC-Dropout sample means concentrate around the biased PRM mean, not the true reward. Proposition 4.1 further assumes P(error | ID) = 0, which is unrealistic and makes the linear-vs-sublinear contrast vacuous.",
+          "The theory–algorithm link is qualitative. The theory requires K_t = Ω(t) and i.i.d. OOD events; the algorithm uses fixed K_0 plus heuristic reallocation and operates on highly correlated tree-structured states. No experiment verifies the predicted O(√T ln T) regret scaling.",
+          "MC-Dropout is presented as approximating p(ϕ | D_PRM), but the paper does not validate whether off-the-shelf PRMs (not necessarily trained with the same dropout pattern) yield meaningful posterior samples. There is no calibration analysis (ECE, reliability diagram, AUROC for OOD detection) showing σ_R is a faithful epistemic uncertainty estimate rather than architectural noise.",
+          "The empirical OOD analysis motivating the whole paper (Section 4.1, Figure 2) relies on only 50 problems and a 2×2 PRM–policy grid, with no per-step OOD labeling. The paper never directly demonstrates accuracy gains specifically on OOD-flagged steps, so the central claim of 'mitigating OOD errors' is inferred rather than measured.",
+          "AIME24 has only ~30 problems, but small numerical differences (often ≤2 points) are interpreted as substantive improvements without confidence intervals, paired significance tests, or multiple seeds. No statistical significance reporting anywhere in the paper.",
+          "Key baselines are under-specified. Beam width, REBASE/DVTS/DoRA temperatures and configurations are not given. Moreover, the 'H-UATS w/o Uncertainty' variant (described as methodologically similar to REBASE) reports numbers that differ from the REBASE row in Table 2, suggesting the baseline comparison is not a clean reimplementation.",
+          "Missing baselines: PRM ensembles (a natural alternative epistemic-uncertainty estimator), self-consistency / majority voting, UCB-MCTS, and a 'UCB without MC-Dropout' control that would isolate which component is doing the work.",
+          "A-UATS generalization is weakly substantiated. Training and evaluation policy-PRM pairs overlap heavily; there is no held-out policy-PRM transfer experiment, and only 500 REINFORCE updates with sparse training-detail reporting. The gain over H-UATS (≈1.5–3 points) is not decomposed into 'behavioral-cloning init vs RL fine-tuning' contributions.",
+          "No efficiency metric (FLOPs or wall-clock latency per problem) is reported, despite the paper's claims of compute efficiency. The 18:1 calibration is specific to one batch/length/hardware setting and applied uniformly across all model sizes, which may systematically favor UATS's parallel PRM passes.",
+          "Methodological novelty is limited: MC-Dropout, UCB, REBASE-style expansion, and REINFORCE controllers are all standard. The contribution is primarily their combination plus the uncertainty framing."
+        ],
+        "fatal_flaws": [],
+        "minor_issues": [
+          "Proposition 4.1's derivation implicitly treats per-step Δ losses as additively decomposable into terminal accuracy AccT ≜ R*(ĥ_T); the link is not rigorous.",
+          "Proposition 4.2's 'Case 1: No OOD' contributes only 'negligible regret' rather than a bounded quantity; if ID errors are nonzero (realistic), this would contribute a linear term not absorbed by O(1).",
+          "Eq. 10 expands children over the full candidate set H, while the filtering step removes uncompetitive OOD candidates from S—this interaction is not clearly resolved in the text.",
+          "The controller's action parameterization (output activations, bounded ranges, exploration noise), batch size M, and episode statistics are not specified.",
+          "Figure 2 axes labels are slightly inconsistent (Pass@1 success rate vs. accuracy); also the 50-question subset is not described as random within the same complexity bin.",
+          "Wording such as 'provably minimizes regret' overstates an upper-bound result without any matching lower bound.",
+          "Citation Snell et al. 2024a/2024b appears redundantly; reference list contains the same work twice.",
+          "Caption of Figure 1 cites σ²=0.032 vs 0.001 but these specific values are not connected to MC-Dropout configuration details (K, dropout rate) used in the figure."
+        ],
+        "questions_for_authors": [
+          "How do you justify the unbiasedness assumption Eϕ[R̄_t(h)] = R*(h) in Proposition 4.2 given your own empirical claim that PRMs are systematically biased on OOD inputs? Can the regret bound be re-derived under a bounded-bias assumption?",
+          "Can you provide an experiment that explicitly verifies the predicted O(√T ln T) scaling, e.g., a regret-vs-T (or vs-budget) curve and a comparison to a method using K_t = Ω(t) as the theory prescribes?",
+          "Have you validated that MC-Dropout variance on these off-the-shelf PRMs is a meaningful epistemic uncertainty estimator? E.g., reliability diagrams, ECE, or AUROC for OOD step detection? How was dropout inserted into PRMs that were not necessarily trained with the same dropout configuration?",
+          "Why do the 'H-UATS w/o Uncertainty' numbers in Table 3 differ from the REBASE numbers in Table 2 despite the text describing them as methodologically similar? What are the exact algorithmic differences?",
+          "Can you provide a held-out policy-PRM generalization experiment for A-UATS where the controller is trained on one policy-PRM family and tested on an entirely unseen one?",
+          "Can you isolate the contribution of REINFORCE fine-tuning versus the behavioral-cloning initialization for A-UATS?",
+          "Could you report FLOPs and wall-clock latency per problem under matched conditions, and verify that the 18:1 calibration holds across the different policy sizes (0.5B–8B) used?",
+          "Have you considered a PRM-ensemble baseline as an alternative epistemic uncertainty estimator? How does H-UATS with an ensemble compare to MC-Dropout?",
+          "On AIME24 (≈30 problems), can you report paired bootstrap or McNemar's test results to substantiate the small percentage-point differences?",
+          "How were baseline hyperparameters (beam widths, REBASE/DVTS/DoRA temperatures, sampling temperatures) chosen, and were they tuned per policy-PRM pair?"
+        ],
+        "recommendation": "borderline",
+        "recommendation_rationale": "The paper addresses a real and timely problem (PRM unreliability under policy-PRM mismatch) and provides a coherent uncertainty-aware framework with broad empirical coverage and a convincing ablation isolating the uncertainty signal. The breadth of policy-PRM combinations on MATH-500 and the consistent (if modest) gains over strong baselines are genuine strengths. However, the theoretical contribution is undermined by assumptions that contradict the paper's own motivation (unbiased PRM estimators, zero ID error), and the bridge from theory to algorithm is qualitative rather than verified. The MC-Dropout uncertainty estimator is not calibrated or validated as faithful posterior approximation. Statistical significance is not reported anywhere, AIME24 results rest on ~30 problems, baseline hyperparameters are under-specified, and an apparent inconsistency between the 'H-UATS w/o Uncertainty' ablation and the REBASE baseline raises reproducibility concerns. Methodological novelty is modest (combining MC-Dropout + UCB + REINFORCE + REBASE-style expansion). With (i) a corrected/strengthened theoretical analysis under bounded-bias assumptions, (ii) calibration validation of MC-Dropout, (iii) a held-out policy-PRM generalization test for A-UATS, (iv) significance testing, and (v) clearer baseline specification, the paper could become a solid accept. As submitted, it falls in the borderline range.",
+        "confidence_1_to_5": 4
+      },
+      "usage": {
+        "input_tokens": 14108,
+        "output_tokens": 3536,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 62742
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_8": {
+      "parsed": {
+        "summary_of_paper": "The paper identifies that Process Reward Models (PRMs) used to guide external tree search for LLM reasoning become unreliable when scoring reasoning traces produced by policy models with distributions different from the PRM's training distribution. The authors empirically demonstrate, on a 50-question MATH500 subset across two PRMs and two policies, that cross-distribution pairs exhibit higher MC-Dropout score variance and lower search accuracy. They then provide a bandit-style regret analysis showing that greedy uncertainty-agnostic selection accumulates linear regret in the OOD probability ε, while UCB-style uncertainty-aware selection achieves sublinear O(ε√(T ln T)) regret when sample budget scales as Kt=Ω(t).\n\nMotivated by this analysis, the authors propose UATS: (i) MC-Dropout-based epistemic uncertainty estimation yielding empirical mean, variance, and a UCB score; (ii) a heuristic search (H-UATS) that filters candidates into ID/OOD via a variance threshold, retains optimistic OOD candidates, and distributes re-evaluation and expansion budgets via temperature-controlled softmaxes; and (iii) an adaptive controller (A-UATS) trained with REINFORCE that dynamically modulates six search hyperparameters. Across MATH-500 and AIME24 with 5 policy models, 3 PRMs, and budgets N∈{4,...,256} matched by wall-clock latency, H-UATS and A-UATS consistently outperform Best-of-N, Beam Search, REBASE, DoRA, and DVTS, with ablations confirming that the uncertainty signal contributes substantially to the gains.",
+        "main_strengths": [
+          "The paper identifies and clearly frames a real and increasingly relevant problem: policy-PRM distribution mismatch causes overconfident PRM misrankings during search. The motivation is grounded in both quantitative evidence (Figure 2) and a clear qualitative example (Figure 1).",
+          "The framework unifies three components — MC-Dropout uncertainty estimation, uncertainty-aware budget allocation (H-UATS), and a learned adaptive controller (A-UATS) — into a coherent inference-time pipeline that bridges bandit-style theory and practical search algorithms.",
+          "Empirical evaluation is broad: 5 policy models (0.5B–8B) × 3 PRMs × 7 budgets on MATH-500 plus AIME24, with consistent gains over Beam Search, Best-of-N, REBASE, DVTS, and DoRA (Table 2; Figures 4, 6, 7).",
+          "The ablation in Table 3 cleanly demonstrates that the uncertainty signal — not just the budget reallocation mechanism — contributes substantially, with drops of 2–7 points across three policy-PRM pairs when uncertainty is removed.",
+          "Compute is matched via wall-clock latency calibration (~18 PRM passes per generation step), enabling more meaningful comparison than naive N-matched evaluation.",
+          "The qualitative case studies (Figures 9–12) clearly illustrate the four-quadrant behavior of PRM score vs uncertainty and concretely motivate uncertainty-aware filtering."
+        ],
+        "main_weaknesses": [
+          "The theoretical analysis is built on assumptions that contradict the paper's own empirical motivation. Proposition 4.2 assumes Eϕ[R̄t(h)] = R*(h) (unbiased estimators), while the paper's central claim is that PRMs are systematically biased on OOD inputs — so MC-Dropout sample means concentrate around the biased PRM mean, not the true reward. Proposition 4.1 further assumes P(error | ID) = 0, which is unrealistic and makes the linear-vs-sublinear contrast somewhat vacuous.",
+          "The theory-to-algorithm link is qualitative. The theory requires Kt = Ω(t) and i.i.d. OOD events; the algorithm uses fixed K0 plus heuristic reallocation on highly correlated tree-structured states. No experiment verifies the predicted O(√T ln T) regret scaling.",
+          "MC-Dropout is presented as approximating p(ϕ | D_PRM), but the paper does not validate whether off-the-shelf PRMs (not necessarily trained with the same dropout pattern) yield meaningful posterior samples. There is no calibration analysis (e.g., ECE, reliability diagram, AUROC for OOD detection) showing that σR is a faithful epistemic uncertainty estimator.",
+          "The empirical OOD analysis motivating the whole paper (Section 4.1, Figure 2) rests on only 50 problems and a 2×2 PRM-policy grid, without per-step OOD labeling. The paper never directly measures accuracy gains specifically on OOD-flagged steps, so the central claim of 'mitigating OOD errors' is inferred rather than measured.",
+          "AIME24 has only ~30 problems, yet small numerical differences (often ≤2 points) are interpreted as substantive improvements. No confidence intervals, paired significance tests, or multi-seed standard deviations are reported anywhere.",
+          "Baselines are under-specified. Beam widths and REBASE/DVTS/DoRA temperatures and configurations are not given. The 'H-UATS w/o Uncertainty' variant — described as methodologically similar to REBASE — reports numbers that differ from the REBASE row in Table 2, raising reproducibility concerns about the baseline.",
+          "Important baselines are missing: PRM ensembles (a natural alternative epistemic uncertainty estimator), self-consistency / majority voting, UCB-MCTS, and a 'UCB-without-MC-Dropout' control that would isolate which component is doing the work.",
+          "A-UATS generalization is weakly substantiated. Training and evaluation policy-PRM pairs overlap heavily; there is no held-out policy-PRM transfer experiment, only 500 REINFORCE updates with sparse training-detail reporting, and the gain over H-UATS (~1.5–3 points) is not decomposed into 'behavioral-cloning init vs RL fine-tuning' contributions.",
+          "No efficiency metric (FLOPs or wall-clock latency per problem) is reported, despite claims of compute efficiency. The 18:1 calibration is specific to one batch/length/hardware setting and is applied uniformly across policy sizes 0.5B–8B, which may systematically favor UATS's parallel PRM passes.",
+          "Methodological novelty is moderate: MC-Dropout, UCB, REBASE-style expansion, and REINFORCE controllers are all standard. The contribution is primarily their combination plus the uncertainty framing."
+        ],
+        "detailed_comments": [
+          "Section 4.2: The interaction between Proposition 4.1's assumption P(error | ID) = 0 and the empirical reality of nonzero ID errors makes the linear-vs-sublinear contrast partly an artifact of the assumption rather than of uncertainty-aware selection. Consider a unified bounded-bias setting in which both ID and OOD incur error with different rates.",
+          "Section 4.2: Proposition 4.2 hinges on Eϕ[R̄t(h)] = R*(h). MC-Dropout averages over parameter samples but cannot remove a systematic bias in the PRM toward OOD traces. A bounded-bias variant of the theorem — with a residual O(εTb) term where b is the bias — would more honestly reflect the empirical claim.",
+          "Section 5.1: It is unclear whether the PRMs evaluated were trained with the same dropout configuration used at inference. If not, the resulting variance may reflect architectural noise rather than posterior dispersion. A small calibration study (e.g., ECE on a held-out PRM training set, AUROC for OOD step detection) would strengthen this central component.",
+          "Sections 5.2–5.3: Eq. 10 expands children over the full candidate set H, while the filtering step removes uncompetitive OOD candidates from S — the interaction between these two pools is not clearly resolved. Also, the controller's action parameterization (output activations, bounded ranges, exploration noise), batch size M, and training/evaluation statistics are not specified.",
+          "Section 6.1: The wall-clock calibration (571 ms / 32 ms ≈ 18) is reported for one batch size and step length on one GPU. Since policy generation latency varies significantly across the policy models used (0.5B–8B) and across batch sizes, the 18:1 conversion is unlikely to hold uniformly; reporting per-model latency and FLOPs would clarify the compute-matching claim.",
+          "Table 3 vs. Table 2: 'H-UATS w/o Uncertainty' is described as methodologically similar to REBASE, yet the numbers differ. Please clarify the precise differences and whether REBASE was re-tuned per policy-PRM pair.",
+          "Statistical reporting: For AIME24 (~30 problems), 1–2 point differences correspond to 0–1 problem changes. Bootstrap CIs, paired McNemar tests, or multi-seed evaluations are needed to support the claimed improvements.",
+          "Wording: Claims such as 'provably minimizes regret' (Sections 4.3 and 1) overstate the upper-bound result. The bounds shown are upper bounds without matching lower bounds for the algorithm, and rely on idealized assumptions.",
+          "Minor: Figure 1 cites σ²=0.032 vs 0.001 but does not connect these to the MC-Dropout configuration (K, dropout rate). The reference list contains Snell et al. 2024a and 2024b which appear to be the same work."
+        ],
+        "questions_for_authors": [
+          "How do you justify the unbiasedness assumption Eϕ[R̄t(h)] = R*(h) in Proposition 4.2 given your own empirical claim that PRMs are systematically biased on OOD inputs? Can the regret bound be re-derived under a bounded-bias assumption?",
+          "Can you provide an experiment that explicitly verifies the predicted O(√T ln T) scaling — e.g., a regret-vs-T (or vs-budget) curve and a comparison to a method using Kt = Ω(t) as the theory prescribes?",
+          "Have you validated that MC-Dropout variance on these off-the-shelf PRMs is a meaningful epistemic uncertainty estimator? Specifically, can you report reliability diagrams, ECE, or AUROC for OOD step detection? How was dropout inserted into PRMs that were not necessarily trained with the same dropout configuration?",
+          "Why do the 'H-UATS w/o Uncertainty' numbers in Table 3 differ from the REBASE numbers in Table 2 despite the text describing them as methodologically similar? What are the exact algorithmic differences?",
+          "Can you provide a held-out policy-PRM generalization experiment for A-UATS where the controller is trained on one policy-PRM family and tested on an entirely unseen one?",
+          "Can you isolate the contribution of REINFORCE fine-tuning versus the behavioral-cloning initialization for A-UATS?",
+          "Could you report FLOPs and wall-clock latency per problem under matched conditions, and verify that the 18:1 calibration holds across the different policy sizes (0.5B–8B) used?",
+          "Have you compared against a PRM-ensemble baseline as an alternative epistemic uncertainty estimator? How does H-UATS with an ensemble compare to MC-Dropout?",
+          "On AIME24 (~30 problems), can you report paired bootstrap or McNemar's test results to substantiate the small percentage-point differences?",
+          "How were baseline hyperparameters (beam widths, REBASE/DVTS/DoRA temperatures, sampling temperatures) chosen, and were they tuned per policy-PRM pair?"
+        ],
+        "suggestions_for_improvement": [
+          "Strengthen the theory by replacing the unbiased-estimator assumption with a bounded-bias condition (e.g., |E[R̄t(h)] − R*(h)| ≤ b on OOD inputs), and derive how b enters the regret bound. This would align the theory with the paper's empirical motivation.",
+          "Add a calibration study of MC-Dropout on the PRMs used: reliability diagrams, ECE, and AUROC for distinguishing ID vs OOD reasoning steps (e.g., using cross-policy traces as a proxy). This would justify σR as an epistemic uncertainty estimator.",
+          "Include a PRM-ensemble baseline (e.g., 3–5 independently fine-tuned or seed-varied PRMs) as an alternative uncertainty estimator and a 'UCB-only' control without MC-Dropout, to isolate which component drives gains.",
+          "Add statistical significance testing: bootstrap confidence intervals for MATH-500 accuracy and paired McNemar tests for AIME24, plus multi-seed standard deviations for the controller training.",
+          "Provide a held-out policy-PRM transfer experiment for A-UATS: train the controller on a subset of policy-PRM pairs and evaluate on entirely unseen combinations to substantiate generalization claims.",
+          "Specify baseline hyperparameters and per-model latency measurements clearly, and reconcile the 'H-UATS w/o Uncertainty' variant with REBASE numbers.",
+          "Report end-to-end wall-clock latency and FLOPs per problem for all methods at matched accuracy levels, since efficiency is a central claim.",
+          "Decompose the A-UATS gain into the behavioral-cloning initialization and RL fine-tuning contributions.",
+          "Soften theoretical claims (e.g., 'provably minimizes regret' → 'achieves a sublinear regret upper bound under stated assumptions') and clarify caveats."
+        ],
+        "overall_recommendation": "Borderline / weak reject — The paper addresses a timely problem and presents a coherent framework with broad empirical evidence and a useful uncertainty-vs-budget ablation, but the theoretical contribution rests on assumptions that contradict the paper's own motivation, the MC-Dropout estimator is not validated as faithful epistemic uncertainty, statistical significance is absent, and important baselines and reproducibility details are missing. With a corrected/strengthened theory under bounded-bias assumptions, calibration validation of MC-Dropout, held-out policy-PRM generalization tests for A-UATS, significance testing, and clearer baseline specification, the paper could become a solid accept.",
+        "reviewer_confidence_1_to_5": 4,
+        "score_card": {
+          "soundness_1_to_4": 2,
+          "presentation_1_to_4": 3,
+          "contribution_1_to_4": 2,
+          "overall_1_to_10": 5
+        }
+      },
+      "usage": {
+        "input_tokens": 6368,
+        "output_tokens": 5110,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 62742
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_9": {
+      "parsed": {
+        "hallucinated_comments": [],
+        "misrepresentations": [
+          "The draft states Proposition 4.1 assumes 'P(error | ID) = 0', which is literally what the paper assumes (P(ĥ_t ≠ h*_t | O_t^c) = 0). This is accurate, but the draft's framing that this 'makes the linear-vs-sublinear contrast somewhat vacuous' is somewhat strong — the contrast still holds in spirit; consider softening to 'makes the contrast partly an artifact of the assumption rather than fully vacuous.'"
+        ],
+        "missed_strengths": [
+          "Additional ablations in Appendix F (dropout rate, K0, threshold τ, optimism margin δ, network architecture) systematically characterize hyperparameter sensitivity.",
+          "The paper provides explicit qualitative case-study taxonomy (four quadrants of score×uncertainty) in Appendix G, which is a useful diagnostic contribution."
+        ],
+        "missed_weaknesses": [
+          "The 'Oracle (Pass@K)' baseline shows a substantial remaining gap, suggesting that even with uncertainty awareness, the search is far from optimal — this is not discussed.",
+          "The 18:1 latency calibration creates a measurement asymmetry: parallelized PRM passes likely have very different wall-clock scaling than sequential generation, so 'compute-matched' may understate true cost of UATS.",
+          "Proposition 4.2's Case 1 ('No OOD contributes negligible regret') is asserted without proof or justification — this is a meaningful gap in the theory derivation."
+        ],
+        "too_strong_claims": [
+          "The draft's phrasing 'MC-Dropout sample means concentrate around the biased PRM mean, not the true reward' is correct in spirit but should be qualified — MC-Dropout does sample over parameter perturbations, so the mean is not literally the single deterministic PRM output.",
+          "The draft says 'A-UATS generalization is weakly substantiated' — this is fair but could be tempered since some policy-PRM diversity is used at training time."
+        ],
+        "non_actionable_criticisms": [],
+        "tone_issues": [],
+        "consistency_between_summary_weaknesses_and_recommendation": "consistent",
+        "external_novelty_claims_supported": "partial",
+        "corrections_needed": [
+          "Soften the 'somewhat vacuous' framing of Proposition 4.1's idealized ID-error assumption to 'partly an artifact of the assumption.'",
+          "Add a note that Proposition 4.2 explicitly assumes (rather than proves) that ID contributes negligible regret (Case 1).",
+          "Add the observation that even the best UATS results remain well below the Oracle Pass@K upper bound, indicating headroom not addressed.",
+          "Refine the MC-Dropout bias critique to acknowledge that the mean is over dropout-perturbed parameters, not the deterministic PRM output, while maintaining the core point that systematic OOD bias is not removed by parameter resampling.",
+          "Mention the missing justification for the latency-based compute-matching across different policy sizes more concretely (e.g., the 0.5B policy will have a very different gen:PRM ratio than the 8B policy)."
+        ]
+      },
+      "usage": {
+        "input_tokens": 5440,
+        "output_tokens": 1123,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 62742
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_10": {
+      "parsed": {
+        "final_review": {
+          "summary_of_paper": "The paper identifies that Process Reward Models (PRMs) used to guide external tree search for LLM reasoning become unreliable when scoring reasoning traces produced by policy models whose distribution differs from the PRM's training distribution. The authors empirically demonstrate, on a 50-question MATH500 subset across two PRMs and two policies, that cross-distribution pairs exhibit higher MC-Dropout score variance and lower search accuracy. They then provide a bandit-style regret analysis showing that greedy uncertainty-agnostic selection accumulates linear regret in the OOD probability ε, while UCB-style uncertainty-aware selection achieves sublinear O(ε√(T ln T)) regret when sample budget scales as Kt=Ω(t). Motivated by this analysis, the authors propose UATS: (i) MC-Dropout-based epistemic uncertainty estimation yielding empirical mean, variance, and a UCB score; (ii) a heuristic search (H-UATS) that filters candidates into ID/OOD via a variance threshold, retains optimistic OOD candidates, and distributes re-evaluation and expansion budgets via temperature-controlled softmaxes; and (iii) an adaptive controller (A-UATS) trained with REINFORCE that dynamically modulates six search hyperparameters. Across MATH-500 and AIME24 with 5 policy models, 3 PRMs, and budgets N∈{4,...,256} matched by wall-clock latency, H-UATS and A-UATS consistently outperform Best-of-N, Beam Search, REBASE, DoRA, and DVTS, with ablations confirming that the uncertainty signal contributes substantially to the gains.",
+          "main_strengths": [
+            "The paper identifies and clearly frames a real and increasingly relevant problem: policy-PRM distribution mismatch causes overconfident PRM misrankings during search. The motivation is grounded in both quantitative evidence (Figure 2) and a clear qualitative example (Figure 1).",
+            "The framework unifies three components — MC-Dropout uncertainty estimation, uncertainty-aware budget allocation (H-UATS), and a learned adaptive controller (A-UATS) — into a coherent inference-time pipeline that bridges bandit-style theory and practical search algorithms.",
+            "Empirical evaluation is broad: 5 policy models (0.5B–8B) × 3 PRMs × 7 budgets on MATH-500 plus AIME24, with consistent gains over Beam Search, Best-of-N, REBASE, DVTS, and DoRA (Table 2; Figures 4, 6, 7).",
+            "The ablation in Table 3 cleanly demonstrates that the uncertainty signal — not just the budget reallocation mechanism — contributes substantially, with drops of 2–7 points across three policy-PRM pairs when uncertainty is removed.",
+            "Compute is matched via wall-clock latency calibration (~18 PRM passes per generation step), which is a more meaningful protocol than naive N-matched evaluation.",
+            "Appendix F provides systematic hyperparameter sensitivity studies (dropout rate p, initial sample count K0, threshold τ, optimism margin δ, network architecture), supporting the robustness of the chosen configuration.",
+            "The qualitative case studies (Figures 9–12) clearly illustrate the four-quadrant taxonomy of PRM score vs uncertainty and provide a useful diagnostic framing of where uncertainty-aware filtering helps and where it does not."
+          ],
+          "main_weaknesses": [
+            "The theoretical analysis rests on assumptions that are partly in tension with the paper's own empirical motivation. Proposition 4.2 assumes Eϕ[R̄t(h)] = R*(h) (unbiased estimators), while the paper's central claim is that PRMs are systematically biased on OOD inputs — MC-Dropout samples over parameter perturbations but is unlikely to remove a systematic OOD bias inherited from PRM training. Proposition 4.1 also assumes P(error | ID) = 0, which makes the linear-vs-sublinear contrast partly an artifact of the assumption rather than a purely algorithmic distinction.",
+            "Proposition 4.2's Case 1 (ID contributes negligible regret) is asserted rather than proved, leaving a meaningful gap in the derivation.",
+            "The theory-to-algorithm link is qualitative. The theory requires Kt = Ω(t) and i.i.d. OOD events; the algorithm uses fixed K0 plus heuristic reallocation on highly correlated tree-structured states. No experiment verifies the predicted O(√T ln T) regret scaling.",
+            "MC-Dropout is presented as approximating p(ϕ | D_PRM), but the paper does not validate whether off-the-shelf PRMs (not necessarily trained with the specific dropout configuration used at inference) yield meaningful posterior samples. There is no calibration analysis (e.g., ECE, reliability diagram, AUROC for OOD step detection) showing that σR is a faithful epistemic uncertainty estimator.",
+            "The empirical OOD analysis motivating the whole paper (Section 4.1, Figure 2) rests on only 50 problems and a 2×2 PRM-policy grid, without per-step OOD labeling. The paper never directly measures accuracy gains specifically on OOD-flagged steps, so the central claim of 'mitigating OOD errors' is inferred rather than measured.",
+            "AIME24 has only ~30 problems, yet small numerical differences (often ≤2 points) are interpreted as substantive improvements. No confidence intervals, paired significance tests, or multi-seed standard deviations are reported anywhere.",
+            "Baselines are under-specified. Beam widths and REBASE/DVTS/DoRA temperatures and configurations are not given. The 'H-UATS w/o Uncertainty' variant — described as methodologically similar to REBASE — reports numbers that differ from the REBASE row in Table 2, raising reproducibility concerns about baseline tuning.",
+            "Important comparison baselines are missing: PRM ensembles (a natural alternative epistemic uncertainty estimator), self-consistency / majority voting, UCB-MCTS, and a 'UCB-without-MC-Dropout' control that would isolate which component is doing the work.",
+            "A-UATS generalization is only partly substantiated. Training uses a mix of policy-PRM pairs, but there is no held-out policy-PRM transfer experiment, only 500 REINFORCE updates with sparse training-detail reporting, and the gain over H-UATS (~1.5–3 points) is not decomposed into 'behavioral-cloning init' vs 'RL fine-tuning' contributions.",
+            "Even with UATS, results remain well below the Oracle Pass@K curves shown in Figures 4 and 6, indicating substantial headroom that the paper does not discuss or analyze.",
+            "No FLOPs metric is reported, and the 18:1 latency calibration is measured for a single batch size, sequence length, and hardware setting (and on the 7B PRM), then applied uniformly across policy sizes 0.5B–8B. Smaller policies have very different generation:PRM cost ratios, so the compute-matching is likely uneven across configurations and may favor UATS's parallel PRM evaluation.",
+            "Methodological novelty is moderate: MC-Dropout, UCB, REBASE-style expansion, and REINFORCE controllers are all standard. The contribution is primarily their combination and the uncertainty framing."
+          ],
+          "detailed_comments": [
+            "Section 4.2: The combination of Proposition 4.1's idealized P(error | ID) = 0 and Proposition 4.2's unbiasedness assumption makes the linear-vs-sublinear contrast partly an assumption-driven artifact. A unified bounded-bias setting — in which both ID and OOD incur error with different rates, and OOD scores carry a residual systematic bias b — would more honestly reflect the empirical claim and yield a more informative bound.",
+            "Section 4.2: Proposition 4.2's Case 1 ('No OOD contributes negligible regret') is stated without proof. Please make this assumption explicit or derive it from a stated ID-noise condition.",
+            "Section 5.1: It is unclear whether the PRMs evaluated were trained with the same dropout configuration used at inference. If not, the resulting variance may partly reflect architectural noise rather than posterior dispersion. A small calibration study (e.g., ECE on a held-out PRM training set, AUROC for OOD step detection using cross-policy traces as a proxy) would strengthen this central component.",
+            "Sections 5.2–5.3: Eq. 10 expands children over the full candidate set H, while the filtering step removes uncompetitive OOD candidates from the re-evaluation pool S — the interaction between these two pools should be clarified. The controller's action parameterization (output activations, bounded ranges, exploration noise), batch size M, and training/evaluation statistics are also not specified.",
+            "Section 6.1: The wall-clock calibration (571 ms / 32 ms ≈ 18) is reported for one batch size and step length on one GPU. Since policy generation latency varies significantly across the policy models used (0.5B–8B) and across batch sizes, the 18:1 conversion is unlikely to hold uniformly; reporting per-model latency and FLOPs would clarify the compute-matching claim.",
+            "Table 3 vs. Table 2: 'H-UATS w/o Uncertainty' is described as methodologically similar to REBASE, yet the numbers differ. Please clarify the precise differences and whether REBASE was re-tuned per policy-PRM pair.",
+            "Statistical reporting: For AIME24 (~30 problems), 1–2 point differences correspond to 0–1 problem changes. Bootstrap CIs, paired McNemar tests, or multi-seed evaluations are needed to support the claimed improvements.",
+            "Oracle gap: Figures 4 and 6 show a persistent gap between UATS and the Pass@K Oracle, suggesting that uncertainty-aware selection is not the only bottleneck. A discussion of remaining failure modes (e.g., correct paths never sampled by the policy) would help calibrate the contribution.",
+            "Wording: Claims such as 'provably minimizes regret' (Sections 4.3 and 1) overstate the upper-bound result, which provides only an upper bound under idealized assumptions without matching lower bounds for the algorithm.",
+            "Minor: Figure 1 cites σ²=0.032 vs 0.001 without connecting these numbers to the MC-Dropout configuration (K, dropout rate). The reference list contains both Snell et al. 2024a and 2024b, which appear to be the same work."
+          ],
+          "questions_for_authors": [
+            "How do you justify the unbiasedness assumption Eϕ[R̄t(h)] = R*(h) in Proposition 4.2 given the empirical claim that PRMs are systematically biased on OOD inputs? Can the regret bound be re-derived under a bounded-bias assumption with a residual O(εTb) term?",
+            "Can you make Proposition 4.2's Case 1 explicit — either as a stated assumption on ID noise or as a derivation — rather than asserting that ID contributes negligible regret?",
+            "Can you provide an experiment that verifies the predicted O(√T ln T) scaling — e.g., a regret-vs-T (or vs-budget) curve and a comparison to a method using Kt = Ω(t) as the theory prescribes?",
+            "Have you validated that MC-Dropout variance on these off-the-shelf PRMs is a meaningful epistemic uncertainty estimator? Specifically, can you report reliability diagrams, ECE, or AUROC for OOD step detection? How was dropout inserted into PRMs whose original training did not necessarily use the same dropout configuration?",
+            "Why do the 'H-UATS w/o Uncertainty' numbers in Table 3 differ from the REBASE numbers in Table 2 despite the text describing them as methodologically similar? What are the exact algorithmic differences?",
+            "Can you provide a held-out policy-PRM generalization experiment for A-UATS where the controller is trained on one policy-PRM family and tested on an entirely unseen one?",
+            "Can you isolate the contribution of REINFORCE fine-tuning versus the behavioral-cloning initialization for A-UATS?",
+            "Could you report FLOPs and end-to-end wall-clock latency per problem under matched conditions, and verify that the 18:1 calibration holds across the different policy sizes (0.5B–8B) used?",
+            "Have you compared against a PRM-ensemble baseline as an alternative epistemic uncertainty estimator? How does H-UATS with an ensemble compare to MC-Dropout?",
+            "On AIME24 (~30 problems), can you report paired bootstrap or McNemar's test results to substantiate the small percentage-point differences?",
+            "How were baseline hyperparameters (beam widths, REBASE/DVTS/DoRA temperatures, sampling temperatures) chosen, and were they tuned per policy-PRM pair?"
+          ],
+          "suggestions_for_improvement": [
+            "Strengthen the theory by replacing the unbiased-estimator assumption with a bounded-bias condition (e.g., |E[R̄t(h)] − R*(h)| ≤ b on OOD inputs) and explicitly stating (or deriving) the ID-regret condition used in Proposition 4.2's Case 1.",
+            "Add a calibration study of MC-Dropout on the PRMs used: reliability diagrams, ECE, and AUROC for distinguishing ID vs OOD reasoning steps (e.g., using cross-policy traces as a proxy). This would justify σR as an epistemic uncertainty estimator.",
+            "Include a PRM-ensemble baseline (e.g., 3–5 independently fine-tuned or seed-varied PRMs) as an alternative uncertainty estimator and a 'UCB-only' control without MC-Dropout, to isolate which component drives gains.",
+            "Add statistical significance testing: bootstrap confidence intervals for MATH-500 accuracy and paired McNemar tests for AIME24, plus multi-seed standard deviations for the controller training.",
+            "Provide a held-out policy-PRM transfer experiment for A-UATS: train the controller on a subset of policy-PRM pairs and evaluate on entirely unseen combinations to substantiate generalization claims.",
+            "Specify baseline hyperparameters and per-model latency measurements clearly, and reconcile the 'H-UATS w/o Uncertainty' variant with REBASE numbers.",
+            "Report end-to-end wall-clock latency and FLOPs per problem for all methods at matched accuracy levels, including per-policy-size measurements, since efficiency is a central claim.",
+            "Decompose the A-UATS gain into the behavioral-cloning initialization and RL fine-tuning contributions.",
+            "Discuss the remaining gap to the Oracle Pass@K curves and characterize when uncertainty-aware selection cannot close it (e.g., correct path never proposed by the policy).",
+            "Soften theoretical claims (e.g., 'provably minimizes regret' → 'achieves a sublinear regret upper bound under stated assumptions') and explicitly list the caveats."
+          ],
+          "overall_recommendation": "Borderline / weak reject — The paper addresses a timely problem and presents a coherent framework with broad empirical evidence and a useful uncertainty-vs-budget ablation, but the theoretical contribution rests on assumptions that are partly in tension with the paper's own motivation, the MC-Dropout estimator is not validated as a faithful epistemic uncertainty signal, statistical significance is absent on a small AIME benchmark, and several important baselines and reproducibility details are missing. With a corrected/strengthened theory under bounded-bias assumptions, calibration validation of MC-Dropout, held-out policy-PRM generalization tests for A-UATS, significance testing, and clearer baseline specification, the paper could become a solid accept.",
+          "reviewer_confidence_1_to_5": 4,
+          "score_card": {
+            "soundness_1_to_4": 2,
+            "presentation_1_to_4": 3,
+            "contribution_1_to_4": 2,
+            "overall_1_to_10": 5
+          }
+        },
+        "author_facing_improvement_checklist": [
+          "Re-derive Proposition 4.2 under a bounded-bias condition on E[R̄t(h)] − R*(h), and make the ID-regret assumption in Case 1 explicit or derived.",
+          "Add a calibration study for MC-Dropout-based PRM uncertainty (ECE, reliability diagrams, AUROC for ID/OOD step detection), and clarify how dropout was inserted in off-the-shelf PRMs.",
+          "Add a PRM-ensemble baseline and a 'UCB without MC-Dropout' control to isolate where the gains come from.",
+          "Report bootstrap confidence intervals and paired McNemar tests (especially for AIME24), plus multi-seed standard deviations for controller training.",
+          "Add a held-out policy-PRM transfer experiment for A-UATS.",
+          "Specify all baseline hyperparameters and per-policy-size latency / FLOPs; reconcile 'H-UATS w/o Uncertainty' with REBASE.",
+          "Decompose the A-UATS gain into BC-initialization and RL fine-tuning contributions.",
+          "Add an experiment verifying the predicted O(√T ln T) regret scaling.",
+          "Discuss the remaining gap to Oracle Pass@K and characterize when uncertainty cannot close it.",
+          "Soften 'provably minimizes regret' phrasing and explicitly state assumptions.",
+          "Deduplicate Snell et al. 2024a/b in the reference list."
+        ],
+        "changes_from_draft": [
+          "Softened the framing of Proposition 4.1's idealized ID-error assumption from 'somewhat vacuous' to 'partly an artifact of the assumption.'",
+          "Added a new weakness and detailed comment noting that Proposition 4.2's Case 1 (negligible ID regret) is asserted rather than proved.",
+          "Added a new weakness noting that even the best UATS results remain well below the Oracle Pass@K curves, with corresponding suggestion to discuss this remaining gap.",
+          "Refined the MC-Dropout bias critique to acknowledge that MC-Dropout samples over parameter perturbations, while maintaining that a systematic OOD bias is unlikely to be removed by parameter resampling.",
+          "Sharpened the latency-calibration critique with the specific concern that the 18:1 ratio is measured on a 7B PRM and single configuration, while policy sizes range 0.5B–8B.",
+          "Added strengths covering Appendix F hyperparameter sensitivity studies and the Appendix G four-quadrant qualitative taxonomy.",
+          "Added a corresponding question and improvement item about making Case 1's assumption explicit."
+        ]
+      },
+      "usage": {
+        "input_tokens": 6604,
+        "output_tokens": 6607,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 62742
+      },
+      "stop_reason": "end_turn"
+    }
+  },
+  "total_usage": {
+    "input_tokens": 70342,
+    "output_tokens": 49973,
+    "cache_creation_input_tokens": 143137,
+    "cache_read_input_tokens": 793779
+  }
+}

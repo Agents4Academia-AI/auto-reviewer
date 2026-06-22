@@ -132,10 +132,12 @@ class ReviewerPipeline:
             "stage_4",
             _fill(
                 STAGE_4_NOVELTY,
+                stage_0=_dump(self._parsed("stage_0")),
                 stage_3=_dump(self._parsed("stage_3")),
                 review_date=_review_date(),
             ),
             use_web_search=True,
+            max_tokens=self.llm.cfg.max_tokens_long,
         )
 
         # Stage 5

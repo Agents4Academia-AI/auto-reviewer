@@ -118,40 +118,77 @@ Prior context (Stage 1):
 
 STAGE_4_NOVELTY = """Stage 4 — Novelty check.
 
-Judge whether the work is genuinely new compared with prior work in deep learning.
-
+Judge whether the work is genuinely new compared with prior work in deep learning. Do not collapse the paper into a single "is it novel?" verdict — a paper can be novel on one axis (e.g., method) while derivative on another (e.g., problem framing). Decompose first, then search, then judge.
 Review date: {review_date}.
 
-First infer the paper's own date from the attached PDF or prior context: use a
-submission date, arXiv first-posted date, camera-ready/publication date, or
-version date if one is stated. If no paper date is inferable, use the review
-date above as the cutoff and say so.
+First infer the paper's own date from the attached PDF or prior context: use a submission date, arXiv first-posted date, camera-ready/publication date, or version date if one is stated. 
+If no paper date is inferable, use the review date above as the cutoff and say so.
 
-Novelty must be judged against work available on or before the cutoff date.
-Do not penalize the paper's novelty for papers, blog posts, code releases, or
-benchmarks that appeared after the cutoff. Put post-cutoff or clearly
-concurrent work in a separate context list and use it only to calibrate
-importance, adoption, or how the field evolved. If a related work is concurrent
-or has uncertain timing, mark it explicitly as "concurrent_or_uncertain" and do
-not treat it as definitive prior art.
+Novelty must be judged against work available on or before the cutoff date. Do not penalize the paper's novelty for papers, blog posts, code releases, or benchmarks that appeared after the cutoff. 
+Put post-cutoff or clearly concurrent work in a separate context list and use it only to calibrate importance, adoption, or how the field evolved. 
+If a related work is concurrent or has uncertain timing, mark it explicitly as "concurrent_or_uncertain" and do not treat it as definitive prior art.
 
-If you have access to a web search tool, use it to look up the most relevant
-prior work on arXiv, OpenReview, Papers With Code, and venue proceedings.
-Prefer sources with dates and URLs. Compare against the closest matches.
-
+If you have access to a web search tool, use it to look up the most relevant prior work on arXiv, OpenReview, Papers With Code, and venue proceedings. Prefer sources with dates and URLs. Compare against the closest matches.
 If no search tool is available, rely on your own knowledge but mark conclusions as "from-model-knowledge" so reviewers can verify.
+
+STEP 1 — Decompose into novelty axes.
+From the paper's contributions and claims, identify the distinct axes on which the paper might claim novelty. Use only the axes that actually apply. Candidate axes:
+- problem / task formulation (a new problem, setting, or framing)
+- method / architecture (a new model, module, mechanism, or algorithm)
+- theory (a new analysis, bound, guarantee, or proof technique)
+- training / optimization (a new objective, regularizer, or training procedure)
+- data / benchmark (a new dataset, benchmark, or evaluation protocol)
+- empirical finding (a new result, phenomenon, or state-of-the-art claim)
+- application domain (applying known techniques to a new domain)
+
+STEP 2 — For each axis, formulate targeted searches.
+Write specific search keywords and a precise search question per axis. Avoid generic queries (e.g., "deep learning attention"); name the specific mechanism, problem, or claim.
+
+EXEMPLAR (for a paper proposing a self-attention-only sequence model):
+- axis: "method / architecture"
+  why_it_matters: "The core contribution is replacing recurrence/convolution entirely with attention; novelty hinges on whether prior models already did this."
+  search_keywords: ["attention without recurrence sequence model", "self-attention only encoder decoder", "attention replace convolution translation"]
+  search_question: "Did any prior work build a sequence transduction model using only attention, with no recurrent or convolutional layers?"
+- axis: "empirical finding"
+  why_it_matters: "Claims SOTA on WMT translation; novelty of the result depends on the prior SOTA."
+  search_keywords: ["WMT 2014 English-German BLEU state of the art", "machine translation BLEU benchmark 2017"]
+  search_question: "What was the best published BLEU on WMT14 EN-DE before this work, and by which model?"
+
+STEP 3 — Search (multi-round).
+If you have a web search tool, run the per-axis queries against arXiv, OpenReview, Papers With Code, Semantic Scholar / Google Scholar, and venue proceedings. Do at least one refinement round: after the first results, tighten queries toward the closest matches you found (chase the specific competing method by name, check its citations). Record the exact queries you actually ran in `novelty_axes_searched`.
+
+If no search tool is available, rely on your own knowledge and set `source_of_judgment` to "model_knowledge" so reviewers know conclusions are unverified.
+
+STEP 4 — Compare against closest prior work.
+For each axis, identify the closest prior work and state precisely what this paper does that the prior work does not (or why it is in fact subsumed). Record the FULL bibliographic entry + difference ONCE in `similar_prior_work` at the bottom of the JSON. In each `novelty_axes` entry, reference that prior work by a SHORT pointer (e.g., `"Parikh 2016 [similar_prior_work #1]"`) — do not repeat title/venue/diff text inside the axis. This keeps the output single-source for any downstream stage that consumes prior-work details.
+
+STEP 5 — Judge per axis, then overall.
+Give a per-axis verdict, then synthesize ONE overall assessment in `rationale`. Be concrete about what is genuinely new versus repackaged.
+
+
 
 Return JSON:
 {
   "cutoff_date": "YYYY-MM-DD or best-effort date string",
   "cutoff_basis": "paper_submission | arxiv_first_posted | publication | paper_version | review_date_fallback | uncertain",
+  "novelty_axes": [
+    {
+      "axis": "problem | method | theory | training | data | empirical | application",
+      "claimed_contribution": "what the paper claims is new on this axis",
+      "why_it_matters": "why novelty on this axis is load-bearing for the paper",
+      "search_keywords": ["..."],
+      "search_question": "...",
+      "closest_prior_work_ref": "short pointer into similar_prior_work, e.g. 'Parikh 2016 [similar_prior_work #1]' or 'none found' — do NOT duplicate full bibliographic details or the diff here",
+      "axis_verdict": "novel | incremental | derivative"
+    }
+  ],
+  "novelty_axes_searched": ["exact query strings actually run, in order; empty list if no search tool"],
   "similar_prior_work": [
     {"title": "...", "venue_or_source": "...", "year": "...", "date_relation_to_cutoff": "before_cutoff | after_cutoff | concurrent_or_uncertain", "similarity_summary": "...", "key_difference": "..."}
   ],
   "post_cutoff_or_concurrent_context": [
     {"title": "...", "venue_or_source": "...", "year": "...", "date_relation_to_cutoff": "after_cutoff | concurrent_or_uncertain", "why_not_used_as_prior_art": "..."}
   ],
-  "potential_missing_citations": ["..."],
   "novelty_type": "conceptual | technical | empirical | theoretical | application_driven | none",
   "novelty_assessment": "strong | moderate | incremental | derivative",
   "novelty_risk_level": "low | medium | high",
@@ -160,8 +197,12 @@ Return JSON:
   "source_of_judgment": "web_search | model_knowledge"
 }
 
+Prior context (Stage 0 structured paper):
+{stage_0}
+
 Prior context (Stage 3 claims):
 {stage_3}
+
 """
 
 

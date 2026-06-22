@@ -1,0 +1,1172 @@
+{
+  "paper": {
+    "filename": "Revisiting_the_Platonic_Representation_Hypothesis_An_Aristotelian_View.pdf",
+    "path": "papers/accepted/Revisiting_the_Platonic_Representation_Hypothesis_An_Aristotelian_View.pdf",
+    "num_bytes": 5045862,
+    "input_mode": "pdf_document"
+  },
+  "config": {
+    "model": "claude-opus-4-7",
+    "effort": "high",
+    "web_search": true
+  },
+  "stages": {
+    "stage_0": {
+      "parsed": {
+        "title": "Revisiting the Platonic Representation Hypothesis: An Aristotelian View",
+        "authors": [
+          "Fabian Gröger",
+          "Shuo Wen",
+          "Maria Brbić"
+        ],
+        "venue_hint": "ICML or NeurIPS submission (ML conference); arXiv preprint Feb 2026",
+        "field": "Representation learning / representational similarity analysis",
+        "abstract": "The paper argues that existing metrics used to measure representational similarity are confounded by network scale (width and depth), which inflates similarity scores. The authors propose a permutation-based null-calibration framework that transforms any similarity metric into a calibrated score with statistical guarantees. Applied to the Platonic Representation Hypothesis, the framework shows that apparent convergence under global spectral measures (e.g., CKA) largely disappears after calibration, while local neighborhood similarity retains significant cross-modal agreement. The authors propose the Aristotelian Representation Hypothesis: representations converge to shared local neighborhood relationships rather than global structure.",
+        "sections": {
+          "introduction": "The paper introduces representational similarity metrics and the Platonic Representation Hypothesis (PRH) of Huh et al. 2024. It identifies two confounders: (i) model width inflates spectral metrics because expected similarity under independence scales with d/n; (ii) model depth inflates max-aggregated similarity due to the look-elsewhere/multiple comparisons effect. The authors motivate a null-calibration framework based on permutations and preview the finding that global convergence largely disappears after calibration while local neighborhood agreement persists, motivating the Aristotelian Representation Hypothesis.",
+          "related_work": "Surveys representational similarity metrics (CCA/SVCCA/PWCCA, CKA, RSA, mKNN, Procrustes/shape distances) and prior reliability work (debiased CKA by Murphy et al., Chun et al.; deconfounding by Cui et al.; resampling-based maxT procedures). Notes prior work has not unified bias correction with aggregation-aware calibration in a metric-agnostic way, and reviews the PRH and follow-ups.",
+          "method": "The authors define a null hypothesis H0 of no relationship beyond marginal statistics, operationalized via random permutations of sample correspondences. For a scalar comparison they form K null scores, compute a critical threshold τ_α as the (1-α)-quantile of the combined set of observed+null scores, an add-one permutation p-value, and a 'calibrated score' s_cal = max((s_obs - τ_α)/(s_max - τ_α), 0). For layer-wise comparisons across model layers, they apply aggregation-aware calibration: the same permutation is applied across all layers consistently, and an aggregate statistic T (e.g., max) is computed under the null to calibrate the selection step.",
+          "theory": "Proposition 4.1 shows that under independence, the expected Frobenius norm squared of the centered cross-covariance is d_x d_y/(n-1), giving CKA a null baseline of O(d/n). Proposition 4.2 shows that under independence, expected mKNN equals k/(n-1), so neighborhood metrics have null baseline O(k/n). For depth, a sub-Gaussian union bound shows E[T_max] ≤ μ + Cσ√log M with M=L_A L_B, demonstrating the multiple-comparisons inflation. Proofs of validity (super-uniformity of permutation p-values) and monotone invariance are provided.",
+          "experiments": "Synthetic experiments under H0 and H1 with Gaussian/heavy-tailed noise sweep n and d to validate that calibration removes width-driven null inflation. Type-I error control and power curves are shown. Synthetic two-model layer-stack experiments validate that aggregation-aware calibration removes depth confounding. The authors then revisit PRH using 1024 WIT image-text pairs, with three language model families (Bloomz, OpenLLaMA, LLaMA) and five vision model families (ImageNet-21K, MAE, DINOv2, CLIP, CLIP-finetuned), across 204 model pairs, evaluating CKA (linear/RBF), mKNN, cycle-kNN, CKNNA. They also extend to video-language alignment with VideoMAE.",
+          "results": "Synthetic: Raw CKA scores grow with d/n while calibrated scores stay at zero; Type-I error remains at or below α=0.05; power increases with signal strength. Calibrated CKA closely matches analytical debiased CKA (Murphy et al.). PRH: After calibration, global CKA shows no scaling trend with model capacity, while local mKNN/cycle-kNN/CKNNA retain a clear scaling trend across model families. The same pattern holds for video-language alignment. Locality analysis shows mKNN alignment exists at all k values (most pronounced at small k), while CKA-RBF at very small bandwidth (σ=0.1) shows no calibrated alignment - suggesting models agree on neighbor identity (topological) but not on exact local distances (metric).",
+          "limitations": "Permutation calibration assumes exchangeability (Assumption 3.1); grouped/clustered samples may violate it, requiring restricted permutations. The Aristotelian conclusion is drawn under the specific settings considered (n=1024, particular model families).",
+          "conclusion": "Representational similarity metrics suffer from width-dependent null baselines and depth-dependent selection inflation. A unified permutation-based null-calibration framework corrects both. Applying it to PRH shows global spectral convergence is largely confounded, while local neighborhood alignment is robust, motivating the Aristotelian Representation Hypothesis: networks converge to shared local neighborhood relationships."
+        },
+        "main_claims": [
+          "Spectral representational similarity metrics like CKA have non-zero null baselines that scale as O(d/n), confounding comparisons across models of different widths.",
+          "Selection-based summaries (e.g., max over layer pairs) inflate with the number of layer-pair comparisons due to multiple-comparisons effects, confounding comparisons across models of different depths.",
+          "A permutation-based null-calibration framework can be applied to any similarity metric to remove both confounders with finite-sample statistical guarantees (super-uniform p-values).",
+          "After calibration, the previously reported global cross-modal convergence under spectral metrics (CKA) largely disappears.",
+          "After calibration, local neighborhood-based metrics (mKNN, cycle-kNN, CKNNA) retain significant cross-modal alignment that scales with model capacity.",
+          "Cross-modal representations converge in topological neighborhood structure (who is near whom) but not in exact local metric distances, supporting the Aristotelian Representation Hypothesis."
+        ],
+        "key_contributions": [
+          "Identification and formal characterization of two confounders (width via d/n null baseline; depth via look-elsewhere effect) in representational similarity comparison.",
+          "A metric-agnostic permutation-based null-calibration framework producing calibrated scores with finite-sample Type-I control.",
+          "An aggregation-aware extension that calibrates selection-based summaries (e.g., max over layer pairs) via consistent layer-wise permutations.",
+          "Theoretical results: Proposition 4.1 (CKA null baseline O(d/n)), Proposition 4.2 (mKNN null baseline k/(n-1)), and sub-Gaussian maximal inequality for the depth confounder.",
+          "Empirical re-evaluation of the Platonic Representation Hypothesis showing global convergence is largely confounded while local neighborhood convergence is robust.",
+          "Proposed Aristotelian Representation Hypothesis: representations converge to shared local neighborhood relationships."
+        ],
+        "experimental_results": [
+          "Synthetic H0 sweeps: raw CKA grows with d/n; calibrated scores collapse to zero across Gaussian, Student-t, Laplace, and mixture distributions.",
+          "Type-I error remains at or below α=0.05 across (n, d/n) configurations; power increases rapidly with signal strength.",
+          "Calibrated CKA closely matches the analytical debiased CKA estimator of Murphy et al. without metric-specific derivation.",
+          "Synthetic depth experiment: raw max-CKA grows with number of layers L (1→128) under H0; aggregation-aware calibration removes this; entry-wise calibration alone does not.",
+          "PRH revisit on 204 vision-language model pairs: calibrated CKA (linear/RBF) shows no scaling trend with language model capacity, while calibrated mKNN/cycle-kNN/CKNNA retain clear scaling trends across all five vision families.",
+          "Video-language alignment (VideoMAE vs Bloom/OpenLLaMA/LLaMA): calibrated CKA shows no trend; calibrated mKNN shows clear trend especially with VideoMAE-Huge.",
+          "Locality analysis: mKNN alignment significant at all k∈{10,20,50,100} (strongest at small k); CKA-RBF with σ=0.1 (very local metric) shows no significant calibrated alignment, indicating topological rather than metric convergence.",
+          "Conclusions robust to α∈{0.01, 0.05, 0.10} and to permutation budgets K≥200."
+        ],
+        "assumptions_and_limitations": [
+          "Exchangeability assumption (Assumption 3.1): n row pairs are exchangeable under H0; violated for grouped/clustered samples without restricted permutations.",
+          "Theoretical width derivations assume i.i.d. rows with mean 0 and identity covariance.",
+          "Maximal inequality assumes uniform sub-Gaussian right tails (Assumption D.5); empirical inflation in dependent settings is bounded but may be loose.",
+          "PRH experiments use n=1024 WIT samples and specific vision/language families; conclusions are stated as holding 'under the considered setting'.",
+          "Calibrated score normalization is not monotone-invariant by design, which is necessary to correct scale-dependent baselines but means different scaling choices give different effect sizes."
+        ],
+        "figures_tables": [
+          "Figure 1: Conceptual illustration of the Aristotelian Representation Hypothesis - shared local neighborhoods across two spaces.",
+          "Figure 2: Summary of width and depth confounders and how calibration removes them; shows CKA loses convergence trend while mKNN retains it after calibration.",
+          "Figure 3: Heatmaps of raw vs calibrated scores across (n, d) under H0 for CKA, mKNN, CCA - calibrated scores collapse to zero.",
+          "Figure 4: Type-I error stays at/below α=0.05 across d/n; power curves rise with signal strength.",
+          "Figure 5: Aggregation-aware calibration: raw max-CKA inflates with layer count under H0; calibrated aggregates are stable; entry-wise calibration insufficient.",
+          "Figure 6: Revisiting PRH - calibrated CKA RBF (a) shows no scaling trend with LM capacity while raw scores do; calibrated mKNN (b) retains scaling trend.",
+          "Figure 7: Video-language alignment - same pattern as image-language: CKA flat after calibration, mKNN retains trend with VideoMAE-Huge.",
+          "Table 1 (App. B): Comparison with prior calibration approaches (Murphy, Chun, Cui, Diedrichsen, Cai, Smilde) showing only the proposed method covers any bounded metric, bounded output, and aggregation-awareness.",
+          "Figures 8-25 (appendix): Phase diagrams for different noise types, SNR sweeps, permutation budget analysis, full PRH results across all vision families and metrics, locality analyses for k and σ, sensitivity to α."
+        ],
+        "equations_algorithms": [
+          "Eq. (2): Centered cross-covariance operator C = X_c^T Y_c/(n-1) used to define spectral metrics.",
+          "Eq. (3) / Prop. 4.1: E_H0[||C||_F^2] = d_x d_y/(n-1), establishing O(d/n) null baseline for CKA.",
+          "Eq. (4) / Prop. 4.2: E_H0[mKNN(X,Y)] = k/(n-1), establishing O(k/n) null baseline for neighborhood metrics.",
+          "Eq. (5)-(7): Sub-Gaussian tail bound and maximal inequality E[T_max] ≤ μ + Cσ√log M characterizing depth confounder.",
+          "Eq. (8)-(10): Construction of permutation null scores, rank-based critical value τ_α, and add-one permutation p-value.",
+          "Eq. (12): Calibrated score s_cal = max((s_obs - τ_α)/(s_max - τ_α), 0).",
+          "Eq. (14)-(17): Aggregation-aware calibration with consistent permutations across layers, p_agg, and T_cal.",
+          "Algorithm 1: Scalar Null Calibration - permutation procedure for a single similarity comparison.",
+          "Algorithm 2: Aggregation-Aware Null Calibration - extends to layer-wise comparisons with consistent permutations across all layers.",
+          "Corollary 5.1 / Lemma D.2: Super-uniformity of permutation p-values guaranteeing finite-sample Type-I control."
+        ]
+      },
+      "usage": {
+        "input_tokens": 354,
+        "output_tokens": 4633,
+        "cache_creation_input_tokens": 110460,
+        "cache_read_input_tokens": 0
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_1": {
+      "parsed": {
+        "field_and_subfield": "Machine learning; representation learning and representational similarity analysis (with connections to multimodal learning and statistical inference)",
+        "problem_addressed": "Existing representational similarity metrics (CKA, CCA, RSA, mKNN, etc.) used to compare neural network representations across architectures and modalities are confounded by network scale: model width inflates spectral metrics via non-zero null baselines that scale with d/n, and model depth inflates max-aggregated similarity via multiple-comparisons effects. These confounders undermine claims of representational convergence such as the Platonic Representation Hypothesis (PRH).",
+        "research_question": "Once representational similarity scores are properly calibrated against a principled null of no relationship, does the cross-modal convergence reported under the Platonic Representation Hypothesis still hold, and if so, in what form?",
+        "one_paragraph_summary": "The paper argues that widely-used representational similarity metrics are systematically biased by network width (via O(d/n) null baselines for spectral metrics like CKA) and network depth (via look-elsewhere inflation when reporting max over layer pairs). The authors introduce a metric-agnostic permutation-based null-calibration framework that constructs an empirical null by shuffling sample correspondences, defines a critical threshold τ_α as a (1-α)-quantile of the combined observed+null scores, and rescales raw scores into a bounded calibrated effect size with finite-sample super-uniform p-values. An aggregation-aware variant applies the same permutation consistently across all layers and calibrates the entire reported summary statistic (e.g., max). Theoretically, they prove the d/n null baseline for CKA, the k/(n-1) null baseline for mKNN, and a sub-Gaussian maximal inequality for the depth effect. Empirically, synthetic experiments confirm width and depth bias removal with controlled Type-I error and preserved power, and the calibrated CKA closely matches Murphy et al.'s analytical debiased CKA. Applying the framework to PRH (204 vision-language pairs across BLOOM/OpenLLaMA/LLaMA and five vision families, plus video-language with VideoMAE) shows that the previously reported global CKA convergence largely vanishes, while local neighborhood metrics (mKNN, cycle-kNN, CKNNA) retain a robust scaling trend. Further locality analysis indicates topological rather than metric agreement (small-σ CKA-RBF shows no calibrated alignment), motivating the proposed 'Aristotelian Representation Hypothesis': networks converge to shared local neighborhood relationships.",
+        "problem_statement": "Quantifying representational similarity across neural networks is central to understanding learned representations and to claims like the Platonic Representation Hypothesis, but raw similarity scores have non-trivial null expectations that depend on representation dimensionality (width) and on the size of the layer-pair search space (depth). This makes cross-scale comparisons unreliable and may produce spurious evidence of convergence. The paper aims to formalize these confounders and provide a principled, metric-agnostic correction.",
+        "main_contributions": [
+          "Formal identification and characterization of two confounders in representational similarity: a width-driven null baseline (Proposition 4.1: E[||C̃||_F^2] = d_x d_y/(n-1) for CKA-type metrics) and a depth-driven multiple-comparisons inflation (sub-Gaussian maximal inequality E[T_max] ≤ μ + Cσ√log M).",
+          "A unified permutation-based null-calibration framework applicable to any similarity metric, producing a calibrated bounded effect size and an add-one permutation p-value with finite-sample super-uniformity (Type-I control, Corollary 5.1).",
+          "An aggregation-aware extension that calibrates selection summaries (max/top-k over layer pairs) by applying consistent permutations across layers, addressing the depth confounder directly at the level of the reported statistic.",
+          "Proposition 4.2 showing that neighborhood metrics (mKNN) have a much milder null baseline of k/(n-1), explaining why local metrics are less confounded.",
+          "Empirical re-evaluation of the Platonic Representation Hypothesis on 204 vision-language model pairs (plus video-language with VideoMAE), showing global spectral convergence largely disappears after calibration while local neighborhood convergence persists across model families, modalities, choices of α, and permutation budgets.",
+          "A proposed refinement, the Aristotelian Representation Hypothesis: representations converge to shared local neighborhood relationships ('who is near whom'), reflecting topological rather than metric alignment (supported by absence of calibrated alignment for small-bandwidth CKA-RBF)."
+        ],
+        "claim_evidence_map": [
+          {
+            "claim": "Spectral similarity metrics like CKA have non-zero null baselines that scale as O(d/n).",
+            "evidence_in_paper": "Proposition 4.1 derives E_H0[||C̃||_F^2] = d_x d_y/(n-1) (proof in Section D.4); Figure 3 shows raw CKA increasing with d/n on H0 synthetic data; calibrated CKA matches Murphy et al.'s analytical debiased CKA (Figure 12, Section F.4)."
+          },
+          {
+            "claim": "Selection-based summaries (max over layer pairs) inflate with the number of layer pairs, confounding depth comparisons.",
+            "evidence_in_paper": "Section 4.2 derives a sub-Gaussian maximal inequality E[T_max] ≤ μ + Cσ√log M; Figure 5 shows raw max-CKA grows from L=1 to L=128 under H0 while aggregation-aware calibration removes this and naive entry-wise calibration does not."
+          },
+          {
+            "claim": "The permutation-based calibration provides finite-sample Type-I control while preserving sensitivity to genuine signal.",
+            "evidence_in_paper": "Lemma D.2 and Corollary 5.1 establish super-uniformity; Figure 4 shows empirical Type-I error at or below α=0.05 across (n, d/n) and power increasing with signal strength; SNR sweeps in Section F.2 corroborate this."
+          },
+          {
+            "claim": "Neighborhood metrics have a much smaller null baseline (k/(n-1)).",
+            "evidence_in_paper": "Proposition 4.2 / Theorem D.9 derives E_H0[mKNN] = k/(n-1) via hypergeometric argument; Figure 3 shows raw mKNN does not drift strongly with d."
+          },
+          {
+            "claim": "After calibration, the global cross-modal convergence trend reported under CKA largely disappears.",
+            "evidence_in_paper": "Figure 6a and Section 6.3: dotted (raw) lines show increasing CKA with LM capacity while solid (calibrated) lines are flat; extended results across all five vision families and CKA variants confirm this (Figures 16-17, Section F.7); the same holds for video-language (Figure 7)."
+          },
+          {
+            "claim": "Local neighborhood metrics retain significant cross-modal alignment that scales with model capacity after calibration.",
+            "evidence_in_paper": "Figure 6b shows calibrated mKNN retains its upward trend with LM capacity across BLOOM, OpenLLaMA, LLaMA against DINOv2 and CLIP; Section F.7 (Figures 16, 17) extends this to cycle-kNN, CKNNA across five vision families; Figure 7 confirms it on video-language."
+          },
+          {
+            "claim": "Cross-modal convergence is topological (neighbor identity) rather than metric (exact local distances).",
+            "evidence_in_paper": "Section F.9: mKNN shows alignment at k=10,20,50,100 (Figure 20), but CKA-RBF with σ=0.1 (very local kernel) shows calibrated scores near zero and non-significant p-values (Figures 21, 22), indicating no agreement on exact pairwise distances; larger σ gives significant but non-scaling alignment."
+          },
+          {
+            "claim": "Conclusions are robust to design choices (α, K, noise distributions).",
+            "evidence_in_paper": "Section F.10 (Figures 23-25) shows invariance across α∈{0.01,0.05,0.10}; Section F.5 (Figure 13) shows stability for K≥200; Section F.1 (Figure 8) shows the calibration works across Gaussian/Student-t/Laplace/Gaussian-mixture noise."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4833,
+        "output_tokens": 2949,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 110460
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_2": {
+      "parsed": {
+        "sections": [
+          {
+            "name": "Abstract",
+            "summary": "States that representational similarity metrics are confounded by network width and depth, introduces a permutation-based null-calibration framework that produces calibrated scores with statistical guarantees, and reports that after calibration global spectral convergence disappears while local neighborhood agreement persists, motivating the 'Aristotelian Representation Hypothesis'.",
+            "key_claims": [
+              "Width and depth systematically inflate raw representational similarity scores.",
+              "A permutation-based calibration framework yields calibrated scores with statistical guarantees.",
+              "After calibration, global convergence largely disappears but local neighborhood similarity remains significant cross-modally.",
+              "Representations converge to shared local neighborhood relationships, not global structure."
+            ],
+            "supporting_evidence": [
+              "Forward references to Figure 2 and empirical results in Section 6."
+            ],
+            "issues": [
+              "The phrase 'with statistical guarantees' is unspecified in the abstract; the nature of the guarantee (finite-sample Type-I control of p-values) is only clarified later.",
+              "'Apparent convergence largely disappears' is qualitative; no quantitative threshold or effect-size criterion is stated."
+            ],
+            "missing_information": [
+              "No mention of the sample size (n=1024) or model regime under which the conclusion is drawn, which is later acknowledged as relevant to interpretation."
+            ],
+            "ambiguous_or_unsupported": [
+              "'Local neighborhood similarity, but not local distances' is a strong distinction introduced without preview of supporting evidence."
+            ]
+          },
+          {
+            "name": "Introduction",
+            "summary": "Motivates representational similarity, frames the PRH, and identifies two confounders: width (positive null baseline scaling with d/n for spectral metrics) and depth (look-elsewhere inflation when summarizing layer-pair comparisons via max). Previews calibration and the Aristotelian Representation Hypothesis.",
+            "key_claims": [
+              "Spectral interaction-matrix-based metrics have positive null baselines that depend on d and n.",
+              "Selection-based summaries over many layer pairs inflate with the number of comparisons.",
+              "These confounders undermine comparative use of representational similarity without calibration."
+            ],
+            "supporting_evidence": [
+              "Figure 2 conceptual schematic; subsequent theoretical sections (4) and empirical sections (6) cited."
+            ],
+            "issues": [
+              "The claim that 'wider models can appear more aligned simply because their representations live in higher-dimensional spaces' implicitly assumes consistent preprocessing; effects depend on normalization (kernel CKA's bias depends nontrivially on centering and bandwidth), which is glossed over here.",
+              "The 'depth confounder' framing assumes practitioners use max-aggregation; the introduction does not acknowledge that Huh et al. and others sometimes use alternative summaries (best-matching layer-pair, top-k), which the framework handles but should be flagged upfront."
+            ],
+            "missing_information": [
+              "No mention that the Platonic paper of Huh et al. itself used mKNN for the main result (not CKA), which is relevant to whether the calibrated reanalysis actually overturns Huh's main claim."
+            ],
+            "ambiguous_or_unsupported": [
+              "The named distinction 'Platonic vs Aristotelian' is more of a rhetorical framing than a technical contribution; its philosophical motivation (footnote on Aristotle's Categories) is decorative."
+            ]
+          },
+          {
+            "name": "Related Work",
+            "summary": "Reviews representational similarity metrics, prior debiasing work (Murphy et al., Chun et al.), deconfounding (Cui et al.), and resampling-based maxT procedures. Positions the proposed framework as the first metric-agnostic, aggregation-aware calibration.",
+            "key_claims": [
+              "Prior debiasing methods are metric-specific (e.g., CKA only).",
+              "No analogous debiasing exists for neighborhood metrics.",
+              "Resampling-based maxT procedures exist in statistics but have not been applied to representational similarity."
+            ],
+            "supporting_evidence": [
+              "Citations to Murphy et al. 2024, Chun et al. 2025, Cui et al. 2022, Diedrichsen et al. 2020, Westfall & Young 1993, Nichols & Holmes 2002."
+            ],
+            "issues": [
+              "Permutation testing for representational similarity is not novel in itself; Ding et al. (2021), cited but not engaged with deeply, used statistical testing for representation similarity. The paper should more clearly articulate what is technically new relative to existing permutation-based testing in the area.",
+              "Cai et al. (2019) bias-correction for RSA is glossed as 'partial' in Table 1 without explanation."
+            ],
+            "missing_information": [
+              "No discussion of HSIC unbiased estimator (Song et al. 2012) as a form of debiasing, although it is referenced later in the appendix.",
+              "No comparison to recent work on debiased neighborhood metrics or to the distance-correlation literature, which faces similar high-dimensional bias issues."
+            ],
+            "ambiguous_or_unsupported": [
+              "The claim that the framework is the only one with 'Bounded' output (Table 1) is a property of choice of rescaling, not a fundamental capability; comparable methods could be rescaled similarly."
+            ]
+          },
+          {
+            "name": "Method",
+            "summary": "Defines representation spaces and similarity scores, the permutation null H0 with exchangeability assumption, and the baseline problem of non-zero null expectations. Introduces scalar null-calibrated similarity and aggregation-aware null-calibration with consistent permutations across layers.",
+            "key_claims": [
+              "Permutation under H0 provides a principled null distribution.",
+              "Scalar calibration via gating against τ_α produces a meaningful zero point.",
+              "Aggregation-aware calibration calibrates the entire selection pipeline by applying the same permutation across all layers."
+            ],
+            "supporting_evidence": [
+              "Corollary 5.1 (Type-I control); Lemma D.2; Algorithm 1 and 2 in appendix."
+            ],
+            "issues": [
+              "The calibrated score (Eq. 12) is not monotone-invariant and depends on α; the paper acknowledges this but it can be confusing because the rank-based p-value is monotone-invariant while the effect-size score is not, and reported 'calibrated scores' in figures are α-dependent.",
+              "The choice of s_max is implicit (e.g., 1 for CKA/mKNN). For unbounded metrics this is more arbitrary; the section briefly addresses this with [s − τ_α]_+ but the asymmetry is not fully discussed.",
+              "Consistency of permutations across layers (Eq. 14) assumes that within-model layer pairs are not themselves shuffled. This is correct, but the paper does not discuss whether this preserves the dependence structure between layers within a model (it does, but worth stating)."
+            ],
+            "missing_information": [
+              "The method does not discuss how to choose α in practice or how the calibrated effect size should be interpreted across metrics with different scales of baseline noise."
+            ],
+            "ambiguous_or_unsupported": [
+              "The claim 'the calibrated score adapts to the actual null distribution, providing a meaningful zero point' is correct but glosses over the fact that s_cal still depends on the scale of (s_max − τ_α), which can differ substantially across metrics, making cross-metric comparison of calibrated scores nontrivial."
+            ]
+          },
+          {
+            "name": "Theory",
+            "summary": "Provides Proposition 4.1 (CKA null baseline O(d/n)), Proposition 4.2 (mKNN null baseline k/(n-1)), and a sub-Gaussian maximal inequality for depth-driven inflation. Supplementary appendix proves super-uniformity of permutation p-values and monotone invariance.",
+            "key_claims": [
+              "Under H0, E[||C̃||_F^2] = d_x d_y/(n-1), so CKA has a positive null baseline scaling as O(d/n).",
+              "Under H0, E[mKNN] = k/(n-1), so neighborhood metrics have null baseline O(k/n).",
+              "Under sub-Gaussian right tails, E[T_max] ≤ μ + Cσ√log M, formalizing depth inflation."
+            ],
+            "supporting_evidence": [
+              "Detailed proofs in Section D (D.4 for Prop 4.1, D.5 for depth, D.6 for Prop 4.2)."
+            ],
+            "issues": [
+              "Prop 4.1 establishes a baseline for ||C̃||_F^2, but linear CKA is normalized by ||Σ_XX||_F · ||Σ_YY||_F. The text says 'CKA is scaled by the normalized self-similarity terms, which each scale as O(√d), resulting in null baseline O(d/n)' — this informal argument elides the random-matrix fluctuations of the denominator and assumes specific scalings; a more careful statement would help.",
+              "Prop 4.2 derivation requires k-NN sets to be uniformly distributed over k-subsets, which holds under i.i.d. assumptions but may not hold under realistic representation distributions (e.g., low intrinsic dimension structure). This is briefly noted but not quantified.",
+              "The sub-Gaussian assumption (D.5) on layer-pair similarities is unverified; bounded scores get a sub-Gaussian bound via Hoeffding but with σ ≤ (s_max − s_min)/2, which is loose. Dependence across layers (which is strong in practice) means union bound is conservative — the paper acknowledges this but does not characterize the effective number of comparisons."
+            ],
+            "missing_information": [
+              "No analysis of what happens for unbiased CKA, which corrects the d/n bias analytically — does calibration still meaningfully change it? The appendix touches on this but the main theory section does not.",
+              "No characterization of the variance of mKNN under H0 beyond appendix Prop D.10, which gives bounds rather than the realistic case where per-anchor dependencies exist."
+            ],
+            "ambiguous_or_unsupported": [
+              "The remark that 'closed-form bulk edges are ensemble- and normalization-specific' justifies the permutation approach but is not formally argued; alternative analytical corrections (e.g., Murphy et al.) are shown to match the empirical calibration in Section F.4, somewhat undermining the strength of the argument that closed-form is brittle."
+            ]
+          },
+          {
+            "name": "Experiments",
+            "summary": "Validates calibration on synthetic data under H0 (Gaussian and heavy-tailed) and H1 (low-rank signal), shows Type-I error control and power, validates aggregation-aware calibration on synthetic layer-stack experiments, and revisits PRH with 204 vision-language model pairs and video-language alignment with VideoMAE.",
+            "key_claims": [
+              "Calibration eliminates spurious similarity across metrics, sample sizes, dimensions, and noise distributions.",
+              "Type-I error is controlled at or below α=0.05; power increases rapidly with signal strength.",
+              "Aggregation-aware calibration removes depth-driven inflation; entry-wise calibration is insufficient.",
+              "On PRH, calibrated global metrics show no scaling trend with model capacity while calibrated local metrics retain scaling trends across vision families.",
+              "Video-language alignment shows the same local vs global pattern."
+            ],
+            "supporting_evidence": [
+              "Figures 3-7; extensive ablations in appendix Sections F.1-F.10."
+            ],
+            "issues": [
+              "The synthetic experiments use Gaussian/heavy-tailed i.i.d. data, which does not capture the structured, low-intrinsic-dimension nature of real representations. The validation that calibration 'works' on i.i.d. synthetic data may be over-stating generalization.",
+              "The number of WIT samples (n=1024) is small relative to embedding dimensions in modern models. Combined with d/n ∈ [0.75, 8], the calibration framework is being applied in a regime where null baselines are substantial — but it would be more compelling to also test with larger n to show that conclusions are not sample-size artifacts.",
+              "The synthetic depth experiment uses linear CKA with d/n=8 and independent layer representations across both models. Real models have strong layer-to-layer correlations, so the demonstrated 'inflation' is the worst case; how much of the inflation observed in actual PRH experiments is attributable to depth vs width is not quantified separately.",
+              "Power analysis (Fig 4 right) is shown for synthetic signals but not for realistic representation structure; it is unclear how the framework discriminates weak-but-real signals from null at finite n in real model comparisons.",
+              "The video-language experiment uses only 3 VideoMAE sizes against 3 LM families, which is a small base for the scaling claim."
+            ],
+            "missing_information": [
+              "Calibrated CKA results are not directly compared to unbiased CKA (Song et al.) or debiased CKA (Murphy et al.) on the actual PRH data; only matched on synthetic data in F.4. A direct comparison on real models would strengthen the claim that the disappearance of CKA scaling is not specific to the permutation approach.",
+              "No analysis of whether the local vs global distinction holds for vision-vision or language-language comparisons (within-modality), which would help establish whether this is a cross-modality phenomenon or a general property.",
+              "No baseline comparison showing that random/untrained models give no calibrated alignment — this would be a useful sanity check."
+            ],
+            "ambiguous_or_unsupported": [
+              "The statement that 'smaller video encoders appear to act as a bottleneck, limiting alignment regardless of language model size' is interpretive and based on a single Figure 7 comparison; alternative explanations (e.g., domain mismatch) are not discussed."
+            ]
+          },
+          {
+            "name": "Results",
+            "summary": "The PRH revisit shows calibrated CKA loses its scaling trend while calibrated mKNN/cycle-kNN/CKNNA retain it. Locality analysis (F.9) shows mKNN alignment at all k but small-σ CKA-RBF shows no calibrated alignment, supporting topological (not metric) convergence.",
+            "key_claims": [
+              "Calibrated global metrics show no systematic trend with model scale.",
+              "Calibrated local metrics retain significant scaling trends across all vision families.",
+              "Cross-modal models agree on neighborhood identity but not on exact local distances."
+            ],
+            "supporting_evidence": [
+              "Figures 6-7 in main text; Figures 16-22 in appendix; p-value analysis in Figure 18."
+            ],
+            "issues": [
+              "Figure 18 shows that all 204 model pairs are significant at p<0.05 for both global and local metrics, including CKA. This is a tension with the claim that 'global convergence largely disappears' — the calibrated effect size flattens but is non-zero and significant. The narrative could be more nuanced: it is the scaling trend that disappears, not the alignment itself.",
+              "The locality analysis (F.9) uses fixed σ values for the RBF kernel that depend on the (unstated) feature norms; without normalization or median-heuristic justification, claiming 'no significant alignment at σ=0.1' is ambiguous because the relevant scale depends on embedding magnitudes that differ across models.",
+              "The conclusion that local metric distances are not preserved while local neighborhood identity is preserved is a meaningful refinement, but it leans heavily on the σ=0.1 result; alternative tests (e.g., correlation of local distance ranks) would strengthen this distinction."
+            ],
+            "missing_information": [
+              "Whether the calibrated mKNN scaling trend would survive if model pairs were re-ranked or if vision capability (not LM capability) was the x-axis variable.",
+              "Effect sizes of the scaling trend (e.g., slope of calibrated mKNN vs LM capacity) are not quantified.",
+              "How calibrated CKA compares against null even in absence of scaling — is the average calibrated CKA across model pairs zero, or just non-trending?"
+            ],
+            "ambiguous_or_unsupported": [
+              "The framing 'global convergence largely disappears' contrasts with 'all model pairs are significant at p<0.05 for global metrics' (Fig 18) — these statements need reconciliation in the main text."
+            ]
+          },
+          {
+            "name": "Limitations",
+            "summary": "Acknowledges that permutation calibration is finite-sample valid under exchangeability, which can be violated in grouped/clustered samples, and that restricted permutations can recover validity.",
+            "key_claims": [
+              "Calibration validity depends on the exchangeability assumption."
+            ],
+            "supporting_evidence": [
+              "None beyond statement."
+            ],
+            "issues": [
+              "The limitations section is unusually brief and does not address several substantive concerns: (i) the dependence of conclusions on n=1024; (ii) the sensitivity of effect sizes to the chosen s_max and α; (iii) the assumption of i.i.d. structure in theoretical derivations not matching real representations; (iv) the fact that the proposed framework cannot distinguish between 'genuine convergence' and 'arbitrarily small but real convergence', since calibration only gates against null.",
+              "No discussion of computational cost for large-scale studies (K × L_A × L_B similarity computations)."
+            ],
+            "missing_information": [
+              "No discussion of failure modes of mKNN-based calibration when k is comparable to n (where the null baseline k/(n-1) is large).",
+              "No discussion of whether the locality findings extend to other modalities (audio, code, etc.)."
+            ],
+            "ambiguous_or_unsupported": []
+          },
+          {
+            "name": "Conclusion",
+            "summary": "Summarizes the calibration framework and the Aristotelian Representation Hypothesis: representations converge to shared local neighborhood relationships, not global spectral structure.",
+            "key_claims": [
+              "Width-dependent baselines and depth-dependent selection inflation distort representational similarity.",
+              "Calibrated effect sizes show global spectral convergence is largely confounded, while local neighborhood alignment is robust.",
+              "Models converge to shared local neighborhood relationships."
+            ],
+            "supporting_evidence": [
+              "Recapitulation of empirical findings from Section 6 and Appendix F."
+            ],
+            "issues": [
+              "The 'Aristotelian Representation Hypothesis' is presented as a refinement but is essentially a relabeling of the local-similarity finding that was already shown in Huh et al. (who used mKNN as their main metric). It is not clear how much is genuinely new claim vs. reframing.",
+              "The conclusion overstates by saying 'previously reported global spectral convergence is largely confounded' — Huh et al. did not primarily rely on global spectral metrics for their headline result."
+            ],
+            "missing_information": [
+              "No discussion of implications for downstream tasks (transfer learning, brain-score) where representational similarity is used as a tool."
+            ],
+            "ambiguous_or_unsupported": [
+              "The 'shared local neighborhood relationships' phrasing remains qualitative; no operational criterion (e.g., minimum k, threshold on calibrated mKNN) defines what counts as convergence."
+            ]
+          },
+          {
+            "name": "Supplementary",
+            "summary": "Provides detailed metric definitions, proofs (super-uniformity, monotone invariance, Prop 4.1 derivation, depth-confounder bound, mKNN null baseline), algorithm pseudocode, and extensive additional experiments including phase diagrams, SNR sweeps, calibration variant comparisons, comparison to Murphy/Chun debiasing, permutation budget analysis, full PRH results across all metrics and vision families, video-language analysis, locality (k and σ) analyses, and α-sensitivity.",
+            "key_claims": [
+              "Calibration works across noise distributions and SNR regimes.",
+              "Empirical calibration recovers analytical debiased CKA (Murphy et al.) on synthetic data.",
+              "K≥200 permutations suffice for stable thresholds.",
+              "PRH conclusions hold across all five vision families and four similarity metric variants.",
+              "Locality analysis shows topological (rank-based) convergence but not metric (distance-based) convergence."
+            ],
+            "supporting_evidence": [
+              "Figures 8-25; Theorem D.9 (mKNN null), Proposition D.10 (mKNN variance), Lemma D.2, Proposition D.4."
+            ],
+            "issues": [
+              "Theorem D.9 (mKNN null baseline) implicitly requires that NX(i) and NY(i) are functions of independent random variables; the proof asserts this but the assumption that representations across modalities are mutually independent under H0 (which corresponds to a strong null) deserves more discussion.",
+              "Figure 18 shows that p-values for global CKA are uniformly small (<0.005), indicating significant cross-modal alignment exists for all model pairs. This is in some tension with the main-text framing that 'global convergence disappears'; the supplementary text acknowledges this and reframes as 'no convergence in calibrated effect sizes', which is a more accurate but weaker claim.",
+              "The bandwidth σ values for CKA-RBF (0.1, 0.5, 2.0, 5.0) are stated without justification of feature scales; the conclusion that σ=0.1 shows no significant alignment could be a result of σ being below the natural scale of the data rather than evidence about local metric structure.",
+              "F.5 recommends K≥200 but does not analyze the impact of small K on aggregation-aware calibration where the null distribution is more complex; the stability analysis is only for scalar comparisons."
+            ],
+            "missing_information": [
+              "No analysis of computational scaling for very large models (e.g., 65B params); how does aggregation-aware calibration scale when L_A · L_B is large?",
+              "No comparison to alternative aggregation operators (e.g., mean over layer-pairs, top-k average) beyond Figure 5.",
+              "No analysis of whether different choices of distance for k-NN (Euclidean vs cosine) affect conclusions."
+            ],
+            "ambiguous_or_unsupported": [
+              "F.9's strong claim that 'cross-modal representations agree on neighborhood identity but not on exact local distances' rests on a single set of σ values; alternative ways to test metric vs topological convergence (e.g., Procrustes on local neighborhoods, local distance correlations) are not used."
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4892,
+        "output_tokens": 7849,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 110460
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_3": {
+      "parsed": {
+        "claims": [
+          {
+            "claim": "Linear/spectral CKA-type metrics have a non-zero null baseline that scales as O(d_x d_y / n) under independence.",
+            "category": "theoretical",
+            "evidence_in_paper": "Proposition 4.1 with proof in Section D.4 derives E_H0[||C̃||_F^2] = d_x d_y/(n-1) under i.i.d. zero-mean identity-covariance assumptions; Figure 3 shows raw CKA increasing with d/n.",
+            "evidence_strength": "strong",
+            "notes": "Proof is straightforward and assumptions (i.i.d., identity covariance) are standard; consistent with known random matrix theory results."
+          },
+          {
+            "claim": "Mutual k-NN has null baseline k/(n-1), much smaller than spectral baselines.",
+            "category": "theoretical",
+            "evidence_in_paper": "Proposition 4.2 / Theorem D.9 via hypergeometric argument (Proposition D.8); empirical confirmation in Figure 3.",
+            "evidence_strength": "strong",
+            "notes": "Proof relies on exchangeability of i.i.d. samples; reasonable derivation."
+          },
+          {
+            "claim": "Selection-based summaries (max over layer pairs) inflate as O(σ√log M) where M = L_A L_B.",
+            "category": "theoretical",
+            "evidence_in_paper": "Section 4.2 and Proposition D.6 derive sub-Gaussian maximal inequality without independence assumption; Figure 5 empirically demonstrates depth-driven inflation.",
+            "evidence_strength": "strong",
+            "notes": "Classical result applied appropriately; the bound is dependence-robust which is important since layer similarities are correlated."
+          },
+          {
+            "claim": "The permutation-based calibration provides finite-sample Type-I control (super-uniform p-values).",
+            "category": "theoretical",
+            "evidence_in_paper": "Lemma D.2 and Corollary 5.1 with proofs in Section D.1; empirical verification in Figure 4 (Type-I error ≤ α).",
+            "evidence_strength": "strong",
+            "notes": "Standard randomization inference result; correctly applied. Requires exchangeability under H0 (Assumption 3.1)."
+          },
+          {
+            "claim": "Calibration preserves sensitivity to genuine signal (power).",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 4 right panel shows detection rates rapidly increase with signal strength across metrics; SNR sweeps (Figures 9, 10) show monotone decay with noise.",
+            "evidence_strength": "strong",
+            "notes": "Synthetic only, but covers multiple metrics and signal ranks."
+          },
+          {
+            "claim": "Empirical permutation calibration recovers analytical debiased CKA estimators.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Section F.4, Figure 12: difference between calibrated CKA and Murphy et al.'s debiased CKA is near zero across d/n.",
+            "evidence_strength": "strong",
+            "notes": "Validates the framework against an independent metric-specific correction."
+          },
+          {
+            "claim": "After calibration, global spectral convergence reported under PRH largely disappears.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 6a, 7, and Section F.7 (Figures 16, 17) across five vision families and CKA variants show flat calibrated trends versus rising raw trends.",
+            "evidence_strength": "strong",
+            "notes": "Comprehensive across families and metrics. However, 'largely disappears' is somewhat qualitative; some residual scaling may still be present visually."
+          },
+          {
+            "claim": "Local neighborhood metrics retain significant cross-modal alignment that scales with model capacity even after calibration.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figures 6b, 7, 16-18 show calibrated mKNN/cycle-kNN/CKNNA trends increasing with LM capacity; p-values significant for all 204 pairs.",
+            "evidence_strength": "strong",
+            "notes": "Robust across families, metrics, modalities (image and video), and α choices."
+          },
+          {
+            "claim": "Cross-modal convergence is topological (neighbor identity) rather than metric (exact distances).",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Section F.9: small-σ CKA-RBF shows non-significant calibrated scores (Figures 21, 22), while mKNN at varying k shows significant alignment.",
+            "evidence_strength": "weak",
+            "notes": "The argument hinges on contrasting CKA-RBF at small bandwidth with mKNN. At σ=0.1, raw scores are near 1.0 (saturation), which complicates interpretation—the lack of calibrated signal could reflect kernel saturation rather than absence of metric agreement. The interpretation that this proves 'topological vs. metric' is suggestive but not airtight."
+          },
+          {
+            "claim": "The Aristotelian Representation Hypothesis: neural networks converge to shared local neighborhood relationships.",
+            "category": "novelty",
+            "evidence_in_paper": "Proposed in introduction and Section 6.3 based on empirical findings; supported by mKNN scaling trends across image-language and video-language settings.",
+            "evidence_strength": "weak",
+            "notes": "This is a refined hypothesis rather than a proven claim. The evidence supports persistence of local alignment after calibration, but 'convergence' as a strong claim depends on the rate and limit of the trend with scale. The empirical curves appear to be slowly increasing rather than clearly approaching a shared structure."
+          },
+          {
+            "claim": "The framework is metric-agnostic and applies to any similarity metric.",
+            "category": "generalization",
+            "evidence_in_paper": "Sections 5, E (Algorithms 1-2); empirical results across CKA (linear/RBF/unbiased), mKNN, cycle-kNN, CKNNA, RSA, CCA/SVCCA/PWCCA, RV, Procrustes.",
+            "evidence_strength": "strong",
+            "notes": "Demonstrated across a broad range of metrics in Section F.6."
+          },
+          {
+            "claim": "Calibration works across noise distributions without distributional assumptions.",
+            "category": "generalization",
+            "evidence_in_paper": "Section F.1 (Figure 8) and Section F.6 (Figure 15) test Gaussian, Student-t, Laplace, and Gaussian mixture distributions.",
+            "evidence_strength": "strong",
+            "notes": "Permutation-based methods are inherently distribution-free under exchangeability."
+          },
+          {
+            "claim": "Conclusions are robust to choice of α and permutation budget K.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Section F.5 (Figure 13): stability by K≈200; Section F.10 (Figures 23-25): invariance to α ∈ {0.01, 0.05, 0.10}.",
+            "evidence_strength": "strong",
+            "notes": "Well-supported ablations."
+          },
+          {
+            "claim": "Existing approaches to debiasing representational similarity are metric-specific while ours is unified and metric-agnostic.",
+            "category": "novelty",
+            "evidence_in_paper": "Related work and Table 1 in Appendix B compares prior corrections (Murphy 2024, Chun 2025, Cui 2022, Diedrichsen 2020, etc.).",
+            "evidence_strength": "strong",
+            "notes": "Reasonable positioning; the permutation/maxT idea is classical in statistics but its systematic application to representational similarity, especially with aggregation-aware variants, appears novel."
+          },
+          {
+            "claim": "Naive entry-wise calibration of layer-pair scores still leads to inflation when reporting a summary statistic.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Figure 5: entry-wise calibrated max still inflates with layer count, while aggregation-aware calibration is flat.",
+            "evidence_strength": "strong",
+            "notes": "Clear and important demonstration motivating the aggregation-aware design."
+          },
+          {
+            "claim": "The PRH analysis covers 204 vision-language model pairs spanning d/n ∈ [0.75, 8].",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Section 6.3: WIT dataset with n=1024 samples, three LM families and five vision families.",
+            "evidence_strength": "strong",
+            "notes": "Reasonably broad coverage following Huh et al. (2024)'s protocol."
+          }
+        ],
+        "unsupported_claims": [
+          "The strong form of the 'Aristotelian Representation Hypothesis' (i.e., that representations are *converging* to shared local neighborhood relationships) is asserted but not rigorously established. The empirical results show persistent positive alignment with mild upward trends, but convergence in the strong sense (e.g., toward a common limit as scale increases) is not demonstrated.",
+          "The interpretation that 'convergence is topological rather than metric' relies primarily on CKA-RBF at σ=0.1 showing no calibrated alignment. However, at σ=0.1 the raw CKA approaches 1.0 (kernel saturation), so the calibrated zero may reflect a degenerate regime rather than absence of metric agreement."
+        ],
+        "overstated_claims": [
+          "'Apparent convergence reported by global spectral measures largely disappears after calibration': while the trend flattens, the calibrated scores remain non-zero and statistically significant; the claim could be more nuanced as 'the scaling trend disappears' rather than 'convergence disappears'.",
+          "Naming the refined hypothesis after Aristotle and framing it as a positive thesis may overstate what the data show: the local alignment is significant but its magnitudes (often 0.10-0.20 for calibrated mKNN) are modest, and the upward scaling is gradual."
+        ],
+        "claims_requiring_external_verification": [
+          "Whether the d/n null baseline derivation for CKA is consistent with prior work by Murphy et al. (2024) and Chun et al. (2025) under matching assumptions.",
+          "Whether the reproduction of Huh et al. (2024)'s PRH results uses the same sample size (n=1024) and embedding extraction protocol as the original work, and whether the reported raw trends quantitatively match.",
+          "Whether the Type-I error guarantee under Assumption 3.1 (exchangeability) holds in practice given WIT data may have group/topic clustering structure violating strict exchangeability."
+        ]
+      },
+      "usage": {
+        "input_tokens": 3193,
+        "output_tokens": 3398,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 110460
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_4": {
+      "parsed": {
+        "novelty_axes": [
+          {
+            "axis": "method",
+            "claimed_contribution": "A metric-agnostic permutation-based null-calibration framework that transforms any representational similarity metric into a calibrated score with finite-sample Type-I guarantees, including an aggregation-aware variant that calibrates selection statistics (e.g., max over layer pairs).",
+            "why_it_matters": "The framework is positioned as the key technical contribution that unifies bias correction across metrics and extends to selection-based summaries; if classical permutation/maxT had already been applied to representational similarity, the methodological novelty would be modest.",
+            "search_keywords": [
+              "permutation test representational similarity neural network",
+              "maxT permutation layer comparison neural network",
+              "null-calibration similarity metric CKA"
+            ],
+            "search_question": "Has prior work proposed a unified permutation-based null-calibration framework for arbitrary representational similarity metrics, including aggregation-aware calibration of selection statistics like max-over-layers?",
+            "closest_prior_work_ref": "Ding et al. 2021 [similar_prior_work #1]; Westfall & Young 1993 / Nichols & Holmes 2002 [similar_prior_work #2]; Kriegeskorte et al. 2008 permutation RSA [similar_prior_work #3]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "theory",
+            "claimed_contribution": "Proposition 4.1 (CKA null energy = d_x d_y/(n-1), giving O(d/n) null baseline), Proposition 4.2 (mKNN null baseline k/(n-1)), and a dependence-robust sub-Gaussian maximal inequality E[T_max] ≤ μ + Cσ√log M for the depth confounder. Plus super-uniformity of permutation p-values.",
+            "why_it_matters": "These formal results justify why calibration is needed and explain the scale-dependent baselines that motivate the empirical revisit of PRH.",
+            "search_keywords": [
+              "debiased CKA bias correction high dimension d/n",
+              "CKA finite sample bias dimensionality",
+              "mutual k-NN expected overlap random baseline hypergeometric"
+            ],
+            "search_question": "Are the null-baseline scalings for CKA (O(d/n)) and mKNN (k/(n-1)) already established in prior work, and does the maxT bound add anything new?",
+            "closest_prior_work_ref": "Murphy et al. 2024 [similar_prior_work #4]; Chun et al. 2025 [similar_prior_work #5]; Westfall & Young 1993 [similar_prior_work #2]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "empirical",
+            "claimed_contribution": "After calibration the global cross-modal convergence reported under PRH (with CKA) largely disappears, while local neighborhood metrics (mKNN, cycle-kNN, CKNNA) retain a significant scaling trend across 204 vision–language pairs and also for video–language; further locality analysis suggests topological rather than metric alignment.",
+            "why_it_matters": "This is the load-bearing empirical claim that overturns/refines a prominent recent hypothesis (Huh et al. 2024) and motivates the renamed 'Aristotelian' hypothesis.",
+            "search_keywords": [
+              "Platonic Representation Hypothesis convergence vision language critique",
+              "cross-modal alignment scaling CKA mKNN",
+              "representation convergence calibrated bias"
+            ],
+            "search_question": "Has any prior work systematically re-evaluated the Platonic Representation Hypothesis with statistical calibration, or shown a divergence between local and global similarity trends across model scales?",
+            "closest_prior_work_ref": "Huh et al. 2024 (PRH) [similar_prior_work #6]; Maniparambil et al. 2024 [similar_prior_work #7]",
+            "axis_verdict": "novel"
+          },
+          {
+            "axis": "problem",
+            "claimed_contribution": "Reframing 'representational convergence' as convergence in local neighborhood relationships (Aristotelian Representation Hypothesis) rather than global statistical structure.",
+            "why_it_matters": "The conceptual framing is the headline contribution and is what justifies the paper's title; novelty here depends on whether prior work already articulated 'local-only' convergence.",
+            "search_keywords": [
+              "local neighborhood convergence representation learning hypothesis",
+              "topological alignment neural representations cross-model"
+            ],
+            "search_question": "Has prior work explicitly proposed that representational convergence is local/topological rather than global, as a refined hypothesis?",
+            "closest_prior_work_ref": "Huh et al. 2024 (PRH proposes mKNN as one measure but does not distinguish local-vs-global as the limiting phenomenon) [similar_prior_work #6]",
+            "axis_verdict": "novel"
+          }
+        ],
+        "novelty_axes_searched": [
+          "debiased CKA centered kernel alignment bias correction high dimension",
+          "permutation test representational similarity neural network statistical significance",
+          "Ding Steinhardt grounding representation similarity statistical testing",
+          "Platonic Representation Hypothesis Huh 2024 convergence",
+          "multiple comparisons correction layer similarity neural network maxT permutation",
+          "RV coefficient adjusted modified high dimensional correction Smilde"
+        ],
+        "similar_prior_work": [
+          {
+            "title": "Grounding Representation Similarity Through Statistical Testing",
+            "venue_or_source": "NeurIPS",
+            "year": "2021",
+            "similarity_summary": "Ding, Denain, Steinhardt propose a statistical testing framework to evaluate representational similarity measures, scoring measures by their sensitivity and specificity to functional changes in networks.",
+            "key_difference": "Ding et al. use statistical testing to *benchmark and select* similarity metrics; the present paper uses permutation testing to *calibrate* any given metric's output (subtracting a null baseline) and explicitly addresses width and depth confounders in cross-scale comparisons. Different goal — benchmarking metrics vs. correcting reported scores."
+          },
+          {
+            "title": "Resampling-based Multiple Testing: Examples and Methods for p-value Adjustment / Nonparametric Permutation Tests for Functional Neuroimaging",
+            "venue_or_source": "Wiley; Human Brain Mapping",
+            "year": "1993 / 2002",
+            "similarity_summary": "Westfall & Young's maxT and Nichols & Holmes's permutation procedures are the classical templates for calibrating max-statistics under multiple comparisons via permutation.",
+            "key_difference": "Classical methods. The paper itself explicitly notes these have not previously been applied to representational similarity selection (max over layer pairs); the contribution is the application/adaptation, not the statistical technique itself."
+          },
+          {
+            "title": "Representational Similarity Analysis – Connecting the Branches of Systems Neuroscience",
+            "venue_or_source": "Frontiers in Systems Neuroscience",
+            "year": "2008",
+            "similarity_summary": "Kriegeskorte et al. introduce RSA and routinely use permutation testing of the stimulus labels to assess significance of RDM correlations.",
+            "key_difference": "Permutation-based significance for RSA is standard; this paper generalizes the idea to any bounded similarity (including CKA, mKNN, CKNNA, CCA-family) and adds an aggregation-aware extension for layer-pair selection, plus a max-preserving effect-size rescaling."
+          },
+          {
+            "title": "Correcting Biased Centered Kernel Alignment Measures in Biological and Artificial Neural Networks",
+            "venue_or_source": "arXiv:2405.01012",
+            "year": "2024",
+            "similarity_summary": "Murphy, Zylberberg, Fyshe derive an analytical debiased CKA that removes the d-dependent inflation, demonstrating that biased CKA can be artificially high when feature dimensionalities differ.",
+            "key_difference": "Murphy et al. give a metric-specific analytic correction for CKA only; the present work delivers a permutation-based correction that the authors show empirically recovers Murphy's debiased CKA (Section F.4) while applying generically to mKNN, CKA, CKNNA, RSA, etc., and additionally handling the depth/selection confounder."
+          },
+          {
+            "title": "Estimating Neural Representation Alignment from Sparsely Sampled Inputs and Features",
+            "venue_or_source": "arXiv:2502.15104",
+            "year": "2025",
+            "similarity_summary": "Chun, Canatar, Chung, Lee propose corrections for CKA that account for finite-sample and feature-sampling effects (including column-dependence).",
+            "key_difference": "Like Murphy et al., this is metric-specific. The paper compares to dep-cols CKA (Section F.4) and shows the permutation calibration is closer to Murphy's debiased CKA on independent-column synthetic data; the present framework is metric-agnostic and adds aggregation-aware calibration."
+          },
+          {
+            "title": "Position: The Platonic Representation Hypothesis",
+            "venue_or_source": "ICML",
+            "year": "2024",
+            "similarity_summary": "Huh, Cheung, Wang, Isola argue that representations across modalities and scales are converging to a shared statistical model of reality, supported by both global (CKA) and local (mKNN) similarity trends with model capacity.",
+            "key_difference": "This paper is the direct target of the critique. The present work argues the global-CKA evidence is largely a width/depth confounding artifact and refines the hypothesis to local neighborhood relationships only ('Aristotelian')."
+          },
+          {
+            "title": "Do Vision and Language Encoders Represent the World Similarly?",
+            "venue_or_source": "CVPR",
+            "year": "2024",
+            "similarity_summary": "Maniparambil et al. study cross-modal alignment of vision and language encoders, reporting evidence of representational similarity.",
+            "key_difference": "Reports raw similarity trends; does not control for the d/n null baseline or selection inflation. The present work re-evaluates such trends with calibration."
+          },
+          {
+            "title": "Deconfounded Representation Similarity for Comparison of Neural Networks",
+            "venue_or_source": "NeurIPS",
+            "year": "2022",
+            "similarity_summary": "Cui, Kumar, Marttinen, Kaski propose regression-style deconfounding to remove the effect of shared input-population structure from RSA/CKA scores.",
+            "key_difference": "Addresses a different confounder (shared input statistics across networks) rather than the dimensionality/scale-driven null baselines and selection inflation that this paper targets; not metric-agnostic nor aggregation-aware."
+          },
+          {
+            "title": "Matrix Correlations for High-Dimensional Data: the Modified RV-Coefficient",
+            "venue_or_source": "Bioinformatics",
+            "year": "2009",
+            "similarity_summary": "Smilde et al. introduce the modified/adjusted RV coefficient with a chance correction for high-dimensional regimes.",
+            "key_difference": "Provides a metric-specific (RV) chance correction by subtracting an estimated expectation; the present paper provides a general permutation-based correction (bounded, max-preserving, aggregation-aware) covering many metrics including RV."
+          }
+        ],
+        "potential_missing_citations": [
+          "Westfall & Young 1993 and Nichols & Holmes 2002 are cited but mostly in passing; given the aggregation-aware calibration is essentially an application of maxT to layer-pair selection, a more thorough technical comparison (rather than a one-sentence note that 'this has not been applied in representational similarity studies') would be appropriate.",
+          "Klabunde et al. (Similarity of Neural Network Models: A Survey) is cited, but other systematic critiques of CKA's reliability under dimensionality changes (e.g., Davari et al. 'Reliability of CKA as a Similarity Measure', 2022/2023) could be mentioned when motivating the width confounder.",
+          "Work on the look-elsewhere effect / family-wise error control in deep-learning representational analyses appears to be cited only via Westfall & Young and Bonferroni; specific recent work applying these in neuroscience-AI comparisons (e.g., brain-score-style analyses) could strengthen the related work."
+        ],
+        "novelty_type": "empirical",
+        "novelty_assessment": "moderate",
+        "novelty_risk_level": "medium",
+        "rationale": "The paper's technical machinery is a careful but largely classical assembly: permutation testing for similarity statistics is standard in RSA (Kriegeskorte 2008+), and the aggregation-aware calibration of a max-statistic is exactly the maxT idea of Westfall & Young (1993) / Nichols & Holmes (2002). The paper acknowledges this and notes the gap is in *application* to representational similarity at scale. The theoretical results are also derivative: the O(d/n) null baseline of CKA aligns with known random-matrix-theory phenomena and with concurrent analytic debiased-CKA derivations by Murphy et al. (2024) and Chun et al. (2025), and the mKNN null = k/(n-1) is a simple hypergeometric calculation. The sub-Gaussian max inequality is textbook. Thus the method and theory axes are incremental rather than foundational. Where the paper is genuinely novel is empirical and conceptual: (i) it is, to my knowledge, the first systematic, scale-controlled re-examination of the Platonic Representation Hypothesis showing that global CKA trends are largely confounded while local neighborhood trends are not; (ii) the topological-vs-metric locality dissection (varying mKNN-k and CKA-RBF bandwidth) is a fresh empirical observation, even though one of its interpretations (small-σ CKA = 0) may be partly driven by kernel saturation; and (iii) the 'Aristotelian Representation Hypothesis' is a new conceptual framing of a known phenomenon. The overall package therefore earns a 'moderate' novelty rating — incremental on technique and theory, but a meaningful and timely empirical contribution that materially refines an actively discussed hypothesis in the field. Risk is medium because reviewers familiar with classical multiple-testing or with the debiased-CKA literature may judge the methodological contribution as repackaging known statistics.",
+        "source_of_judgment": "web_search"
+      },
+      "usage": {
+        "input_tokens": 10290,
+        "output_tokens": 7090,
+        "cache_creation_input_tokens": 133265,
+        "cache_read_input_tokens": 901096
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_5": {
+      "parsed": {
+        "perspectives": {
+          "domain_expert": {
+            "add_to_field": "The paper makes a substantive conceptual contribution by reframing the Platonic Representation Hypothesis: it provides evidence that purported cross-modal convergence under global spectral metrics is largely an artifact of width/depth scaling, while local neighborhood (topological) agreement survives calibration. This nuanced 'Aristotelian' refinement reshapes how the community should interpret convergence claims and reconnects representational similarity to its neuroscience roots (RSA-style topological comparisons).",
+            "beneficiaries": "Researchers studying representation learning, multimodal alignment, model stitching/transfer, neuroscience-AI comparisons (Brain-Score, NeuroAI), and anyone making scaling claims based on CKA or similar metrics. Also benefits authors of follow-up PRH-style studies (video, brain, biological vision).",
+            "importance": "Yes. The PRH has been highly influential, and many recent papers build on uncalibrated similarity comparisons. Showing that a core empirical pillar is partly confounded is an important corrective for the field.",
+            "improvement_meaningful": "The qualitative shift from 'global convergence' to 'local topological convergence' is meaningful and reframes interpretation. The proposed Aristotelian framing is more defensible and aligns with prior intuitions from manifold learning.",
+            "future_influence": "Likely to influence how future PRH-style and cross-model similarity studies are reported; could become a standard sanity check. Will also influence neuroscience-AI alignment literature, where CKA/RSA are dominant tools."
+          },
+          "methodology_expert": {
+            "add_to_field": "A clean, metric-agnostic permutation-based calibration framework with finite-sample super-uniform p-values and an aggregation-aware extension. The unification of width-bias debiasing and depth/selection (look-elsewhere) correction in a single framework is novel in the representational similarity context, importing well-established randomization-inference tools (maxT, permutation tests) into a setting that lacked them.",
+            "beneficiaries": "Anyone reporting similarity scores across models/layers—not just PRH researchers. Practitioners doing model comparison, layer-pair search, brain-model alignment, or comparing self-supervised pretraining objectives.",
+            "importance": "Yes. The width baseline scaling as d/n and the maximum-over-layer-pairs inflation are real, documented issues, and existing fixes (debiased CKA) are metric-specific. A general, distribution-free, easy-to-implement framework fills a clear methodological gap.",
+            "improvement_meaningful": "Yes. The theoretical contributions (Prop 4.1, 4.2, sub-Gaussian maximal inequality) are mostly straightforward but correctly identify the scaling, and the permutation framework is principled. The agreement with Murphy et al.'s analytical debiased CKA is a strong validation.",
+            "future_influence": "High potential to become a standard tool/best practice. The code release and simple algorithms (Algs. 1-2) lower the adoption barrier. May influence reviewer expectations for similarity-based claims."
+          },
+          "empirical_evaluation_expert": {
+            "add_to_field": "A thorough empirical re-evaluation of PRH across 204 vision-language pairs, multiple metric families, and an extension to video-language. The combination of controlled synthetic experiments (Type-I, power, phase diagrams) with large-scale real-model experiments and extensive ablations (α, K, noise distributions, neighborhood size, bandwidth) is exemplary.",
+            "beneficiaries": "Empirical researchers benchmarking similarity-based claims; reviewers evaluating such claims.",
+            "importance": "Yes—both validating the framework and re-running the PRH analysis are needed to credibly challenge a well-known hypothesis.",
+            "improvement_meaningful": "The empirical evidence is convincing. The local-vs-global divergence is consistent across model families, modalities (image, video), metric variants (mKNN, cycle-kNN, CKNNA vs CKA linear/RBF/unbiased), and design choices, which strengthens the claim. The topological vs metric distinction (small-σ CKA-RBF analysis) is a particularly strong piece of evidence.",
+            "future_influence": "Sets a higher bar for empirical PRH-style analyses; provides a replicable protocol others can adopt."
+          },
+          "skeptical_reviewer": {
+            "add_to_field": "The methodological framework is largely a careful application of standard permutation/maxT inference to representational similarity, plus straightforward bias derivations. The novelty is in framing and application rather than statistical innovation. The 'Aristotelian' rebranding is partly rhetorical.",
+            "beneficiaries": "Mostly PRH-adjacent researchers; broader ML may find the contribution incremental from a statistics standpoint.",
+            "importance": "The width baseline is already known (Murphy et al. 2024 debiased CKA), and multiple-comparisons correction is textbook. The contribution is therefore more synthesis than discovery. However, the empirical re-examination of PRH is genuinely important.",
+            "improvement_meaningful": "The calibrated CKA closely matches debiased CKA—suggesting the framework reproduces, rather than improves on, existing corrections for the spectral case. The main novel empirical claim (local convergence persists, global does not) is meaningful but rests on the assumption that the permutation null is the 'right' null; alternative debiasing schemes might give different verdicts. The choice of bounded rescaling to [0,1] is somewhat arbitrary. Sample size n=1024 is relatively small for d/n up to 8.",
+            "future_influence": "Possibly moderate. If reviewers adopt calibration as a default sanity check, it could shift practice; otherwise, the Aristotelian framing may not displace PRH terminology."
+          },
+          "practical_impact_expert": {
+            "add_to_field": "A drop-in, easy-to-implement calibration procedure with released code, applicable to any bounded similarity metric. This is practically valuable because researchers can apply it without metric-specific derivations.",
+            "beneficiaries": "Practitioners and researchers running model comparison studies in deep learning, multimodal AI, and computational neuroscience. Reviewers and authors who need a defensible null reference for similarity claims.",
+            "importance": "Yes—similarity metrics are pervasive in empirical ML and neuroscience, and the lack of principled null calibration is a real reproducibility/comparability concern.",
+            "improvement_meaningful": "Yes. Computational cost is modest (K=200-500 permutations × O(LA·LB) similarity computations), and the procedure parallelizes trivially. The aggregation-aware version is particularly useful for layer-search studies.",
+            "future_influence": "Likely to be adopted in PRH follow-ups, NeuroAI alignment work, and model auditing contexts. Could become a community-standard reporting practice within a few years."
+          }
+        },
+        "consensus": [
+          "The paper identifies and convincingly demonstrates real confounders (width-driven null baselines and depth-driven selection inflation) in representational similarity comparisons.",
+          "The permutation-based, metric-agnostic calibration framework is practical, easy to implement, and theoretically grounded with finite-sample guarantees.",
+          "The empirical re-evaluation of PRH is thorough and the local-vs-global distinction (topological vs metric alignment) is well-supported across model families, modalities, and design choices.",
+          "The proposed Aristotelian Representation Hypothesis is a more defensible refinement of PRH and is likely to influence future work.",
+          "The contribution is most novel as a synthesis—unifying width debiasing and depth/maxT calibration in a metric-agnostic way—rather than as new statistical theory."
+        ],
+        "disagreement": [
+          "How novel the statistical methodology is: methodology and practical impact experts emphasize unification and applicability, while the skeptical reviewer views it as a straightforward application of standard permutation/maxT inference.",
+          "Whether the Aristotelian framing is a substantive reinterpretation (domain/empirical experts) or partly rhetorical rebranding (skeptic).",
+          "Whether the calibration adds value beyond existing debiased CKA: methodology experts see metric-agnostic generality as the win; skeptic notes the spectral case largely reproduces known corrections."
+        ],
+        "significance_score_1_to_10": 7,
+        "impact_assessment": "high"
+      },
+      "usage": {
+        "input_tokens": 3381,
+        "output_tokens": 2924,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 110460
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_6": {
+      "parsed": {
+        "problem_and_solution_formulation": {
+          "definitions_clear": [
+            "Representation spaces, similarity score, and null hypothesis of independence are clearly defined (Section 3).",
+            "Scalar and aggregation-aware null-calibrated scores are formally defined with explicit formulas (Equations 9, 10, 12, 15-17).",
+            "Permutation procedure is operationally specified via Algorithms 1 and 2, with clear notation for permutations consistent across layers."
+          ],
+          "assumptions_clear": [
+            "Exchangeability under the null (Assumption 3.1) is stated and used consistently in proofs.",
+            "Sub-Gaussian right tails for the depth maximal inequality (Assumption D.5) are explicitly stated.",
+            "i.i.d. assumptions for Proposition 4.1 and 4.2 are stated, though their realism for actual neural network activations is not discussed in the main text."
+          ],
+          "derivations_algorithms_clear": [
+            "Algorithms 1 and 2 provide step-by-step pseudocode that is easy to implement.",
+            "Proofs of the null baselines (D.4, D.6) are explicit and follow standard arguments.",
+            "The depth-inflation derivation (D.5) is presented with clear steps and bound."
+          ],
+          "suggested_improvements_for_formulation": [
+            "Make explicit that the calibrated effect-size score s_cal is α-dependent and not monotone-invariant, while the p-value is — this asymmetry can confuse interpretation across figures.",
+            "Provide an operational definition of 'convergence' in the Aristotelian Representation Hypothesis (e.g., slope of calibrated mKNN with capacity or limit behavior); the current phrasing is qualitative.",
+            "Clarify the choice of s_max for each metric used in figures, especially for unbounded ones, and how cross-metric comparisons of calibrated scores should be interpreted.",
+            "State upfront in the main text that Huh et al.'s headline result already used a local metric (mKNN), to clarify what is new versus reframed."
+          ]
+        },
+        "theoretical_support": {
+          "correct": [
+            "Proposition 4.1: derivation E_H0[||C̃||_F^2] = d_x d_y/(n−1) is correct given the stated i.i.d. assumptions.",
+            "Proposition 4.2 / Theorem D.9: mKNN null baseline k/(n−1) follows correctly from uniform distribution of k-NN sets under i.i.d. data with distinct distances.",
+            "Proposition D.6: sub-Gaussian maximal inequality E[T_max] ≤ μ + Cσ√log M correctly derived via union bound and tail integration; explicit constant C=3 derivation is sound.",
+            "Lemma D.2 and Corollary 5.1: super-uniformity of permutation p-values is a standard randomization-inference result, correctly applied.",
+            "Proposition D.3: monotone invariance of rank-based statistics under strictly increasing transformations is standard and correctly stated."
+          ],
+          "partially_correct": [
+            "The informal scaling argument that CKA's null baseline is O(d/n) because the denominator scales as O(√d): the proposition only bounds the numerator energy; fluctuations and concentration of the normalizing terms ||Σ_XX||_F · ||Σ_YY||_F are not formally analyzed, leaving the final O(d/n) baseline argument heuristic.",
+            "Theorem D.9 assumes pairwise distances are almost surely distinct under absolutely continuous distributions; for finite-precision computations and structured representation distributions (low intrinsic dimension), the tie-breaking assumption is glossed over.",
+            "Sub-Gaussian assumption (D.5) is satisfied by bounded metrics via Hoeffding, but σ ≤ (s_max − s_min)/2 is loose; the bound is correct but the effective constant for real similarity matrices is not characterized."
+          ],
+          "suggested_improvements_for_theoretical_support": [
+            "Provide a complete derivation of the null CKA baseline including denominator concentration, perhaps invoking standard results for Wishart matrices.",
+            "Discuss when the i.i.d. assumption fails (e.g., low intrinsic dimension representations) and how this affects mKNN null baseline.",
+            "Quantify the effective number of comparisons for correlated layer pairs (e.g., via mixing or block-correlation arguments) since union bound is conservative.",
+            "Add formal analysis showing whether and when calibrated unbiased CKA differs from raw unbiased CKA, given that unbiased HSIC already targets the bias."
+          ]
+        },
+        "experimental_support": {
+          "supported": [
+            "Calibration eliminates width-induced null inflation across metrics and noise distributions (Figures 3, 8, 14, 15).",
+            "Type-I error control at α=0.05 and increasing power with signal strength (Figure 4).",
+            "Aggregation-aware calibration removes depth-driven inflation in controlled synthetic experiments (Figure 5).",
+            "Empirical permutation calibration recovers Murphy et al.'s analytical debiased CKA on synthetic data (Figure 12).",
+            "Calibrated CKA shows no convergence trend with model capacity, while calibrated mKNN/cycle-kNN/CKNNA retain scaling trends, across 5 vision families and 3 LM families (Figures 6, 16, 17).",
+            "Conclusions robust to permutation budget K≥200 (Figure 13) and significance level α∈{0.01,0.05,0.10} (Figures 23–25)."
+          ],
+          "partially_supported": [
+            "Video-language extension to VideoMAE: based on only 3 video encoder sizes and 3 LM families; the scaling trend with VideoMAE-Huge is a single data point and bottleneck interpretation is speculative (Figure 7).",
+            "The 'global convergence largely disappears' claim: calibrated effect sizes flatten but p-values remain <0.005 for all global metric pairs (Figure 18), so it is the scaling trend not the alignment that vanishes.",
+            "The locality 'topological vs metric' distinction: rests on small-σ CKA-RBF showing no calibrated alignment (σ=0.1), but at σ=0.1 raw CKA approaches 1.0 (saturation), confounding interpretation."
+          ],
+          "unsupported_or_overstated": [
+            "Strong form of the Aristotelian Representation Hypothesis as 'convergence': calibrated mKNN scores show modest values (0.10–0.20) with gradual upward trends; this does not establish convergence in a strong limiting sense.",
+            "Claim that cross-modal representations 'agree on which points are neighbors but not on how close they are': based primarily on a single hyperparameter choice (σ=0.1) without normalization analysis or alternative tests (e.g., local distance rank correlation).",
+            "Claim that 'global spectral convergence is largely confounded by width and depth': partially over-stated since unbiased CKA (which corrects width bias analytically) is not shown on the actual PRH data to confirm the source of confounding."
+          ],
+          "suggested_improvements_for_claim_support": [
+            "Add a direct comparison of calibrated CKA against unbiased CKA (Song et al.) and debiased CKA (Murphy et al.) on the actual PRH model pairs to confirm the disappearance of scaling is robust to method.",
+            "Quantify the scaling trend (e.g., regression slope of calibrated mKNN vs LM capability) with confidence intervals to substantiate 'retains alignment' more rigorously.",
+            "Include random/untrained model baselines and within-modality (vision-vision, language-language) comparisons as sanity checks.",
+            "Test the topological-vs-metric claim with normalized kernels (e.g., median-heuristic bandwidth) and complementary measures like local Procrustes or local distance rank correlation.",
+            "Replicate with larger n to demonstrate that conclusions are not artifacts of n=1024 in a regime where d/n is large."
+          ]
+        },
+        "experimental_rigor": {
+          "baseline_quality": "Adequate for the synthetic settings; for PRH, calibrated scores are compared against raw scores but not against alternative debiasing methods (unbiased CKA, Murphy et al.'s debiased CKA, Chun et al.'s dep-cols CKA) on the actual model data — only on synthetic data.",
+          "missing_baselines": [
+            "Untrained/random model controls on PRH to confirm calibrated alignment is zero in the absence of training.",
+            "Within-modality (vision-vision, language-language) comparisons to disentangle cross-modal phenomenon from general representation similarity.",
+            "Direct comparison of calibrated CKA to Murphy et al.'s and Chun et al.'s debiased CKA on real PRH model pairs.",
+            "Comparison to existing permutation-test approaches in representational similarity (Ding et al. 2021)."
+          ],
+          "dataset_quality": "Reasonable for reproducing Huh et al.'s protocol (WIT, n=1024); sample size is small relative to embedding dimensions, leaving the framework in a high-d/n regime. PVD test set for video uses 1024 samples.",
+          "better_datasets": [
+            "Larger samples from WIT or other paired image-text datasets to test sample-size robustness.",
+            "Multiple datasets (e.g., COCO, Conceptual Captions) to verify generality of the local vs global pattern.",
+            "Additional modalities (audio-text, code-text) to test the modality-agnostic strength of the Aristotelian hypothesis."
+          ],
+          "metric_appropriateness": "Broad set of metrics covered (CKA linear/RBF/unbiased, mKNN, cycle-kNN, CKNNA, RSA, CCA/SVCCA/PWCCA, RV, Procrustes), appropriate for the metric-agnostic framing.",
+          "better_metric": [
+            "Local distance rank correlation as an additional test of metric (not just topological) agreement.",
+            "Procrustes on local neighborhoods as a complementary test of local metric structure."
+          ],
+          "missing_ablations": [
+            "Choice of distance for k-NN (Euclidean vs cosine) on mKNN conclusions.",
+            "Effect of feature normalization on CKA-RBF bandwidth interpretation.",
+            "Stability of aggregation-aware calibration with small K (only scalar case is analyzed).",
+            "Comparison of aggregation operators (mean, top-k mean) beyond max."
+          ],
+          "statistical_significance": "Permutation p-values reported with Benjamini-Hochberg correction; super-uniformity formally established. However, confidence intervals on calibrated effect sizes (e.g., across random seeds or bootstrap on n) are not reported in main figures.",
+          "better_significance_test_or_confidence_interval": [
+            "Add bootstrap confidence intervals on calibrated scores for PRH plots.",
+            "Report regression slopes with confidence intervals to quantify scaling trends formally.",
+            "Use restricted permutations to test robustness under potential WIT topic-clustering structure."
+          ],
+          "hyperparameter_clarity": "K=200 permutations, α=0.05, k=10 for neighborhood metrics are clearly stated; RBF bandwidth values (0.1, 0.5, 2.0, 5.0) are stated but not justified relative to feature scales.",
+          "negative_results_discussed": "partial",
+          "possible_confounders": [
+            "Within-family layer correlations make the effective number of comparisons smaller than M=L_A·L_B, possibly under-stating depth confounding (or over-stating it depending on framing).",
+            "n=1024 places experiments in high-d/n regime where calibration corrections are large; conclusions may differ with larger n.",
+            "Feature norms differ across models, affecting RBF kernel bandwidth interpretation in F.9.",
+            "WIT samples may have topic/group clustering violating strict exchangeability.",
+            "Modality choice: image-text vs video-text with limited number of video encoders limits generalizability."
+          ],
+          "confounder_reduction_alternatives": [
+            "Use restricted/block permutations to address potential clustering in WIT.",
+            "Repeat PRH analysis at multiple sample sizes (e.g., 256, 1024, 4096) to verify conclusions are not n-dependent.",
+            "Normalize features before applying RBF kernels and use median-heuristic bandwidths in F.9.",
+            "Include more video encoder families (V-JEPA, InternVideo) to strengthen video-language findings."
+          ],
+          "reproducibility_score_1_to_10": 8,
+          "suggestions_for_improving_reproducibility": [
+            "Specify exact embedding extraction (layer indices, pooling) for each model family.",
+            "Provide random seeds used for permutation sampling and the WIT subsampling.",
+            "Document RBF bandwidth selection criterion and feature normalization choices.",
+            "Release computed similarity matrices and null distributions alongside code to enable verification."
+          ]
+        }
+      },
+      "usage": {
+        "input_tokens": 12446,
+        "output_tokens": 4516,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 110460
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_7": {
+      "parsed": {
+        "strengths": [
+          "Identifies and clearly characterizes two real, important confounders (width-driven O(d/n) null baselines and depth-driven look-elsewhere inflation) that undermine cross-scale representational similarity comparisons.",
+          "Proposes a unified, metric-agnostic permutation-based calibration framework with finite-sample super-uniformity guarantees (Lemma D.2, Corollary 5.1) and an aggregation-aware extension that correctly addresses the maxT-style inflation at the level of the reported statistic.",
+          "Theoretical results (Propositions 4.1, 4.2, D.6, D.9) are correct, clearly stated, and directly motivate the empirical methodology.",
+          "Empirical validation is thorough: controlled synthetic Type-I/power experiments across multiple metric families and noise distributions, agreement with Murphy et al.'s analytical debiased CKA, and large-scale PRH re-evaluation across 204 vision-language pairs and a video-language extension.",
+          "Robustness ablations across α, K, neighborhood size k, and RBF bandwidth strengthen the central qualitative finding that global spectral scaling vanishes after calibration while local neighborhood scaling persists.",
+          "Provides clean pseudocode (Algorithms 1, 2) and released code, lowering adoption barriers; likely to become a community-standard practice for similarity-based comparisons.",
+          "The reframing into the Aristotelian Representation Hypothesis (topological rather than metric agreement) is a substantively meaningful and defensible refinement of an influential prior claim."
+        ],
+        "weaknesses": [
+          "On the actual PRH data, calibrated CKA is not directly compared against existing analytical bias corrections (Murphy et al., Chun et al., or Song et al.'s unbiased CKA); the agreement is shown only on synthetic data, leaving open whether the disappearance of global convergence is specific to the permutation null.",
+          "The strong-form 'convergence' language in the Aristotelian Representation Hypothesis is not operationally defined; calibrated mKNN values remain modest (~0.10-0.20) with gradual upward trends, evidence consistent with persistent alignment but not strong-sense convergence to a shared limit.",
+          "The 'topological vs metric' interpretation rests largely on small-bandwidth (σ=0.1) CKA-RBF showing no calibrated alignment, but at σ=0.1 raw scores saturate near 1.0, confounding the interpretation; no normalization analysis or alternative test (e.g., local distance rank correlation, local Procrustes) is provided.",
+          "Missing baselines on PRH: no untrained/random-model controls, no within-modality (vision-vision, language-language) controls, and no direct comparison with Ding et al. (2021)'s permutation-based similarity testing.",
+          "Confidence intervals/bootstrap variability on calibrated scores and quantitative slopes for the 'scaling trend' are not reported in main figures, making claims like 'retains scaling' versus 'flattens' somewhat qualitative.",
+          "Sample size n=1024 places experiments in a high d/n regime where calibration corrections are largest; robustness to larger n on actual model data is not demonstrated.",
+          "Video-language extension relies on a single encoder family (VideoMAE, three sizes), and the 'bottleneck' interpretation of smaller encoders is speculative.",
+          "The novelty is primarily a synthesis of standard randomization-inference tools (permutation tests, maxT correction) adapted to representational similarity; while the application and unification are valuable, the underlying statistical machinery is classical."
+        ],
+        "fatal_flaws": [],
+        "minor_issues": [
+          "The informal claim that CKA's null baseline scales as O(d/n) glosses over concentration of the denominator (||Σ_XX||_F · ||Σ_YY||_F); only the numerator energy is formally derived.",
+          "The calibrated score s_cal is α-dependent and not monotone-invariant while p-values are; this asymmetry deserves more explicit discussion to avoid misinterpretation of figures.",
+          "RBF bandwidths in the locality analysis (σ ∈ {0.1, 0.5, 2.0, 5.0}) are not justified relative to feature scales; median-heuristic comparison would clarify.",
+          "Exchangeability under H0 (Assumption 3.1) may be mildly violated by topic/group structure in WIT; restricted permutations are mentioned in the limitations but not empirically tested.",
+          "Choice of distance for k-NN (Euclidean vs cosine) and effect of feature normalization on mKNN/CKA-RBF conclusions are not ablated.",
+          "Some figures would benefit from explicit reporting of regression slopes with confidence intervals for the scaling trends.",
+          "The framing implicitly acknowledges but could state more prominently that Huh et al.'s headline mKNN result is preserved (and only their global-CKA claim is overturned).",
+          "Typo/citation oddity: 'Aristotle, ca. 350 B.C.E' citation is stylistic but slightly awkward as a formal reference."
+        ],
+        "questions_for_authors": [
+          "On the actual PRH data, how does calibrated CKA compare to Murphy et al.'s debiased CKA, Chun et al.'s dep-cols CKA, and Song et al.'s unbiased CKA? Does the disappearance of global scaling reproduce under these analytical corrections?",
+          "Can you provide quantitative slopes (with confidence intervals) of calibrated mKNN vs. language model capability across families to substantiate the 'scaling trend persists' claim?",
+          "What do calibrated scores look like for untrained/randomly initialized vision or language models as baseline controls?",
+          "How sensitive are the locality conclusions (Section F.9) to feature normalization and median-heuristic RBF bandwidth selection? Could the σ=0.1 result reflect kernel saturation rather than absence of metric agreement?",
+          "Does the local-vs-global pattern persist at larger n (e.g., 4096, 8192), where d/n is smaller and width confounding is intrinsically milder?",
+          "Have you tested restricted/block permutations to address possible topic clustering in WIT, and do results change?",
+          "Could you complement the topological-vs-metric claim with a direct test such as local distance rank correlation or local Procrustes within k-neighborhoods?",
+          "How would you formally define 'convergence' in the Aristotelian Representation Hypothesis (e.g., a limit object, a slope threshold, or a fixed-point characterization)?"
+        ],
+        "recommendation": "accept",
+        "recommendation_rationale": "The paper identifies real, well-characterized confounders in representational similarity comparisons and provides a principled, metric-agnostic permutation-based calibration framework with sound theoretical guarantees and broad empirical validation. The re-evaluation of the Platonic Representation Hypothesis is thorough and yields a meaningful conceptual refinement (the Aristotelian Representation Hypothesis), supported by consistent evidence across model families, modalities, metrics, and design choices. The methodological contributions are largely a careful synthesis of classical randomization-inference tools rather than fundamentally new statistical theory, and several interpretive claims—particularly 'convergence' language and the topological-vs-metric distinction—are somewhat over-stated and would benefit from additional baselines (untrained models, within-modality controls), direct comparisons with existing analytical debiasing methods on the actual PRH data, and quantitative slope analyses. Nevertheless, the work is technically sound, clearly written, well-engineered, and likely to influence reporting practices in representation similarity and PRH-style scaling studies. These concerns are addressable with revisions rather than fatal.",
+        "confidence_1_to_5": 4
+      },
+      "usage": {
+        "input_tokens": 14353,
+        "output_tokens": 2683,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 110460
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_8": {
+      "parsed": {
+        "summary_of_paper": "The paper identifies two systematic confounders that distort representational similarity comparisons across neural networks: (i) a width-driven non-zero null baseline for spectral metrics like CKA that scales as O(d/n), and (ii) a depth-driven multiple-comparisons inflation when summarizing layer-pair similarities via max/top-k operators. The authors derive these effects theoretically (Propositions 4.1, 4.2, and a sub-Gaussian maximal inequality for the depth confounder) and propose a unified, metric-agnostic permutation-based null-calibration framework. The framework transforms any raw similarity into a bounded calibrated effect size with finite-sample super-uniform p-values, and an aggregation-aware variant correctly calibrates the entire reported summary statistic by applying consistent permutations across layers.\n\nThe authors then revisit the Platonic Representation Hypothesis (PRH) using their calibration. Across 204 vision–language model pairs (and a video–language extension), the global spectral convergence trend in raw CKA largely vanishes after calibration, whereas local neighborhood metrics (mKNN, cycle-kNN, CKNNA) retain a robust scaling trend. A locality analysis (varying mKNN's k and CKA-RBF's bandwidth) suggests that the persistent alignment is topological (neighbor identity) rather than metric (exact local distances), motivating a refined claim: the Aristotelian Representation Hypothesis, that networks converge to shared local neighborhood relationships.",
+        "main_strengths": [
+          "Identifies and clearly characterizes two real and important confounders (width-driven O(d/n) null baselines and depth-driven look-elsewhere inflation) that undermine cross-scale representational similarity comparisons.",
+          "Provides a unified, metric-agnostic permutation calibration framework with finite-sample super-uniformity guarantees (Lemma D.2, Corollary 5.1) and an aggregation-aware extension that addresses maxT-style inflation at the level of the reported statistic, not the entry-wise level.",
+          "The theoretical results (Propositions 4.1, 4.2, D.6, D.9) are correct, clearly stated, and tightly connected to the empirical methodology.",
+          "Empirical validation is thorough: controlled synthetic Type-I/power experiments across multiple metric families and noise distributions, agreement with Murphy et al.'s analytical debiased CKA, a large-scale PRH re-evaluation across 204 vision–language pairs, and a video–language extension.",
+          "Robustness ablations across α, permutation budget K, neighborhood size k, and RBF bandwidth strengthen the central qualitative finding that global spectral scaling vanishes after calibration while local neighborhood scaling persists.",
+          "Clean pseudocode (Algorithms 1, 2) and released code lower adoption barriers; the framework is practically usable and likely to influence reporting practices in similarity-based comparison studies.",
+          "The reframing into the Aristotelian Representation Hypothesis (topological rather than metric agreement) is a substantively meaningful and defensible refinement of an influential prior claim."
+        ],
+        "main_weaknesses": [
+          "On the actual PRH data, calibrated CKA is not directly compared against existing analytical bias corrections (Murphy et al., Chun et al., Song et al.'s unbiased CKA). The agreement is shown only on synthetic data, leaving open whether the disappearance of global convergence is specific to the permutation null or holds under analytical debiasing.",
+          "The strong-form 'convergence' language in the Aristotelian Representation Hypothesis is not operationally defined. Calibrated mKNN values remain modest (~0.10–0.20) with gradual upward trends; this is evidence consistent with persistent alignment but not strong-sense convergence to a shared limit.",
+          "The 'topological vs metric' interpretation rests largely on small-bandwidth (σ=0.1) CKA-RBF showing no calibrated alignment, but at σ=0.1 raw scores saturate near 1.0, which confounds the interpretation. No normalization analysis or alternative direct test (e.g., local distance rank correlation, local Procrustes within k-neighborhoods) is provided.",
+          "Missing baselines on PRH: no untrained/randomly-initialized model controls, no within-modality (vision–vision, language–language) controls, and no direct comparison with Ding et al. (2021)'s permutation-based similarity testing.",
+          "Confidence intervals/bootstrap variability on calibrated scores and quantitative slopes for the 'scaling trend persists' versus 'flattens' claims are not reported in main figures, leaving these claims somewhat qualitative.",
+          "Sample size n=1024 places PRH experiments in a high d/n regime where calibration corrections are largest. Robustness to larger n on actual model data is not demonstrated.",
+          "The video–language extension relies on a single encoder family (VideoMAE, three sizes); the 'bottleneck' interpretation of smaller encoders is speculative without further encoder families.",
+          "Methodologically, the contribution is primarily a careful synthesis of standard randomization-inference tools (permutation tests, maxT correction) adapted to representational similarity; the underlying statistical machinery is classical, even though the application and unification are valuable."
+        ],
+        "detailed_comments": [
+          "Section 4.1: The informal claim that linear CKA's null baseline scales as O(d/n) glosses over the behavior of the denominator (||Σ_XX||_F · ||Σ_YY||_F). Only the numerator energy ||C̃||_F^2 is formally derived. A short calculation or appeal to standard concentration results for the denominator would tighten the argument.",
+          "Section 5.1: The asymmetry between calibrated scores (α-dependent, not monotone-invariant) and p-values (rank-based, monotone-invariant) is acknowledged briefly but deserves more emphasis. Readers comparing the calibrated effect-size plots across metrics could be misled if they do not internalize this distinction.",
+          "Section 6.3 and Figures 6, 7: The qualitative judgments 'no systematic increase with scale' (global) versus 'retains alignment trend' (local) would be much more convincing with regression slopes and confidence intervals or a formal scaling-trend test. Without this, the visual differences are real but their magnitude is hard to assess.",
+          "Section F.9 (locality analysis): The choice of RBF bandwidths σ ∈ {0.1, 0.5, 2.0, 5.0} is not justified relative to the feature scales of the underlying representations. Reporting median-heuristic bandwidths or feature norm statistics would clarify whether σ=0.1 reflects an extremely under-smoothed kernel rather than a 'truly local' geometric probe. As written, the 'topological vs metric' interpretation is suggestive but not airtight.",
+          "Aggregation-aware calibration: The illustration that naive entry-wise calibration still inflates the max (Figure 5) is a particularly useful and clarifying result; this should perhaps be highlighted more prominently in the main text as it directly contradicts a natural practitioner instinct.",
+          "Section 6.3: Huh et al.'s headline mKNN scaling result is essentially preserved after calibration; only the global CKA claim is overturned. This nuance should be stated more prominently to give an accurate accounting of what the present work refines versus refutes.",
+          "Section A (Limitations): The mention of restricted permutations under non-exchangeable structure (e.g., topic clusters in WIT) is appropriate but is not empirically tested. WIT in particular has well-known topic structure, and a small ablation with block-restricted permutations would meaningfully strengthen Section 6.3.",
+          "Choice of distance for mKNN (Euclidean versus cosine), as well as feature normalization choices, can materially affect both spectral and neighborhood metrics. An ablation would address an obvious practitioner concern.",
+          "The Aristotle reference is stylistically charming but the in-text citation 'Aristotle, ca. 350 B.C.E' is slightly awkward as a formal bibliographic reference; consider standardizing.",
+          "Figure 2(a) is somewhat dense; the labeling of x/y axes and the relationship between subpanels could be clarified in the caption to make the visual claim about width inflation more legible at a glance."
+        ],
+        "questions_for_authors": [
+          "On the actual PRH data, how does calibrated CKA compare to Murphy et al.'s debiased CKA, Chun et al.'s dep-cols CKA, and Song et al.'s unbiased CKA? Does the disappearance of global scaling reproduce under these analytical corrections, or is it specific to the permutation null?",
+          "Can you provide quantitative slopes (with confidence intervals) of calibrated mKNN versus language model capability for each vision family, to substantiate the 'scaling trend persists' claim quantitatively rather than visually?",
+          "What do calibrated CKA and mKNN look like for untrained or randomly initialized vision/language models as baseline controls, and for within-modality comparisons (vision–vision, language–language)?",
+          "How sensitive are the locality conclusions (Section F.9) to feature normalization and to median-heuristic RBF bandwidth selection? Could the σ=0.1 result reflect kernel saturation rather than absence of metric agreement?",
+          "Does the local-vs-global pattern persist at substantially larger n (e.g., 4096, 8192), where d/n is smaller and width confounding is intrinsically milder? This would help distinguish 'calibration removes spurious convergence' from 'small-n regime artifact'.",
+          "Have you tested restricted/block permutations to address possible topic clustering in WIT? Do results change materially?",
+          "Could you complement the topological-vs-metric claim with a direct test such as local distance rank correlation or local Procrustes alignment within k-neighborhoods?",
+          "How would you formally define 'convergence' in the Aristotelian Representation Hypothesis (e.g., a limit object, a slope threshold for scaling, or a fixed-point characterization)? Without such a definition, the hypothesis risks remaining qualitative.",
+          "For the video–language extension, would additional video encoder families (e.g., VideoSwin, V-JEPA) corroborate the 'smaller encoders act as a bottleneck' interpretation?"
+        ],
+        "suggestions_for_improvement": [
+          "Add a direct comparison on the actual PRH data between calibrated CKA and existing analytical debiasing methods (Murphy et al., Chun et al., unbiased CKA). This would substantially strengthen the claim that global convergence is a confounding artifact rather than a permutation-specific phenomenon.",
+          "Include untrained-model and within-modality baselines on the WIT/PRH setup to anchor the magnitude of calibrated scores.",
+          "Report regression slopes with bootstrap confidence intervals for calibrated alignment versus model capability, and add a formal scaling-trend test (e.g., null of zero slope) to make the local-vs-global contrast quantitative.",
+          "Strengthen the topological-vs-metric distinction by adding a direct probe such as local distance rank correlation (Spearman of distances within k-neighborhoods) or local Procrustes, instead of relying solely on small-σ CKA-RBF behavior.",
+          "Justify RBF bandwidth choices via median heuristic or feature-norm statistics, and ablate over feature normalization and distance metric (Euclidean vs cosine) for mKNN.",
+          "Operationalize 'convergence' in the Aristotelian Representation Hypothesis (e.g., a specified scaling-law form, a limiting object, or an explicit non-trivial slope criterion) so the hypothesis becomes empirically falsifiable.",
+          "Test restricted/block permutations on WIT to address possible non-exchangeability from topic clustering.",
+          "Repeat the PRH experiment at larger n (where computationally feasible) to demonstrate robustness outside the high-d/n regime.",
+          "More clearly emphasize in the main text that Huh et al.'s mKNN-based convergence finding is largely preserved after calibration, so that readers do not misread the contribution as overturning PRH wholesale.",
+          "Add a brief subsection in the main text discussing the α-dependence and non-monotone-invariance of the calibrated score s_cal, alongside the monotone-invariance of p-values, to prevent misinterpretation."
+        ],
+        "overall_recommendation": "Accept (with revisions). The paper makes a principled, technically sound, and broadly useful methodological contribution and applies it to a high-profile open question with substantive findings. Several interpretive claims would be strengthened by additional baselines and quantitative analyses, but no concern rises to the level of a fatal flaw.",
+        "reviewer_confidence_1_to_5": 4,
+        "score_card": {
+          "soundness_1_to_4": 3,
+          "presentation_1_to_4": 3,
+          "contribution_1_to_4": 3,
+          "overall_1_to_10": 7
+        }
+      },
+      "usage": {
+        "input_tokens": 5981,
+        "output_tokens": 4493,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 110460
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_9": {
+      "parsed": {
+        "hallucinated_comments": [],
+        "misrepresentations": [
+          "The draft states that Huh et al.'s mKNN-based convergence finding is 'essentially preserved' / 'largely preserved' after calibration. This is broadly correct but slightly overstates the nuance: the paper shows local neighborhood alignment persists after calibration, but does not explicitly verify that Huh et al.'s specific mKNN scaling claim quantitatively survives — the trend is preserved qualitatively in some families (DINOv2, CLIP) but flatter in others (MAE, INet21K)."
+        ],
+        "missed_strengths": [
+          "The paper makes a clear conceptual distinction between rank-based p-values (monotone-invariant) and effect-size calibrated scores (α-dependent by design), which is a genuinely thoughtful design choice worth crediting.",
+          "Table 1 in Appendix B provides a clean positioning relative to prior debiasing work, clarifying that prior methods are metric-specific while this framework is metric-agnostic and also handles aggregation — a strength the draft only partially credits."
+        ],
+        "missed_weaknesses": [
+          "Proposition 4.1 only derives the expected null energy E[||C̃||_F^2], not the expectation of CKA itself; the O(d/n) baseline claim for CKA is informal because CKA is a ratio of random quantities and E[ratio] ≠ ratio of expectations. The draft mentions this in detailed comments but could elevate it to a more substantive soundness concern.",
+          "The sub-Gaussian uniform tail assumption (Assumption D.5) is stated as covering 'common bounded metrics' via Hoeffding, but the constant σ ≤ (s_max − s_min)/2 is loose and may not reflect realistic tail behavior of CKA across correlated layer pairs; the resulting √log M bound is therefore qualitative rather than tight."
+        ],
+        "too_strong_claims": [
+          "Calling the methodological contribution 'primarily a careful synthesis of standard randomization-inference tools' may understate the novelty of the aggregation-aware variant in this specific application context; consider softening.",
+          "The claim that 'no concern rises to the level of a fatal flaw' is appropriate but should be paired with explicit acknowledgement that the central interpretive claim (topological vs metric) rests on one ablation and would benefit from corroborating evidence."
+        ],
+        "non_actionable_criticisms": [
+          "The comment about the Aristotle citation being 'stylistically charming' but 'awkward' is minor and borderline non-actionable; either drop or convert to a concrete suggestion (e.g., use a standard edition citation)."
+        ],
+        "tone_issues": [],
+        "consistency_between_summary_weaknesses_and_recommendation": "consistent",
+        "external_novelty_claims_supported": "partial",
+        "corrections_needed": [
+          "Soften the 'largely preserved' framing of Huh et al.'s mKNN result to acknowledge that the trend persists qualitatively but with family-dependent strength.",
+          "Add explicit weakness noting that Proposition 4.1 derives null energy of the cross-covariance, not of CKA directly, so the O(d/n) baseline statement for CKA is informal (ratio of random quantities).",
+          "Acknowledge as a strength the explicit design rationale for using a non-monotone-invariant effect size alongside monotone-invariant p-values.",
+          "Credit Table 1 / Appendix B for the explicit positioning relative to prior metric-specific debiasing work.",
+          "Drop or rephrase the Aristotle citation stylistic comment to be either concrete or removed.",
+          "Soften the characterization of the contribution as 'primarily a synthesis' to avoid undervaluing the aggregation-aware extension."
+        ]
+      },
+      "usage": {
+        "input_tokens": 4823,
+        "output_tokens": 1304,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 110460
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_10": {
+      "parsed": {
+        "final_review": {
+          "summary_of_paper": "The paper identifies two systematic confounders that distort representational similarity comparisons across neural networks: (i) a width-driven non-zero null baseline for spectral metrics like CKA that scales as O(d/n), and (ii) a depth-driven multiple-comparisons inflation when summarizing layer-pair similarities via max/top-k operators. The authors derive these effects theoretically (Propositions 4.1, 4.2, and a sub-Gaussian maximal inequality for the depth confounder) and propose a unified, metric-agnostic permutation-based null-calibration framework. The framework transforms any raw similarity into a bounded calibrated effect size with finite-sample super-uniform p-values, and an aggregation-aware variant calibrates the entire reported summary statistic by applying consistent permutations across layers.\n\nThe authors then revisit the Platonic Representation Hypothesis (PRH) using their calibration. Across 204 vision–language model pairs (plus a video–language extension), the global spectral convergence trend in raw CKA largely vanishes after calibration, whereas local neighborhood metrics (mKNN, cycle-kNN, CKNNA) retain a scaling trend (with family-dependent strength). A locality analysis (varying mKNN's k and CKA-RBF's bandwidth) suggests that the persistent alignment is topological (neighbor identity) rather than metric (exact local distances), motivating a refined claim: the Aristotelian Representation Hypothesis, that networks converge to shared local neighborhood relationships.",
+          "main_strengths": [
+            "Identifies and clearly characterizes two real and important confounders (width-driven O(d/n) null baselines and depth-driven look-elsewhere inflation) that undermine cross-scale representational similarity comparisons.",
+            "Provides a unified, metric-agnostic permutation calibration framework with finite-sample super-uniformity guarantees (Lemma D.2, Corollary 5.1), and a non-trivial aggregation-aware extension that calibrates the entire reported max/top-k statistic via consistent layer-wise permutations rather than per-entry calibration.",
+            "Theoretical results (Propositions 4.1, 4.2, D.6, D.9) are correct, clearly stated, and tightly connected to the empirical methodology.",
+            "Thoughtful design distinction between rank-based, monotone-invariant permutation p-values and an explicitly non-monotone-invariant calibrated effect size, with a clear rationale for why a rank-invariant calibration cannot correct scale-dependent baselines.",
+            "Table 1 (Appendix B) provides a clean positioning against prior debiasing approaches (Murphy et al., Chun et al., Cui et al., Diedrichsen et al., Cai et al., Smilde et al.), making explicit that prior corrections are metric-specific while this framework is metric-agnostic and additionally handles selection inflation.",
+            "Empirical validation is thorough: controlled synthetic Type-I/power experiments across multiple metric families and noise distributions, agreement with Murphy et al.'s analytical debiased CKA on synthetic data, a large-scale PRH re-evaluation across 204 vision–language pairs, and a video–language extension.",
+            "Robustness ablations across α, permutation budget K, neighborhood size k, and RBF bandwidth strengthen the central qualitative finding that global spectral scaling vanishes after calibration while local neighborhood scaling persists.",
+            "Clean pseudocode (Algorithms 1, 2) and released code lower adoption barriers; the framework is practically usable and likely to influence reporting practices.",
+            "The reframing into the Aristotelian Representation Hypothesis (topological rather than metric agreement) is a substantively meaningful refinement of an influential prior claim."
+          ],
+          "main_weaknesses": [
+            "On the actual PRH data, calibrated CKA is not directly compared against existing analytical bias corrections (Murphy et al., Chun et al., Song et al.'s unbiased CKA). The agreement is shown only on synthetic data, leaving open whether the disappearance of global convergence is specific to the permutation null or also holds under analytical debiasing.",
+            "Proposition 4.1 derives the expected null Frobenius energy E[||C̃||_F^2] of the cross-covariance, but the O(d/n) baseline statement for CKA itself is informal: CKA is a ratio of random quantities and E[ratio] ≠ ratio of expectations, so the headline scaling claim for CKA is justified heuristically rather than proved.",
+            "Assumption D.5's sub-Gaussian parameter σ ≤ (s_max−s_min)/2 from Hoeffding is loose and likely does not reflect realistic right-tail behavior of CKA across correlated layer pairs, so the √log M depth inflation bound is qualitatively informative but not tight.",
+            "The strong-form 'convergence' language in the Aristotelian Representation Hypothesis is not operationally defined. Calibrated mKNN values remain modest (~0.10–0.20) with gradual upward trends consistent with persistent alignment but not strong-sense convergence to a shared limit.",
+            "The 'topological vs metric' interpretation rests largely on small-bandwidth (σ=0.1) CKA-RBF showing no calibrated alignment, but at σ=0.1 raw scores saturate near 1.0, which complicates the interpretation. No direct test (e.g., local distance rank correlation or local Procrustes within k-neighborhoods) is provided.",
+            "Missing baselines on PRH: no untrained/randomly-initialized model controls, no within-modality (vision–vision, language–language) controls, and no direct comparison with Ding et al. (2021)'s permutation-based similarity testing.",
+            "Confidence intervals/bootstrap variability on calibrated scores and quantitative slopes for the 'scaling trend persists' versus 'flattens' claims are not reported, leaving these claims qualitative.",
+            "Sample size n=1024 places PRH experiments in a high-d/n regime where calibration corrections are largest. Robustness to larger n on actual model data is not demonstrated.",
+            "The video–language extension relies on a single encoder family (VideoMAE, three sizes); the 'bottleneck' interpretation of smaller encoders is speculative without further encoder families."
+          ],
+          "detailed_comments": [
+            "Section 4.1: The informal claim that linear CKA's null baseline scales as O(d/n) glosses over (i) the behavior of the denominator (||Σ_XX||_F · ||Σ_YY||_F) and (ii) the fact that CKA is a ratio of random quantities, so the energy calculation does not directly yield E[CKA] under H_0. A short additional argument (e.g., concentration of the denominator) would tighten the claim.",
+            "Section 5.1: The asymmetry between calibrated scores (α-dependent, not monotone-invariant) and p-values (rank-based, monotone-invariant) is acknowledged briefly but deserves more emphasis to prevent readers from misinterpreting effect-size plots across metrics.",
+            "Section 6.3 and Figures 6, 7: The qualitative judgments 'no systematic increase with scale' (global) versus 'retains alignment trend' (local) would be more convincing with regression slopes, confidence intervals, or a formal scaling-trend test. Note that the local trend is clearer for some vision families (DINOv2, CLIP) than for others (MAE, INet21K).",
+            "Section F.9 (locality analysis): The RBF bandwidths σ ∈ {0.1, 0.5, 2.0, 5.0} are not justified relative to the feature scales of the underlying representations. Reporting median-heuristic bandwidths or feature norm statistics would clarify whether σ=0.1 reflects an extremely under-smoothed kernel rather than a 'truly local' geometric probe.",
+            "Aggregation-aware calibration: The illustration that naive entry-wise calibration still inflates the max (Figure 5) is a particularly clarifying result and could be highlighted more prominently as it directly contradicts a natural practitioner instinct.",
+            "Section 6.3: The framing should make clear that Huh et al.'s local mKNN scaling result is qualitatively preserved after calibration (with family-dependent strength), while their global CKA-based convergence claim is the one overturned. This nuance is important for an accurate accounting of what the work refines versus refutes.",
+            "Section A (Limitations): The mention of restricted permutations under non-exchangeable structure (e.g., topic clusters in WIT) is appropriate but not empirically tested; a block-restricted permutation ablation would strengthen Section 6.3.",
+            "Choice of distance for mKNN (Euclidean vs cosine) and feature normalization can materially affect both spectral and neighborhood metrics; an ablation would address an obvious practitioner concern.",
+            "Figure 2(a) is somewhat dense; axis labels and the relationship between subpanels could be clarified to make the visual claim about width inflation more legible."
+          ],
+          "questions_for_authors": [
+            "On the actual PRH data, how does calibrated CKA compare to Murphy et al.'s debiased CKA, Chun et al.'s dep-cols CKA, and Song et al.'s unbiased CKA? Does the disappearance of global scaling reproduce under these analytical corrections, or is it specific to the permutation null?",
+            "Can you provide quantitative slopes (with confidence intervals) of calibrated mKNN versus language model capability for each vision family, to substantiate the 'scaling trend persists' claim quantitatively, especially given the apparent family dependence?",
+            "Beyond the energy calculation in Proposition 4.1, can you provide a direct argument (or empirical check on real model representations) that the null expectation of CKA itself scales as O(d/n)?",
+            "What do calibrated CKA and mKNN look like for untrained or randomly initialized vision/language models as baseline controls, and for within-modality comparisons (vision–vision, language–language)?",
+            "How sensitive are the locality conclusions (Section F.9) to feature normalization and to median-heuristic RBF bandwidth selection? Could the σ=0.1 result reflect kernel saturation rather than absence of metric agreement?",
+            "Does the local-vs-global pattern persist at substantially larger n (e.g., 4096, 8192), where d/n is smaller and width confounding is intrinsically milder?",
+            "Have you tested restricted/block permutations to address possible topic clustering in WIT? Do results change materially?",
+            "Could you complement the topological-vs-metric claim with a direct test such as local distance rank correlation or local Procrustes alignment within k-neighborhoods?",
+            "How would you formally define 'convergence' in the Aristotelian Representation Hypothesis (e.g., a limit object, a slope threshold for scaling, or a fixed-point characterization)?",
+            "For the video–language extension, would additional video encoder families (e.g., VideoSwin, V-JEPA) corroborate the 'smaller encoders act as a bottleneck' interpretation?"
+          ],
+          "suggestions_for_improvement": [
+            "Add a direct comparison on the actual PRH data between calibrated CKA and existing analytical debiasing methods (Murphy et al., Chun et al., unbiased CKA). This would substantially strengthen the claim that global convergence is a confounding artifact rather than a permutation-specific phenomenon.",
+            "Tighten Section 4.1 by either (a) deriving the null expectation of CKA directly or (b) clearly labeling the O(d/n) statement as a heuristic for the numerator energy, with empirical verification on synthetic data of E[CKA] under H_0.",
+            "Include untrained-model and within-modality baselines on the WIT/PRH setup to anchor the magnitude of calibrated scores.",
+            "Report regression slopes with bootstrap confidence intervals for calibrated alignment versus model capability, and add a formal scaling-trend test (e.g., null of zero slope) to make the local-vs-global contrast quantitative; explicitly acknowledge vision-family-dependent strength of the local trend.",
+            "Strengthen the topological-vs-metric distinction by adding a direct probe such as local distance rank correlation (Spearman of distances within k-neighborhoods) or local Procrustes, instead of relying solely on small-σ CKA-RBF behavior.",
+            "Justify RBF bandwidth choices via median heuristic or feature-norm statistics, and ablate over feature normalization and distance metric (Euclidean vs cosine) for mKNN.",
+            "Operationalize 'convergence' in the Aristotelian Representation Hypothesis (e.g., a specified scaling-law form, a limiting object, or an explicit non-trivial slope criterion) so the hypothesis becomes empirically falsifiable.",
+            "Test restricted/block permutations on WIT to address possible non-exchangeability from topic clustering.",
+            "Repeat the PRH experiment at larger n where computationally feasible to demonstrate robustness outside the high-d/n regime.",
+            "Emphasize more clearly in the main text that Huh et al.'s mKNN-based local convergence finding is qualitatively preserved after calibration, so that readers do not misread the contribution as overturning PRH wholesale.",
+            "Add a brief subsection in the main text discussing the α-dependence and non-monotone-invariance of s_cal alongside the monotone-invariance of p-values."
+          ],
+          "overall_recommendation": "Accept (with revisions). The paper makes a principled, technically sound, and broadly useful methodological contribution and applies it to a high-profile open question with substantive findings. Several interpretive claims—particularly the topological-vs-metric distinction and the strong 'convergence' language—would benefit from additional baselines, direct probes, and quantitative analyses on real data, but no concern rises to the level of a fatal flaw.",
+          "reviewer_confidence_1_to_5": 4,
+          "score_card": {
+            "soundness_1_to_4": 3,
+            "presentation_1_to_4": 3,
+            "contribution_1_to_4": 3,
+            "overall_1_to_10": 7
+          }
+        },
+        "author_facing_improvement_checklist": [
+          "Compare calibrated CKA against Murphy et al., Chun et al., and unbiased CKA on actual PRH (image–text and video–text) data, not only synthetic.",
+          "Tighten the theoretical link between the null Frobenius energy (Proposition 4.1) and the null expectation of CKA itself (a ratio of random quantities); either prove a direct statement or label the O(d/n) baseline as heuristic and verify empirically.",
+          "Add untrained/randomly-initialized model controls and within-modality (vision–vision, language–language) controls to the PRH experiments.",
+          "Report regression slopes with bootstrap confidence intervals for calibrated alignment vs model capability, with a formal test of zero slope, and explicitly discuss the vision-family-dependent strength of the local trend.",
+          "Provide a direct test of the topological-vs-metric distinction (e.g., local distance rank correlation, local Procrustes within k-neighborhoods) rather than relying on small-σ CKA-RBF.",
+          "Justify RBF bandwidth and distance/normalization choices via median heuristic and feature-norm statistics; ablate Euclidean vs cosine for mKNN.",
+          "Operationalize 'convergence' in the Aristotelian Representation Hypothesis with a concrete falsifiable criterion.",
+          "Run block-restricted permutations on WIT to address potential non-exchangeability from topic clustering.",
+          "Where feasible, demonstrate robustness at larger n to show the local-vs-global pattern is not a small-sample artifact.",
+          "Add a main-text emphasis that Huh et al.'s local mKNN scaling claim is qualitatively preserved after calibration (with family-dependent strength), while their global CKA claim is overturned.",
+          "Add a clear main-text discussion of α-dependence and non-monotone-invariance of s_cal versus rank-invariance of p-values.",
+          "Improve clarity of Figure 2(a) labeling and consider highlighting Figure 5's entry-wise-calibration counterexample more prominently in the main text."
+        ],
+        "changes_from_draft": [
+          "Softened the claim that Huh et al.'s mKNN result is 'essentially preserved' to acknowledge that the local trend persists qualitatively but with vision-family-dependent strength.",
+          "Added explicit weakness that Proposition 4.1 derives the null energy of the cross-covariance, not of CKA itself, so the O(d/n) baseline statement for CKA is informal (ratio of random quantities).",
+          "Added explicit weakness that Assumption D.5's sub-Gaussian parameter from Hoeffding is loose, making the √log M depth bound qualitatively informative rather than tight.",
+          "Added as a strength the principled design choice of pairing rank-invariant p-values with an α-dependent, non-monotone-invariant calibrated effect size.",
+          "Added as a strength the explicit positioning against prior debiasing methods provided by Table 1 / Appendix B.",
+          "Removed the stylistic comment about the Aristotle citation as non-actionable.",
+          "Removed the framing of the contribution as 'primarily a synthesis of standard randomization-inference tools' to avoid undervaluing the aggregation-aware extension, and instead credited the aggregation-aware variant as a non-trivial extension.",
+          "Added new questions and improvement suggestions targeting the CKA-vs-energy distinction and direct topological-vs-metric probes.",
+          "Updated the overall recommendation rationale to explicitly note that key interpretive claims (topological vs metric, strong 'convergence' language) need corroborating evidence, while keeping the accept recommendation."
+        ]
+      },
+      "usage": {
+        "input_tokens": 6168,
+        "output_tokens": 6083,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 110460
+      },
+      "stop_reason": "end_turn"
+    }
+  },
+  "total_usage": {
+    "input_tokens": 70714,
+    "output_tokens": 47922,
+    "cache_creation_input_tokens": 243725,
+    "cache_read_input_tokens": 1895236
+  }
+}

@@ -1,0 +1,1122 @@
+{
+  "paper": {
+    "filename": "Effective_Reasoning_Chains_Reduce_Intrinsic_Dimensionality.pdf",
+    "path": "papers/accepted/Effective_Reasoning_Chains_Reduce_Intrinsic_Dimensionality.pdf",
+    "num_bytes": 2939314,
+    "input_mode": "pdf_document"
+  },
+  "config": {
+    "model": "claude-opus-4-7",
+    "effort": "high",
+    "web_search": true
+  },
+  "stages": {
+    "stage_0": {
+      "parsed": {
+        "title": "Effective Reasoning Chains Reduce Intrinsic Dimensionality",
+        "authors": [
+          "Archiki Prasad",
+          "Mandar Joshi",
+          "Kenton Lee",
+          "Mohit Bansal",
+          "Peter Shaw"
+        ],
+        "venue_hint": "ICML 2026 (Proceedings of the 43rd International Conference on Machine Learning)",
+        "field": "Natural Language Processing / LLM Reasoning / Analysis of Chain-of-Thought",
+        "abstract": "The paper proposes intrinsic dimensionality as a quantitative measure for characterizing the effectiveness of different chain-of-thought (CoT) reasoning strategies. By fixing the model architecture and varying the reasoning strategy used to generate training rationales, the authors show that effective reasoning strategies consistently reduce the intrinsic dimensionality (minimum number of trainable parameters, via LoRA, needed to reach a fixed performance threshold) of the task. On GSM8K with Gemma-3 1B and 4B, they find a strong inverse correlation between intrinsic dimensionality and generalization performance on in-distribution and out-of-distribution data, outperforming alternative metrics like length, token perplexity, and KL divergence.",
+        "sections": {
+          "introduction": "Motivates the question of when and why CoT reasoning is effective and which reasoning strategy is most effective. Existing explanations (structure, length, process reward models) are either qualitative or yield conflicting evidence. The authors propose intrinsic dimensionality as a principled, information-theoretic measure grounded in minimum description length, showing it strongly inversely correlates with generalization across many CoT variants on GSM8K with Gemma-3 1B/4B.",
+          "related_work": "Discusses prior analyses of CoT efficacy (Sprague et al., Wang et al., Li et al.) that are mostly non-quantifiable, and proxies for reasoning chain quality (self-consistency, review tokens, forking tokens, ROSCOE, ReCEval). Reviews intrinsic dimension literature (Li et al. 2018, Aghajanyan et al. 2021) and connections to LoRA and MDL. Distinguishes from data-manifold intrinsic dimension estimators.",
+          "method": "Defines intrinsic dimension d_int = min{d : A(d) >= tau}, where A(d) is the training accuracy of a model trained with d trainable parameters via LoRA, and tau is a common threshold across reasoning strategies. They sweep LoRA rank r and target modules (attention q/v, all attention, all MLP, all layers) to produce ~20-30 configurations uniformly spaced in log-parameter-count. Threshold tau is set as 90% of the maximum epoch-1 full-capacity training accuracy across strategies (with robustness to other thresholds tested).",
+          "theory": "Argues conceptually from Minimum Description Length: if a reasoning strategy effectively bridges input-to-answer logical gaps, the input-output mapping becomes more compressible, requiring fewer degrees of freedom (lower intrinsic dimension). LoRA serves as an upper-bound proxy for intrinsic dimensionality.",
+          "experiments": "Datasets: GSM8K training set used to generate 14 different reasoning strategies (No CoT, No CoT+extra tokens, Very Short CoT, Short CoT, Short CoT with 2/4/8 distractors, Gemma 27B CoT, Gemini CoT, Executed PoT, Simulated PoT, Plan and Solve, Critical CoT, High Review Ratio CoT). Evaluations on GSM8K test (ID) plus 5 OOD stress tests (GSM-Symbolic main/P1/P2, GSM-IC, GSM-Hard). Models: Gemma-3 1B and 4B, trained with LoRA over multiple parameter budgets. Compared metrics: intrinsic dimension, trajectory length, token perplexity, sequence KL divergence, LongPPL. Additional experiments on Reasoning Gym (algorithmic + cognitive tasks) and an experiment with 50% incorrect training reasoning chains.",
+          "results": "Intrinsic dimension Spearman rank correlation with overall accuracy: 0.93 (4B) and 0.75 (1B), both significant. Token PPL: 0.82 (4B), 0.63 (1B). KL divergence: -0.17 / -0.18 (essentially no predictive power). Length: 0.31 / 0.24 (weak). Robustness across thresholds (70%/80%/90% of epoch-1 train acc, 90% val acc) maintains correlations 0.72-0.94. Executed PoT achieves lowest intrinsic dim and best OOD performance. Larger models compress effective strategies more efficiently but show higher intrinsic dim for ineffective ones. Mixing 50% incorrect chains drastically increases intrinsic dim and reduces accuracy. Reasoning Gym shows intrinsic dim is best predictor across algorithmic and cognitive tasks (and notably, No CoT wins for cognitive tasks).",
+          "limitations": "Estimating intrinsic dimensionality requires many LoRA fine-tunes, making it computationally expensive and not directly optimizable. LoRA provides only an upper bound on true intrinsic dimensionality; the bound may be loose. The measure may reflect artifacts of specific model families or datasets.",
+          "conclusion": "Effective reasoning chains reduce intrinsic dimensionality, providing a principled, MDL-grounded quantitative predictor of generalization that outperforms perplexity, length, and KL alternatives. Future work includes more tractable proxies, alternative PEFT methods, and applying the framework to other post-training settings such as RL."
+        },
+        "main_claims": [
+          "Intrinsic dimensionality (minimum LoRA-trainable parameters needed to reach a fixed accuracy threshold) is a quantitative measure of reasoning strategy effectiveness.",
+          "Effective reasoning strategies reduce the intrinsic dimensionality of the learning task, despite producing longer outputs.",
+          "Intrinsic dimensionality strongly inversely correlates with generalization performance (ID and OOD) across CoT variants on GSM8K.",
+          "Intrinsic dimensionality is a substantially better predictor of generalization than length, token perplexity, KL divergence, or LongPPL.",
+          "Findings are robust to threshold choice and generalize across model sizes (Gemma-3 1B and 4B) and reasoning domains (math and Reasoning Gym tasks).",
+          "Executed Program-of-Thought (PoT) attains both the lowest intrinsic dimensionality and the best OOD generalization."
+        ],
+        "key_contributions": [
+          "Introducing intrinsic dimensionality (via LoRA sweeps) as a quantitative metric for evaluating CoT reasoning strategies.",
+          "An MDL-based theoretical framing connecting compressibility of input-output mappings to generalization in reasoning.",
+          "Empirical demonstration on 14 reasoning strategies, two Gemma-3 model sizes, and multiple OOD evaluation sets that intrinsic dimensionality strongly predicts generalization.",
+          "Comparative meta-evaluation against length, token perplexity, KL divergence, and LongPPL baselines.",
+          "Robustness analyses across threshold selection methods, training data correctness, and reasoning domains (Reasoning Gym)."
+        ],
+        "experimental_results": [
+          "Gemma-3 4B: intrinsic dim Spearman correlation 0.93 with overall accuracy (vs 0.82 token PPL, 0.31 length, -0.17 KL).",
+          "Gemma-3 1B: intrinsic dim Spearman correlation 0.75 (vs 0.63 token PPL, 0.24 length, -0.18 KL).",
+          "Executed PoT: lowest intrinsic dim (1.49M for 4B; 1.03M for 1B) and best OOD accuracy (43.40% on 4B).",
+          "Threshold robustness: correlations remain 0.72-0.94 across 70%/80%/90% epoch-1 train and 90% val thresholds.",
+          "Mixing 50% incorrect Short CoT chains increases intrinsic dim ~500x and drops accuracy by 12 points; for Gemma 27B CoT, ~125x increase and 12.8-point drop.",
+          "On Reasoning Gym algorithmic tasks: intrinsic dim correlation = 1.00 with overall accuracy; Executed PoT best (73.21 overall).",
+          "On Reasoning Gym cognitive tasks: No CoT achieves lowest intrinsic dim (0.40M) and best performance (49.82); intrinsic dim correlation = 1.00, while length and token PPL show -1.00.",
+          "LongPPL variants (K=64, K=256) correlate only 0.60-0.62 with generalization on 4B."
+        ],
+        "assumptions_and_limitations": [
+          "Uses LoRA as a proxy for intrinsic dimensionality; this provides only an upper bound and may be loose for some tasks.",
+          "Intrinsic dimension is computationally expensive to estimate, requiring many fine-tuning runs.",
+          "Training datasets differ slightly in size across reasoning strategies (6.2K-7.5K examples); authors argue (Spearman ~ -0.11, p>0.7) this does not drive results.",
+          "Restricted to two Gemma-3 model sizes and primarily one main domain (GSM8K), with limited additional Reasoning Gym evaluation.",
+          "Reasoning chains are produced by Gemma-3 27B and Gemini 2.5 Flash teachers; teacher choice may affect generated chain properties.",
+          "Threshold tau is the same absolute value across strategies, which the authors argue is needed for fair comparison but ignores ceiling differences.",
+          "Token perplexity baseline uses teacher-token likelihood of 1, not true teacher distribution, which may underestimate this baseline.",
+          "Results are correlational, not causal; the metric is not directly optimizable."
+        ],
+        "figures_tables": [
+          "Figure 1: Overview illustrating different reasoning strategies, the LoRA-sweep procedure to compute intrinsic dimension, and the inverse correlation with generalization.",
+          "Figure 2: Pareto frontier of training accuracy vs trainable parameters for Gemma-3 4B across strategies, showing threshold crossings at tau=63%.",
+          "Figure 3: Analogous Pareto frontier for Gemma-3 1B at tau=24.3%.",
+          "Table 1: Main 4B results across 14 strategies, with ID/OOD/Overall accuracy and four baseline metrics; reports Spearman correlations (intrinsic dim 0.93).",
+          "Table 2: Same as Table 1 for Gemma-3 1B (intrinsic dim correlation 0.75).",
+          "Table 3: Threshold robustness analysis showing correlations across four threshold choices.",
+          "Table 4: Reasoning Gym results for algorithmic and cognitive task categories with metric correlations.",
+          "Table 5: Effect of 50% incorrect chains on intrinsic dim and accuracy.",
+          "Table 6: Easy vs hard configurations for Reasoning Gym tasks.",
+          "Table 7: LongPPL comparison.",
+          "Tables 8-9: Detailed per-split accuracies for Gemma-3 4B and 1B."
+        ],
+        "equations_algorithms": [
+          "LoRA parameterization: W = W0 + BA, with params(r, L_LoRA) = 2 * L_LoRA * d_model * r.",
+          "Intrinsic dimension definition: d_int = min{d : A(d) >= tau}, with tau a common threshold across reasoning strategies.",
+          "Threshold selection heuristic: tau = 90% of maximum epoch-1 full-capacity training accuracy across strategies (avoiding overfitting/memorization contamination).",
+          "Sequence KL divergence baseline: average sequence-level negative log-likelihood (1/N) sum_i -log pi_theta(y_i | x_i).",
+          "Greedy LoRA configuration selection algorithm: for each target parameter count, choose target-module group and rank minimizing |actual - target| parameter count."
+        ]
+      },
+      "usage": {
+        "input_tokens": 354,
+        "output_tokens": 4275,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_1": {
+      "parsed": {
+        "field_and_subfield": "Natural Language Processing / Analysis and Interpretability of Large Language Model Reasoning (Chain-of-Thought)",
+        "problem_addressed": "Existing explanations of why some chain-of-thought (CoT) reasoning strategies generalize better than others are either qualitative (e.g., 'structure', 'coherence') or rely on quantitative proxies (length, perplexity, reward models) that show conflicting evidence. There is no principled, quantitative measure that reliably predicts the downstream generalization benefit of training on a given reasoning strategy.",
+        "research_question": "Can intrinsic dimensionality — the minimum number of trainable (LoRA) parameters needed to reach a fixed training-accuracy threshold — serve as a principled, quantitative predictor of which reasoning strategies will yield the best generalization when used as fine-tuning supervision?",
+        "one_paragraph_summary": "The paper proposes intrinsic dimensionality, estimated via LoRA fine-tuning sweeps, as a measure of how 'learnable' a chain-of-thought reasoning strategy is for a fixed base model. Holding the model and task questions constant while varying only the reasoning-chain format (No CoT, Short CoT, distractor-injected CoT, Executed PoT, Plan-and-Solve, Critical CoT, High-Review-Ratio CoT, etc.), the authors fine-tune Gemma-3 1B and 4B with LoRA configurations spanning ~20–30 trainable-parameter budgets, and define a strategy's intrinsic dimension as the smallest budget that achieves a common accuracy threshold. Across 14 reasoning strategies on GSM8K and five OOD math stress tests, intrinsic dimension shows a strong inverse correlation with overall accuracy (Spearman 0.93 on 4B; 0.75 on 1B), substantially exceeding length (0.31/0.24), token perplexity (0.82/0.63), KL divergence (≈0), and LongPPL (0.60–0.62). Results are robust to threshold choice, hold on Reasoning Gym algorithmic and cognitive tasks (where No-CoT wins for cognitive, consistent with prior findings), and degrade gracefully when training data correctness is corrupted. The authors connect their findings to the Minimum Description Length principle: effective reasoning chains make the input→answer mapping more compressible.",
+        "problem_statement": "Given multiple reasoning strategies that produce different rationales for the same set of problems, predict — without expensive test-time evaluation — which strategy will yield the best generalization when used as supervised fine-tuning data for a given LLM. The paper proposes intrinsic dimensionality (via LoRA sweeps) as such a predictor and validates it empirically.",
+        "main_contributions": [
+          "Reformulating intrinsic dimensionality (originally used to characterize models given fixed data) to instead characterize reasoning strategies given a fixed model, by varying the rationale format used as training supervision.",
+          "An operational definition and estimation procedure: d_int = min{d : A(d) ≥ τ}, computed via a log-spaced LoRA sweep over rank and target-module subsets, with a common threshold τ derived from epoch-1 full-capacity training accuracy.",
+          "An empirical demonstration on Gemma-3 1B/4B and 14 reasoning strategies that intrinsic dimensionality is a substantially stronger predictor of in- and out-of-distribution generalization than length, token perplexity, sequence KL divergence, or LongPPL.",
+          "Robustness studies covering threshold selection, training data correctness (mixed correct/incorrect chains), and a second domain (Reasoning Gym algorithmic and cognitive tasks).",
+          "An MDL-grounded conceptual interpretation: effective reasoning chains, despite being longer outputs, render the underlying input→answer mapping more compressible, hence requiring fewer effective parameters to fit."
+        ],
+        "claim_evidence_map": [
+          {
+            "claim": "Intrinsic dimensionality strongly predicts generalization performance of reasoning strategies.",
+            "evidence_in_paper": "Table 1 (Gemma-3 4B): Spearman 0.93 (p<0.01) between intrinsic dim and overall accuracy across 14 strategies. Table 2 (Gemma-3 1B): Spearman 0.75 (p<0.05)."
+          },
+          {
+            "claim": "Intrinsic dimensionality outperforms alternative quantitative metrics (length, KL, token perplexity, LongPPL).",
+            "evidence_in_paper": "Tables 1–2: length 0.31/0.24, token PPL 0.82/0.63, KL −0.17/−0.18. Table 7: LongPPL (K=64) 0.60, (K=256) 0.62, all lower than intrinsic dim 0.93 on 4B."
+          },
+          {
+            "claim": "Findings are robust to the choice of accuracy threshold τ.",
+            "evidence_in_paper": "Table 3 shows correlations of 0.72–0.94 across thresholds at 70%/80%/90% of epoch-1 train accuracy and 90% of validation accuracy for both 1B and 4B."
+          },
+          {
+            "claim": "Executed PoT is the most effective strategy and has the lowest intrinsic dimension.",
+            "evidence_in_paper": "Table 1: Executed PoT achieves 46.15 overall (best OOD 43.40) with intrinsic dim 1.49M; Figure 2 shows it crosses τ=63% earliest. Same pattern on 1B (Table 2)."
+          },
+          {
+            "claim": "Incorrect reasoning chains degrade both intrinsic dimension and generalization.",
+            "evidence_in_paper": "Table 5: mixing 50% incorrect Short CoT increases intrinsic dim from 3.92M to 2729.64M (~500×) and drops overall accuracy from 32.63 to 20.61; similar pattern for Gemma 27B CoT."
+          },
+          {
+            "claim": "The framework generalizes beyond math to other reasoning domains.",
+            "evidence_in_paper": "Table 4: On Reasoning Gym algorithmic tasks, intrinsic dim correlates 1.00 with overall accuracy (Executed PoT best at 73.21). On cognitive tasks, No CoT achieves lowest intrinsic dim (0.40M) and best overall (49.82), with intrinsic dim correlation 1.00."
+          },
+          {
+            "claim": "Larger models compress effective reasoning strategies more efficiently.",
+            "evidence_in_paper": "Comparing Tables 1 and 2: for Executed PoT, 4B reaches a higher absolute threshold (63%) with 1.49M parameters; 1B reaches a lower threshold (24.3%) with 1.03M; for ineffective strategies (Very Short CoT, distractors), 4B requires substantially more parameters than 1B."
+          },
+          {
+            "claim": "Training-set size differences across strategies do not drive the results.",
+            "evidence_in_paper": "Appendix B.1: training set sizes range 6.2K–7.5K; Spearman between size and accuracy ≈ −0.11 (p>0.7); Executed PoT has the smallest training set yet best performance."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4479,
+        "output_tokens": 2523,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_2": {
+      "parsed": {
+        "sections": [
+          {
+            "name": "Abstract",
+            "summary": "Introduces intrinsic dimensionality (minimum trainable params via LoRA to reach an accuracy threshold) as a measure of CoT effectiveness; claims a strong inverse correlation with generalization on GSM8K with Gemma-3 1B/4B.",
+            "key_claims": [
+              "Effective reasoning strategies reduce intrinsic dimensionality.",
+              "Intrinsic dimensionality inversely correlates with ID and OOD generalization."
+            ],
+            "supporting_evidence": [
+              "Spearman correlations reported in Tables 1-2 (0.93 for 4B, 0.75 for 1B)."
+            ],
+            "issues": [
+              "Abstract does not mention that intrinsic dimensionality is approximated via LoRA, which is only an upper bound.",
+              "Generalization claim is supported on a single primary dataset (GSM8K)."
+            ],
+            "missing_information": [
+              "No mention of scope (single domain primarily, two model sizes) or computational cost."
+            ],
+            "ambiguous_or_unsupported": []
+          },
+          {
+            "name": "Introduction",
+            "summary": "Frames the question of which CoT strategies are most effective, criticizes existing qualitative/quantitative measures, and motivates intrinsic dimensionality via MDL.",
+            "key_claims": [
+              "Existing metrics (length, process reward models) provide conflicting or subjective evidence.",
+              "Intrinsic dimensionality is a principled MDL-based predictor of reasoning effectiveness."
+            ],
+            "supporting_evidence": [
+              "Cites Muennighoff et al., Wu et al., Marjanovic et al. for conflicting length evidence.",
+              "Foreshadows Tables 1-2 results."
+            ],
+            "issues": [
+              "The link between MDL and intrinsic dimensionality is asserted but not formally derived; intrinsic dim as defined is a function of model + data fitting, not strictly a description-length measure.",
+              "Motivational claims about practical implications (data annotation, alignment) are not concretely demonstrated in the paper."
+            ],
+            "missing_information": [
+              "No upfront acknowledgment of computational cost of computing intrinsic dim, which limits its practical utility."
+            ],
+            "ambiguous_or_unsupported": [
+              "Statement that intrinsic dimensionality is 'theoretically grounded' is rhetorical; no theorem is provided."
+            ]
+          },
+          {
+            "name": "Related Work",
+            "summary": "Surveys prior CoT evaluation and intrinsic dimension literature, positioning the paper as inverting prior intrinsic-dim setups by varying data rather than model.",
+            "key_claims": [
+              "Prior CoT analyses are mostly non-quantifiable proxies.",
+              "Authors' use of intrinsic dim measures complexity of the learning objective, not the data manifold."
+            ],
+            "supporting_evidence": [
+              "Cites Li et al. 2018, Aghajanyan et al. 2021, Hu et al. 2022, Blier & Ollivier 2018, Rissanen 1978."
+            ],
+            "issues": [
+              "Could discuss more competing quantitative proxies (e.g., loss landscape sharpness, NTK-based measures).",
+              "Does not discuss potential confounds when comparing intrinsic dim across different output spaces (different output distributions, vocab usage)."
+            ],
+            "missing_information": [
+              "No discussion of measures from the literature on instance-level reasoning chain difficulty (e.g., information gain or step-level metrics) beyond brief mentions."
+            ],
+            "ambiguous_or_unsupported": []
+          },
+          {
+            "name": "Method",
+            "summary": "Defines intrinsic dimension as the minimum LoRA params needed to reach a common accuracy threshold tau; sweeps rank and module targets to span parameter counts; justifies using epoch-1 max training accuracy across strategies as the threshold.",
+            "key_claims": [
+              "LoRA serves as a structured low-dimensional projection consistent with intrinsic dim framework.",
+              "Common absolute threshold across strategies is needed for fair comparison."
+            ],
+            "supporting_evidence": [
+              "Algorithm and module-group definitions in Appendix A.1.",
+              "Robustness to threshold demonstrated in Table 3."
+            ],
+            "issues": [
+              "The definition d_int = min{d : A(d) >= tau} uses *training* accuracy A(d), so it measures fitting capacity, not generalization directly; this is an important conceptual distinction not heavily emphasized.",
+              "Using a single shared absolute threshold tau penalizes strategies whose maximum attainable accuracy is below tau (they would have undefined or infinite intrinsic dim) — the paper does not clearly explain what happens for such strategies.",
+              "Greedy module-group selection means different intrinsic-dim points are achieved via qualitatively different adaptations (attention-only vs MLP-only), which may not be smoothly comparable.",
+              "LoRA initialization, training step budget, and hyperparameter sensitivity at small ranks may significantly affect threshold-crossing, especially for No CoT strategies."
+            ],
+            "missing_information": [
+              "How are 'epoch 1' boundaries handled for different dataset sizes (6.2K-7.5K) — is one epoch the same number of steps?",
+              "Are reported intrinsic dimensions averaged over multiple seeds? Variance is not reported.",
+              "No description of selection rule when training accuracy curve crosses threshold non-monotonically (Figures 2-3 suggest monotonic Pareto frontier is used)."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim that LoRA aligns with intrinsic dimensionality framework is partly heuristic; the original intrinsic dim definition uses random projections, and LoRA's structured low-rank subspace is a different (and not strictly comparable) constraint."
+            ]
+          },
+          {
+            "name": "Experiments",
+            "summary": "14 reasoning strategies are generated from teacher models (mostly Gemma-3 27B, plus Gemini 2.5 Flash) and used to fine-tune Gemma-3 1B/4B; baseline metrics include length, token PPL, KL divergence; evaluation on GSM8K + 5 OOD splits and Reasoning Gym.",
+            "key_claims": [
+              "Strategies span diverse lengths and structures, enabling broad comparison.",
+              "Training set size differences do not drive results (Spearman ~ -0.11)."
+            ],
+            "supporting_evidence": [
+              "Appendix B.1 details data sizes and decontamination.",
+              "Appendix C describes Reasoning Gym configurations."
+            ],
+            "issues": [
+              "Teacher choice is heterogeneous: most strategies come from Gemma-3 27B, but Gemini CoT comes from a stronger teacher; this confounds 'reasoning strategy' with 'teacher quality' (especially for the Gemini comparison).",
+              "Token perplexity baseline assumes teacher likelihood = 1, deliberately omitting teacher distribution — this biases the baseline against the metric and the authors acknowledge but do not address it.",
+              "Only one base model family (Gemma-3) is tested; results may not generalize to other architectures.",
+              "Only one math dataset is the primary subject, with Reasoning Gym serving as the only diversity test, evaluated on only 4 strategies.",
+              "No reported standard error or seed variance for any accuracy or intrinsic dim number."
+            ],
+            "missing_information": [
+              "Specifics of how 'No CoT with extra tokens' filler is constructed and why it is a meaningful inference-time-compute control.",
+              "Whether evaluation uses greedy decoding, sampling, or self-consistency — could affect ID/OOD numbers.",
+              "Sequence KL formula given is just average NLL — equating this with KL requires an implicit assumption about the empirical distribution that should be stated more carefully."
+            ],
+            "ambiguous_or_unsupported": [
+              "Sequence KL = average NLL is technically the cross-entropy under uniform empirical distribution; calling it KL divergence is slightly misleading."
+            ]
+          },
+          {
+            "name": "Results",
+            "summary": "Intrinsic dimensionality has the strongest Spearman correlation with overall accuracy (0.93/0.75 for 4B/1B), substantially better than length, KL, and token PPL. Robust across thresholds, generalizes to Reasoning Gym, and worsens with incorrect chains.",
+            "key_claims": [
+              "Intrinsic dim is the best predictor among tested metrics.",
+              "Larger models compress effective strategies more but require more capacity for ineffective ones.",
+              "Mixing incorrect chains greatly increases intrinsic dim and reduces accuracy."
+            ],
+            "supporting_evidence": [
+              "Tables 1-2, 4, 5, 7; Figures 2-3.",
+              "Robustness check in Table 3."
+            ],
+            "issues": [
+              "Spearman correlation over only 14 (Tables 1-2) or 4 (Table 4) strategies; with n=4 the p-values cannot be reliably significant and correlation = 1.0 is easy to attain by chance.",
+              "Many intrinsic dim values are tied across strategies (e.g., 2729.64, 532.81, 31.45, 7.34 appear repeatedly), suggesting the sweep grid is coarse; ranking ties may favor the metric's appearance of strong correlation but reduce its actual resolution.",
+              "Token PPL correlation (0.82) is close to intrinsic dim (0.93), and the paper does not test whether the difference is statistically significant.",
+              "Claim that 'larger models compress effective reasoning more efficiently' is supported by comparing Exec PoT 1.49M (4B) vs 1.03M (1B), but the threshold is also different (63% vs 24.3%), so this is not a clean comparison.",
+              "The incorrect-chain experiment increases intrinsic dim by 500x-125x but training accuracy may also drop (since the model cannot reach the same threshold) — it's unclear whether the threshold is held fixed or whether incorrect chains are even reachable to threshold; methodology should be clearer.",
+              "Cognitive Reasoning Gym results: No CoT wins with intrinsic dim 0.40M and best accuracy — but the input length is short and No CoT may simply benefit from the model's prior knowledge; correlation = -1.0 for length/PPL with only 4 points is not strong evidence."
+            ],
+            "missing_information": [
+              "No confidence intervals or bootstrap p-values for Spearman correlations.",
+              "No analysis of which LoRA target modules dominate the optimal configurations across strategies (this could reveal whether intrinsic dim is really comparable across strategies).",
+              "No ablation on dataset size (e.g., subsampling to equal sizes across strategies)."
+            ],
+            "ambiguous_or_unsupported": [
+              "Comparing intrinsic dimensions across thresholds tau (4B vs 1B) cannot itself support the 'larger models compress more efficiently' claim without a controlled analysis.",
+              "Claim that intrinsic dim 'potentially captures coherence across the complete set of trajectories' is asserted but not analyzed."
+            ]
+          },
+          {
+            "name": "Limitations / Discussion / Conclusion",
+            "summary": "Acknowledges high computational cost of intrinsic dim estimation, LoRA giving an upper bound, and suggests future work on tractable proxies and other PEFT methods.",
+            "key_claims": [
+              "LoRA-based intrinsic dim is an upper bound; alternative PEFT methods may give tighter bounds.",
+              "Intrinsic dim is correlational and computationally expensive."
+            ],
+            "supporting_evidence": [
+              "Cites Lotfi et al. 2024 and Shaw et al. 2026 for tighter bounds."
+            ],
+            "issues": [
+              "Does not address that the metric requires knowing the training data and running many fine-tunes, undermining practical utility (e.g., for selecting strategies before training).",
+              "No discussion of whether the metric could be confounded by teacher-style or stylistic features of training data unrelated to reasoning effectiveness.",
+              "No quantitative estimate of cost (GPU-hours) for the sweeps."
+            ],
+            "missing_information": [
+              "No discussion of whether intrinsic dim transfers across base models (e.g., would the ranking of strategies be the same on a non-Gemma model?).",
+              "No discussion of potential application to RL/distillation setups beyond mentioning it as future work."
+            ],
+            "ambiguous_or_unsupported": []
+          },
+          {
+            "name": "Supplementary",
+            "summary": "Provides LoRA sweep algorithm, dataset details for GSM8K and Reasoning Gym, LongPPL comparison, examples of all 14 reasoning strategies, and detailed per-split accuracies.",
+            "key_claims": [
+              "Training set size does not significantly correlate with accuracy (Spearman ~ -0.11).",
+              "LongPPL does not outperform plain token PPL in this setting."
+            ],
+            "supporting_evidence": [
+              "Appendix B.1 dataset sizes; Appendix D LongPPL results; Tables 8-9 per-split breakdowns."
+            ],
+            "issues": [
+              "The greedy configuration selection means many target parameter counts collapse to the same actual parameter count, leading to a small effective number of distinct intrinsic dim values.",
+              "Reasoning Gym setup uses only 4 strategies — too few for robust rank-correlation conclusions.",
+              "Example strategies are clear but do not include data filtering details (e.g., how many of teacher's chains were rejected for incorrectness)."
+            ],
+            "missing_information": [
+              "No information on validation sets used for checkpoint selection (size, sampling).",
+              "No description of seed averaging or variance for the LoRA training runs.",
+              "Per-strategy intrinsic dim curves (training accuracy vs params) are only shown for select strategies in Figures 2-3; full curves for all strategies are not provided."
+            ],
+            "ambiguous_or_unsupported": [
+              "Claim of decontamination for Reasoning Gym OOD sets is described qualitatively but contamination test details are not provided."
+            ]
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 4538,
+        "output_tokens": 4985,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_3": {
+      "parsed": {
+        "claims": [
+          {
+            "claim": "Intrinsic dimensionality, measured via LoRA sweeps, strongly predicts the generalization performance of different chain-of-thought reasoning strategies on a fixed model.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 1 shows Spearman rank correlation 0.93 (p<0.01) between intrinsic dim and overall accuracy across 14 strategies on Gemma-3 4B; Table 2 shows 0.75 (p<0.05) on Gemma-3 1B.",
+            "evidence_strength": "strong",
+            "notes": "Correlations are computed over only 14 points, which is small for statistical significance but p-values are reported. Stronger on 4B than 1B."
+          },
+          {
+            "claim": "Intrinsic dimensionality outperforms baseline metrics (trajectory length, token perplexity, sequence KL divergence, LongPPL) at predicting reasoning effectiveness.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Tables 1, 2, 7: length 0.31/0.24, token PPL 0.82/0.63, KL −0.17/−0.18, LongPPL 0.60–0.62, vs intrinsic dim 0.93/0.75.",
+            "evidence_strength": "strong",
+            "notes": "Comparison is fair within their evaluation framework; baselines are reasonable proxies."
+          },
+          {
+            "claim": "The predictive power of intrinsic dimensionality is robust to the choice of accuracy threshold τ.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Table 3: correlations remain 0.72–0.94 across threshold variations (70%/80%/90% of epoch-1 train acc and 90% of val acc).",
+            "evidence_strength": "strong",
+            "notes": "Robustness check is well-executed for threshold variation; doesn't address robustness to LoRA sweep choices."
+          },
+          {
+            "claim": "Executed PoT (program-of-thought with execution) achieves the lowest intrinsic dimensionality and best OOD performance.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 1: Exec PoT 1.49M params, 46.15 overall, 43.40 OOD; Figure 2 shows earliest threshold crossing; consistent on 1B (Table 2).",
+            "evidence_strength": "strong",
+            "notes": "Exec PoT's advantage may partly stem from the fact that the answer comes from external execution, sidestepping the model's arithmetic limitations—orthogonal to compression. The paper acknowledges this connection to Sprague et al. but doesn't fully disentangle it."
+          },
+          {
+            "claim": "Incorrect reasoning chains substantially increase intrinsic dimensionality and reduce generalization.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Table 5: 50% incorrect Short CoT increases intrinsic dim ~500× (3.92M→2729.64M) and drops accuracy by 12 points; similar for Gemma 27B CoT (~125×, 12.8 point drop).",
+            "evidence_strength": "strong",
+            "notes": "Only 2 strategies tested; limited but supportive."
+          },
+          {
+            "claim": "The framework generalizes to non-math reasoning domains (Reasoning Gym algorithmic and cognitive tasks).",
+            "category": "generalization",
+            "evidence_in_paper": "Table 4: Spearman correlation 1.00 for both algorithmic and cognitive categories (overall accuracy vs intrinsic dim).",
+            "evidence_strength": "weak",
+            "notes": "Correlation of 1.00 is computed over only 4 strategies per category, which makes the rank correlation trivially achievable. This is far less convincing than the 14-strategy GSM8K results."
+          },
+          {
+            "claim": "Larger models compress effective reasoning strategies more efficiently than smaller ones.",
+            "category": "empirical_performance",
+            "evidence_in_paper": "Comparing Tables 1/2: Exec PoT 4B uses 1.49M to hit 63% threshold; 1B uses 1.03M to hit 24.3%. Ineffective strategies show reverse pattern.",
+            "evidence_strength": "weak",
+            "notes": "Comparison is confounded because the threshold τ differs between 1B and 4B; comparing parameter counts at different thresholds doesn't cleanly support the 'better compressor' claim. The qualitative argument has merit but the quantitative comparison is not apples-to-apples."
+          },
+          {
+            "claim": "Differences in training-set sizes (6.2K–7.5K examples per strategy) do not drive the observed performance differences.",
+            "category": "technical_correctness",
+            "evidence_in_paper": "Appendix B.1: Spearman correlation between training size and accuracy ≈ −0.11 (p>0.7); Exec PoT smallest but best.",
+            "evidence_strength": "strong",
+            "notes": "A reasonable control. The negative correlation actually slightly favors smaller datasets, addressing a natural confound."
+          },
+          {
+            "claim": "Effective reasoning chains 'compress' the input→answer mapping in an MDL sense, requiring fewer parameters to learn.",
+            "category": "theoretical",
+            "evidence_in_paper": "Section 6 connects findings to MDL principle (Rissanen, 1978; Grünwald, 2007); intrinsic dimension framed as proxy for description length.",
+            "evidence_strength": "weak",
+            "notes": "This is an interpretive narrative rather than a formal theoretical result. The link between LoRA parameter count and MDL description length is not formalized, and the paper itself notes LoRA only provides an upper bound that 'may be loose'."
+          },
+          {
+            "claim": "Intrinsic dimensionality is a novel metric for characterizing reasoning effectiveness.",
+            "category": "novelty",
+            "evidence_in_paper": "Related work (Section 5) contrasts the approach with prior intrinsic dim work (Li et al., 2018; Aghajanyan et al., 2021), which varied models on fixed data; this work fixes the model and varies the rationale format.",
+            "evidence_strength": "strong",
+            "notes": "Novelty primarily lies in the application/reformulation rather than the underlying technique."
+          },
+          {
+            "claim": "Intrinsic dimensionality can be computed from training curves alone without test-set evaluation, providing practical utility.",
+            "category": "practical_impact",
+            "evidence_in_paper": "Section 2.3 and 4.3: τ derived from epoch-1 maximum training accuracy across strategies; Table 3 shows this works robustly.",
+            "evidence_strength": "weak",
+            "notes": "While technically true, computing intrinsic dim requires running 20–30 LoRA fine-tuning sweeps per strategy, which is expensive. The paper acknowledges this in Section 6 as a limitation."
+          },
+          {
+            "claim": "Token perplexity and intrinsic dimensionality are interrelated because compressible chains are also high-likelihood under the base model.",
+            "category": "theoretical",
+            "evidence_in_paper": "Section 4.1 cites Yue et al. (2026); token PPL achieves 0.82 vs intrinsic dim 0.93.",
+            "evidence_strength": "weak",
+            "notes": "This is an informal argument rather than a derived relationship; serves more as intuition than evidence."
+          }
+        ],
+        "unsupported_claims": [
+          "The Reasoning Gym correlations of 1.00 are presented as supporting cross-domain generalization but are trivial given only 4 data points per category.",
+          "Claim that larger models 'compress effective reasoning more efficiently' compares parameter counts across different accuracy thresholds, making the comparison ill-defined."
+        ],
+        "overstated_claims": [
+          "Intrinsic dimensionality 'captures coherence across the complete set of trajectories' (Section 6) — this is speculation, not demonstrated.",
+          "Framing of intrinsic dimension as MDL-grounded — the connection is intuitive but not formally established; LoRA only provides an upper bound that may be loose.",
+          "'Strong inverse correlation' on 1B (0.75) is presented at equal weight to 4B (0.93), but on 1B several strategies cluster at near-floor performance (1–10% overall), which inflates rank correlation given the order is dominated by which strategies are above floor.",
+          "Claim that the metric provides 'a principled, quantitative predictor' implies practical applicability, but computing it requires 20–30 full LoRA fine-tunes per strategy, undermining its utility for selection."
+        ],
+        "claims_requiring_external_verification": [
+          "Whether the chosen learning rates and training duration (8K steps for 1B, 6K for 4B) actually let smaller LoRA configurations converge sufficiently — undertraining at low ranks could artificially inflate intrinsic dimension estimates for some strategies.",
+          "Whether the relative ordering of strategies by intrinsic dimension is stable under alternative PEFT methods (the paper acknowledges this as future work).",
+          "Whether the correlation pattern holds on non-Gemma model families, given the conflict-of-interest disclosure.",
+          "Whether intrinsic dimensionality correlations remain strong on larger, more diverse strategy sets and non-arithmetic tasks beyond Reasoning Gym."
+        ]
+      },
+      "usage": {
+        "input_tokens": 2767,
+        "output_tokens": 3287,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_4": {
+      "parsed": {
+        "novelty_axes": [
+          {
+            "axis": "method",
+            "claimed_contribution": "Using LoRA-rank sweeps to measure the intrinsic dimensionality of a learning task while fixing the model and varying the training data (the reasoning strategy / rationale format), rather than the prior setting that varies the model on fixed data.",
+            "why_it_matters": "The paper's main technical contribution is the *inversion* of the intrinsic-dimensionality probe: if this exact setup (LoRA sweep over fixed model, varying rationales) already exists, the methodological novelty largely collapses to an application.",
+            "search_keywords": [
+              "intrinsic dimensionality LoRA reasoning chain",
+              "LoRA rank task complexity fine-tuning data",
+              "intrinsic dimension fixed model varying training data"
+            ],
+            "search_question": "Has prior work used LoRA-rank or other parameter-efficient sweeps as an intrinsic-dimensionality probe of a *task formulation*, with the model held fixed?",
+            "closest_prior_work_ref": "Aghajanyan 2021 [similar_prior_work #1]; Li 2018 [similar_prior_work #2]; Hu 2022 [similar_prior_work #3]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "problem",
+            "claimed_contribution": "Framing 'which reasoning strategy is most effective' as a question about the intrinsic dimensionality / compressibility of the resulting input→rationale→answer mapping.",
+            "why_it_matters": "Many recent papers analyze CoT effectiveness via different lenses (length, structure, review tokens, faithfulness); the paper's framing must be genuinely distinct to merit a separate contribution.",
+            "search_keywords": [
+              "what makes chain of thought effective",
+              "characterizing effective reasoning chains metric",
+              "predicting reasoning chain quality"
+            ],
+            "search_question": "Did prior work pose the problem of CoT effectiveness in terms of task compressibility / parameter efficiency rather than instance-level quality?",
+            "closest_prior_work_ref": "Feng 2025 [similar_prior_work #4]; Wang 2023a [similar_prior_work #5]; Sprague 2025 [similar_prior_work #6]",
+            "axis_verdict": "novel"
+          },
+          {
+            "axis": "theory",
+            "claimed_contribution": "An MDL-grounded interpretive narrative: effective reasoning chains reduce the conditional Kolmogorov / description-length complexity of the input-to-answer mapping, which manifests empirically as lower LoRA-required parameter count.",
+            "why_it_matters": "If the paper is read as a theoretical contribution, the novelty depends on whether the MDL framing yields any new formal result. The paper itself only offers informal argument plus an upper-bound via LoRA.",
+            "search_keywords": [
+              "minimum description length chain of thought",
+              "Kolmogorov complexity reasoning transformer",
+              "MDL generalization rationale"
+            ],
+            "search_question": "Has prior work formally linked CoT / rationale-augmented training to MDL or description-length bounds for generalization?",
+            "closest_prior_work_ref": "Shaw 2026 [similar_prior_work #7]; Blier & Ollivier 2018 [similar_prior_work #8]; Joshi et al. 2025 (CoT Information) [similar_prior_work #9]",
+            "axis_verdict": "incremental"
+          },
+          {
+            "axis": "empirical",
+            "claimed_contribution": "On 14 CoT variants over Gemma-3 1B/4B (GSM8K + 5 OOD splits + Reasoning Gym), intrinsic dimensionality has Spearman 0.93 / 0.75 with overall accuracy, substantially beating trajectory length, token PPL, sequence KL, and LongPPL.",
+            "why_it_matters": "A meta-evaluation that demonstrably ranks reasoning-quality predictors against generalization would be a concrete empirical contribution if no prior study has done it at comparable scope.",
+            "search_keywords": [
+              "benchmark CoT quality predictors generalization",
+              "meta-evaluation reasoning chain metrics correlation",
+              "perplexity length predicting reasoning generalization"
+            ],
+            "search_question": "Has any prior paper run a head-to-head meta-evaluation of CoT-quality metrics (length, PPL, KL, structural scores) against post-finetuning generalization across many strategies?",
+            "closest_prior_work_ref": "Feng 2025 [similar_prior_work #4]; Golovneva 2023 (ROSCOE) [similar_prior_work #10]; Prasad 2023 (ReCEval) [similar_prior_work #11]",
+            "axis_verdict": "novel"
+          }
+        ],
+        "novelty_axes_searched": [
+          "intrinsic dimensionality chain of thought reasoning",
+          "LoRA rank reasoning chain effectiveness metric",
+          "minimum description length chain of thought generalization",
+          "predicting reasoning chain quality CoT effectiveness metric",
+          "intrinsic dimension fine-tuning language model task complexity",
+          "CoT Information sample complexity chain-of-thought supervision arxiv 2505.15927"
+        ],
+        "similar_prior_work": [
+          {
+            "title": "Intrinsic Dimensionality Explains the Effectiveness of Language Model Fine-Tuning",
+            "venue_or_source": "ACL 2021",
+            "year": "2021",
+            "similarity_summary": "Introduces the technique of measuring intrinsic dimensionality of a task via low-dimensional reparameterization (and discusses LoRA-style projections); shows large pretrained models have low intrinsic dim for downstream tasks.",
+            "key_difference": "Varies the model (pretraining scale / data) at fixed task data; this paper inverts the design — fixes the model and varies the *task formulation* by changing rationale style, and uses that to rank reasoning strategies."
+          },
+          {
+            "title": "Measuring the Intrinsic Dimension of Objective Landscapes",
+            "venue_or_source": "ICLR 2018",
+            "year": "2018",
+            "similarity_summary": "Foundational paper defining intrinsic dimensionality of a learning objective via random low-dimensional projections.",
+            "key_difference": "Defines the concept and protocol the paper inherits; the present work substitutes LoRA for random projections and re-purposes the probe for reasoning-strategy comparison."
+          },
+          {
+            "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+            "venue_or_source": "ICLR 2022",
+            "year": "2022",
+            "similarity_summary": "Provides the parameter-efficient adapter used as the dimensionality-reduction operator P(·) in this paper's intrinsic-dim sweep.",
+            "key_difference": "LoRA is a fine-tuning method, not a measurement tool; the paper uses LoRA rank as a knob to sweep the trainable-parameter budget and read off d_int."
+          },
+          {
+            "title": "What Characterizes Effective Reasoning? Revisiting Length, Review, and Structure of CoT",
+            "venue_or_source": "arXiv:2509.19284 (cited)",
+            "year": "2025",
+            "similarity_summary": "Directly studies what features of CoT chains make them effective, proposing review-token-based and structural predictors.",
+            "key_difference": "Stays at the level of surface features (length, review ratio, structure); does not propose a model-coupled, MDL/parameter-count-based effectiveness measure, and is one of the baselines this paper beats."
+          },
+          {
+            "title": "Towards Understanding Chain-of-Thought Prompting: An Empirical Study of What Matters",
+            "venue_or_source": "ACL 2023",
+            "year": "2023",
+            "similarity_summary": "Empirically dissects which components of CoT prompts (structure vs. numerical correctness) drive performance.",
+            "key_difference": "Focuses on prompt-level CoT not fine-tuning, and offers qualitative attribution rather than a quantitative compressibility metric."
+          },
+          {
+            "title": "To CoT or Not to CoT? Chain-of-Thought Helps Mainly on Math and Symbolic Reasoning",
+            "venue_or_source": "ICLR 2025",
+            "year": "2025",
+            "similarity_summary": "Meta-analysis of when CoT helps across tasks.",
+            "key_difference": "Asks the *when* question across tasks at fixed model; this paper asks *which strategy* at fixed task, and proposes a numeric predictor."
+          },
+          {
+            "title": "Bridging Kolmogorov Complexity and Deep Learning: Asymptotically Optimal Description-Length Objectives for Transformers",
+            "venue_or_source": "ICLR 2026 (cited)",
+            "year": "2026",
+            "similarity_summary": "Connects transformer training to Kolmogorov / description-length bounds.",
+            "key_difference": "Theoretical/representational result on architectures, not an empirical measurement of CoT-strategy effectiveness via PEFT sweeps."
+          },
+          {
+            "title": "The Description Length of Deep Learning Models",
+            "venue_or_source": "NeurIPS 2018",
+            "year": "2018",
+            "similarity_summary": "Formalizes deep learning model fit as MDL/description length and relates to compression.",
+            "key_difference": "Provides the MDL framing the paper invokes; the paper does not derive a new theorem, only invokes the intuition."
+          },
+          {
+            "title": "CoT Information: Improved Sample Complexity under Chain-of-Thought Supervision",
+            "venue_or_source": "arXiv:2505.15927",
+            "year": "2025",
+            "similarity_summary": "Independent information-theoretic treatment of why CoT supervision improves sample complexity for learning.",
+            "key_difference": "Provides theoretical sample-complexity bounds tied to mutual-information-like quantities; this paper offers an empirical, model-coupled measurement (intrinsic dim via LoRA) rather than a closed-form information measure. Not cited."
+          },
+          {
+            "title": "ROSCOE: A Suite of Metrics for Scoring Step-by-Step Reasoning",
+            "venue_or_source": "ICLR 2023",
+            "year": "2023",
+            "similarity_summary": "Defines instance-level scoring metrics for reasoning chain quality.",
+            "key_difference": "Scores correctness/faithfulness of individual chains; this paper measures a property of the *training distribution* of chains via post-fine-tuning intrinsic dim."
+          },
+          {
+            "title": "ReCEval: Evaluating Reasoning Chains via Correctness and Informativeness",
+            "venue_or_source": "EMNLP 2023",
+            "year": "2023",
+            "similarity_summary": "Step-level evaluation of reasoning chain quality.",
+            "key_difference": "Instance-level proxy of chain quality; not a dataset-level predictor of post-training generalization."
+          },
+          {
+            "title": "Understanding Chain-of-Thought Effectiveness in Code Generation: An Empirical and Information-Theoretic Analysis",
+            "venue_or_source": "arXiv:2512.09679",
+            "year": "2025",
+            "similarity_summary": "Independent information-theoretic empirical analysis of CoT effectiveness, in the code-generation domain.",
+            "key_difference": "Same period and adjacent question, but in code generation and using information-theoretic quantities rather than LoRA-based intrinsic dim. Likely contemporaneous; not cited."
+          }
+        ],
+        "potential_missing_citations": [
+          "Joshi et al. (2025) 'CoT Information: Improved Sample Complexity under Chain-of-Thought Supervision' (arXiv:2505.15927) — closely related information-theoretic framing of why CoT supervision aids learning; complements (and partly competes with) the MDL framing the paper uses.",
+          "'Understanding Chain-of-Thought Effectiveness in Code Generation: An Empirical and Information-Theoretic Analysis' (arXiv:2512.09679) — contemporaneous information-theoretic empirical analysis of CoT effectiveness; would strengthen the discussion of alternatives to LoRA-based intrinsic dim. (May postdate the present paper's first arXiv submission; mention if temporally feasible.)"
+        ],
+        "novelty_type": "conceptual",
+        "novelty_assessment": "moderate",
+        "novelty_risk_level": "low",
+        "rationale": "The paper's technical machinery (LoRA, intrinsic dimensionality, MDL) is entirely borrowed: Li 2018 introduced intrinsic dim, Aghajanyan 2021 showed LoRA-style projections measure it, and the MDL framing is decades old. So the *method* and *theory* axes are at best incremental — the paper does not derive a new bound or introduce a new measurement primitive. What is genuinely new is conceptual and empirical: (a) inverting the intrinsic-dim probe to compare *task formulations* (reasoning strategies) at fixed model, which has not been previously done as a means of evaluating CoT, and (b) running a careful 14-strategy × 2-model × 6-split meta-evaluation showing that this re-purposed measure beats the standard candidate predictors (length, PPL, KL, LongPPL) at predicting post-finetuning generalization, plus controls (threshold robustness, dataset-size correction, incorrect-chain ablation, cross-domain Reasoning Gym). Those two contributions are non-trivial and load-bearing, even though they sit on top of off-the-shelf components. Overall the package merits a 'moderate' novelty rating: novel conceptual framing and empirical finding, on top of derivative method and theory. Risk that the work is subsumed by an existing paper is low — the closest related works (Feng 2025, Aghajanyan 2021, ROSCOE/ReCEval, Joshi 2025) each cover only one piece of the contribution, and none combines the LoRA-sweep probe with rationale-format comparison.",
+        "source_of_judgment": "web_search"
+      },
+      "usage": {
+        "input_tokens": 21676,
+        "output_tokens": 6957,
+        "cache_creation_input_tokens": 86453,
+        "cache_read_input_tokens": 319696
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_5": {
+      "parsed": {
+        "perspectives": {
+          "domain_expert": {
+            "add_to_field": "Introduces a novel reframing of intrinsic dimensionality as a property of the reasoning strategy (supervision format) rather than the model, providing a principled MDL-grounded lens on why some CoT formats generalize better than others. This is a conceptual contribution to the active subfield of analyzing CoT effectiveness.",
+            "beneficiaries": "Researchers studying CoT reasoning, distillation, and data curation for reasoning LLMs; those building post-training pipelines who need to compare candidate rationale formats; analysis/interpretability researchers connecting information-theoretic measures to LLM behavior.",
+            "importance": "Yes — 'why is CoT effective?' is one of the most prominent open questions in current LLM research, and existing answers are either qualitative or contradictory. A quantitative predictor grounded in MDL is a meaningful addition.",
+            "improvement_meaningful": "The jump from token-PPL correlation (0.82) to intrinsic-dim correlation (0.93) on 4B, and from 0.63 to 0.75 on 1B, is meaningful given how poorly length and KL perform; it also matches theoretical expectations.",
+            "future_influence": "Likely to influence work on rationale selection, teacher–student alignment, and information-theoretic analysis of reasoning. May inspire follow-ups exploring cheaper proxies and broader domains."
+          },
+          "methodology_expert": {
+            "add_to_field": "Operationalizes intrinsic dimensionality for an output-format comparison via a structured LoRA sweep with a shared accuracy threshold, providing a reusable measurement protocol. The fix-the-model / vary-the-supervision experimental design is a clean methodological inversion of prior intrinsic-dimension work.",
+            "beneficiaries": "Methodologists studying parameter-efficient fine-tuning, compressibility, and learnability metrics; researchers designing benchmarks/protocols for comparing supervision formats.",
+            "importance": "Yes — it provides a principled alternative to ad hoc proxies (length, perplexity, reward models) and connects to long-standing MDL theory.",
+            "improvement_meaningful": "The methodology is sound and well-controlled (threshold robustness, correctness ablation, cross-domain check). However, intrinsic dimension as defined here is an upper bound dependent on LoRA, hyperparameters, and the chosen threshold, which qualifies its theoretical cleanness.",
+            "future_influence": "The LoRA-sweep estimator is concrete enough to be adopted as a standard tool. Future work will likely refine it (alternative PEFT methods, cheaper estimators, tighter bounds), as the authors themselves note."
+          },
+          "empirical_evaluation_expert": {
+            "add_to_field": "Provides a fairly comprehensive empirical comparison across 14 reasoning strategies, 2 model scales, 6 GSM test splits, and a second-domain benchmark (Reasoning Gym), with multiple baselines and robustness checks.",
+            "beneficiaries": "Practitioners evaluating reasoning strategies; researchers seeking calibrated metrics for predicting downstream generalization without test-time evaluation.",
+            "importance": "Yes — robust quantitative predictors of training-data quality are valuable, especially for reasoning where ground-truth labels alone are insufficient.",
+            "improvement_meaningful": "Strong Spearman correlations and consistent ordering across model sizes and threshold settings suggest the signal is real, not an artifact. The N=14 sample for correlation is modest but adequate for ranking analysis.",
+            "future_influence": "Empirical results will motivate replication on other base models (Llama, Qwen), other tasks (code, agentic reasoning), and other supervision formats (RL-trained traces, distilled traces)."
+          },
+          "skeptical_reviewer": {
+            "add_to_field": "Adds a correlational observation that LoRA-rank-to-threshold roughly tracks downstream performance across reasoning strategies. The conceptual framing (MDL, compressibility) is appealing but the empirical link to MDL is loose — LoRA budget is not a clean MDL proxy.",
+            "beneficiaries": "Primarily analysis researchers; practical adoption is limited because computing intrinsic dim requires ~20–30 fine-tuning runs per strategy, which is more expensive than the very test-time evaluation it aims to replace.",
+            "importance": "The problem is real but somewhat narrowly framed: in practice, one can just evaluate candidates directly. The paper's predictive metric is more expensive to compute than the quantity it predicts.",
+            "improvement_meaningful": "Correlations are higher than baselines but token perplexity is already 0.82 on 4B at much lower cost. The marginal gain of intrinsic dim over a cheap proxy may not justify its cost. Results are limited to math reasoning and one model family (Gemma).",
+            "future_influence": "May influence theoretical discussions, but practical influence depends on whether cheaper proxies derived from this insight can be developed. Restricted experimental scope (only Gemma, mostly GSM8K) limits generality of claims."
+          },
+          "practical_impact_expert": {
+            "add_to_field": "Suggests a quantitative criterion for choosing among candidate reasoning-data formats before committing to large-scale fine-tuning, and surfaces actionable insights (e.g., Executed PoT, correctness matters, distractors hurt disproportionately at scale).",
+            "beneficiaries": "Teams building reasoning models, data curators, and distillation pipelines who need to choose between teacher rationale styles. Also informs research on reward modeling and process supervision.",
+            "importance": "Important in principle, but the method's computational cost (sweeping ~20–30 LoRA configs per strategy) limits direct industrial uptake. The conceptual insights — that compressibility under fixed model predicts generalization — may be more impactful than the specific measurement procedure.",
+            "improvement_meaningful": "Meaningful as guidance: confirms code+execution wins on algorithmic tasks, shows distractor-laden chains are anti-compressible, quantifies the cost of noisy supervision. These are actionable.",
+            "future_influence": "Could shape data curation heuristics and motivate cheaper predictors (e.g., early-training loss curves, LoRA-rank-1 fits). Bridges to regularizer and reward-model design, as the authors suggest."
+          }
+        },
+        "consensus": [
+          "Reframing intrinsic dimensionality as a property of the supervision/reasoning format (rather than the model) is a genuinely novel and conceptually appealing contribution.",
+          "Intrinsic dimension empirically predicts downstream generalization better than length, KL divergence, and (mostly) token perplexity across the tested settings.",
+          "Experimental design — fixed model, varied rationale, shared threshold, robustness checks, correctness ablation, second domain — is solid and well-controlled.",
+          "The connection to MDL provides a satisfying theoretical narrative even if the LoRA estimator is only an upper bound.",
+          "Practical adoption is limited by the cost of LoRA sweeps; the method is more useful as an analysis tool than as a deployable predictor."
+        ],
+        "disagreement": [
+          "Whether the improvement over token perplexity (0.93 vs 0.82 on 4B; 0.75 vs 0.63 on 1B) is large enough to justify the substantial extra compute — methodology and domain experts see it as meaningful; skeptical and practical reviewers question cost-effectiveness.",
+          "How strong the MDL grounding actually is: domain/methodology experts view it as a principled bridge; skeptical reviewer sees the LoRA-based estimator as a loose, hyperparameter-dependent proxy rather than a true MDL measure.",
+          "Generality of the claims: empirical and domain experts find the cross-domain Reasoning Gym evidence supportive; skeptical reviewer notes the experiments are confined to Gemma models and primarily math-style reasoning."
+        ],
+        "significance_score_1_to_10": 7,
+        "impact_assessment": "moderate"
+      },
+      "usage": {
+        "input_tokens": 2955,
+        "output_tokens": 2806,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_6": {
+      "parsed": {
+        "problem_and_solution_formulation": {
+          "definitions_clear": [
+            "Intrinsic dimension is formally defined as d_int = min{d : A(d) >= tau}, with A(d) being training accuracy at LoRA configuration d.",
+            "LoRA-based parameterization (params(r, L_LoRA) = 2 * L_LoRA * d_model * r) is clearly specified.",
+            "Reasoning strategies are clearly enumerated and illustrated with concrete examples in Appendix E."
+          ],
+          "assumptions_clear": [
+            "Authors are explicit that LoRA constitutes a structured low-dimensional projection serving as an upper bound on intrinsic dimensionality.",
+            "Use of a common absolute threshold tau across strategies is justified by the differing maximum attainable performance across strategies."
+          ],
+          "derivations_algorithms_clear": [
+            "Greedy algorithm for selecting LoRA configurations (rank + module group) at each target parameter count is described step-by-step in Appendix A.1.",
+            "Pareto-frontier monotonization for the training accuracy vs trainable parameters curve is shown via Figures 2-3."
+          ],
+          "suggested_improvements_for_formulation": [
+            "Clarify the conceptual distinction that d_int is defined via training accuracy (a fitting/capacity measure) rather than generalization accuracy, and discuss how this still predicts generalization.",
+            "Specify behavior when a strategy's maximum training accuracy is below tau (undefined intrinsic dim) - e.g., for No CoT on cognitive tasks or when fewer params suffice than the smallest sweep point.",
+            "Define how 'epoch 1' is normalized across strategies with different training-set sizes (6.2K-7.5K).",
+            "Acknowledge that the sequence-level metric labeled 'KL divergence' is actually average sequence NLL / cross-entropy under a uniform empirical distribution and clarify the implicit assumption.",
+            "Discuss the discontinuity introduced by the greedy module-group selection: different points on the curve correspond to qualitatively different adaptations (attention-only vs MLP-only) that may not be smoothly comparable."
+          ]
+        },
+        "theoretical_support": {
+          "correct": [
+            "LoRA parameter counting formula (2 * L_LoRA * d_model * r) is correct.",
+            "The framing of intrinsic dimensionality as an upper bound when using a structured PEFT projection is correctly characterized."
+          ],
+          "partially_correct": [
+            "The connection to MDL is informally argued and intuitive but not formally derived; LoRA parameter count is not a description length and the relationship is only an upper bound that 'may be loose' as the authors themselves note.",
+            "Calling the average sequence NLL 'sequence KL divergence' is technically equivalent to KL only under a uniform empirical distribution assumption; the framing is loose."
+          ],
+          "suggested_improvements_for_theoretical_support": [
+            "Either formalize the connection between LoRA rank and a description-length / Kolmogorov-complexity bound (e.g., via Lotfi et al. style compression bounds), or frame the MDL connection explicitly as motivation rather than theoretical grounding.",
+            "Provide an explicit derivation or citation for how the LoRA-induced intrinsic dim relates to the random-projection-based intrinsic dim of Li et al. 2018."
+          ]
+        },
+        "experimental_support": {
+          "supported": [
+            "Intrinsic dimensionality has a strong rank correlation with overall accuracy on GSM8K-style evaluations across 14 strategies on Gemma-3 4B (Spearman 0.93) and on 1B (0.75).",
+            "Intrinsic dim outperforms length, sequence KL, token PPL, and LongPPL within this evaluation framework.",
+            "Robustness to threshold choice (Table 3, correlations 0.72-0.94 across multiple threshold variations).",
+            "Training-set size differences do not drive the observed performance differences (Spearman ~-0.11 between training size and accuracy)."
+          ],
+          "partially_supported": [
+            "Generalization to non-math domains (Reasoning Gym): correlation = 1.00 is reported but only over n=4 strategies per category, which is too few to be statistically informative.",
+            "Effect of training data correctness (Table 5): tested on only 2 strategies, supporting the directional claim but with limited breadth.",
+            "Token perplexity vs intrinsic dim differences (0.82 vs 0.93) are reported without a significance test of the difference."
+          ],
+          "unsupported_or_overstated": [
+            "Claim that 'larger models compress effective reasoning more efficiently' is not cleanly supported: 4B and 1B are compared at different thresholds (63% vs 24.3%), so comparing absolute LoRA parameter counts is not apples-to-apples.",
+            "Claim that intrinsic dim 'captures coherence across the complete set of trajectories' (Section 6) is speculative and not analyzed.",
+            "Claim of practical utility as a 'predictor' is overstated given the metric requires 20-30 LoRA fine-tunes per strategy.",
+            "Generalization claim implicitly extends beyond Gemma-3 family, but only Gemma-3 base models are tested (with the conflict-of-interest disclosure making this more salient).",
+            "The Gemini CoT comparison confounds 'reasoning strategy' with 'teacher model identity' since only this strategy uses a different (stronger) teacher."
+          ],
+          "suggested_improvements_for_claim_support": [
+            "Run experiments on at least one non-Gemma model family (e.g., Qwen, Llama) to test generality.",
+            "Increase the number of strategies on Reasoning Gym to make rank-correlation results non-trivial.",
+            "Report bootstrap confidence intervals for Spearman correlations, and test pairwise differences (intrinsic dim vs token PPL).",
+            "For the 1B/4B compression claim, equalize the threshold (e.g., use 50% of max train acc separately) or compare ratios rather than absolutes.",
+            "Use the same teacher (Gemma-3 27B) to generate Gemini-style long CoTs, or include both teachers across multiple strategies to disentangle teacher quality from strategy.",
+            "Report variance across multiple training seeds for intrinsic dimensionality estimates."
+          ]
+        },
+        "experimental_rigor": {
+          "baseline_quality": "Baselines (length, token PPL, KL, LongPPL) are reasonable proxies from the literature but limited; no learned predictor baselines (e.g., process reward models, perplexity under teacher, embedding-based diversity) are included.",
+          "missing_baselines": [
+            "Teacher-distribution-aware perplexity / KL (rather than assuming teacher prob = 1).",
+            "Loss curve area or training loss at a fixed step as a simpler capacity-based baseline.",
+            "Process reward model scores or rationale-quality scores from existing classifiers.",
+            "Random-projection-based intrinsic dim (original Li et al. 2018 definition) to test whether LoRA structure matters."
+          ],
+          "dataset_quality": "GSM8K + 5 OOD splits is a sensible math evaluation suite; Reasoning Gym addition is welcome but uses only 4 strategies; only one base model family is used.",
+          "better_datasets": [
+            "MATH, BIG-Bench Hard subsets, or logical reasoning benchmarks beyond Reasoning Gym.",
+            "Non-reasoning benchmarks to test whether the metric also predicts non-reasoning generalization.",
+            "Multilingual or code-reasoning benchmarks (e.g., HumanEval/MBPP-style)."
+          ],
+          "metric_appropriateness": "Spearman rank correlation is appropriate given small sample size and ordinal nature of the comparison, but n=14 and especially n=4 are too small for reliable inference; the 'sequence KL' label is technically loose (it is sequence NLL).",
+          "better_metric": [
+            "Include Kendall's tau alongside Spearman for robustness to ties (intrinsic dim values are heavily tied).",
+            "Use bootstrap CIs over strategies to quantify uncertainty in correlations.",
+            "Use a clearer label (e.g., 'sequence NLL') instead of 'KL divergence' for the per-sequence likelihood metric."
+          ],
+          "missing_ablations": [
+            "Ablation on LoRA target-module choice (attention-only vs MLP-only vs all) to test sensitivity of intrinsic dim.",
+            "Ablation on number of training steps / learning rate at small ranks (potential undertraining at low rank could inflate intrinsic dim).",
+            "Ablation matching training-set size exactly across strategies (e.g., subsample to 6.2K).",
+            "Ablation on alternative PEFT methods (DoRA, prefix tuning, BitFit) as suggested by the paper itself."
+          ],
+          "statistical_significance": "p-values for Spearman correlations are reported for the main tables (p<0.01 / p<0.05), but no confidence intervals; the n=4 Reasoning Gym correlations have no meaningful significance test, and difference-of-correlations tests between intrinsic dim and competing metrics are not reported.",
+          "better_significance_test_or_confidence_interval": [
+            "Bootstrap confidence intervals for Spearman correlations.",
+            "Steiger's z-test or William's test for the difference between intrinsic dim and token PPL correlations.",
+            "Report multiple seeds for the LoRA training and intrinsic dim estimates with error bars."
+          ],
+          "hyperparameter_clarity": "Learning rate and training step budget are stated for each model size; LoRA grid is documented in Appendix A.1 with the greedy selection algorithm; however, batch size, validation-set composition, and seed information are partial.",
+          "negative_results_discussed": "partial",
+          "possible_confounders": [
+            "Heterogeneous teacher models (Gemini 2.5 Flash for Gemini CoT vs Gemma-3 27B for others) confounds strategy with teacher quality.",
+            "Different training-set sizes per strategy (6.2K-7.5K) - though the authors check correlation with size, the differential filtering by correctness may select for systematically easier or harder problems.",
+            "Greedy LoRA configuration selection makes different intrinsic-dim points qualitatively different adaptations.",
+            "Coarse parameter sweep grid leads to many tied intrinsic dim values across strategies, possibly inflating apparent correlations.",
+            "Executed PoT bypasses model arithmetic via external execution, conflating compression with offloaded computation.",
+            "Single model family (Gemma-3) with conflict-of-interest disclosure raises generalization concerns.",
+            "1B model results are dominated by floor-level performance for many strategies, which could inflate rank correlation."
+          ],
+          "confounder_reduction_alternatives": [
+            "Re-generate all strategies from a single teacher (e.g., Gemma-3 27B only) and additionally from a different teacher to control for teacher effects.",
+            "Subsample all training sets to the same size and rerun.",
+            "Test on at least one non-Gemma base model family.",
+            "Use a finer LoRA parameter grid or repeat each grid point with multiple module choices to disentangle module effects from rank effects.",
+            "For Executed PoT, also run a 'simulated PoT' on arithmetic-only subsets to isolate the execution benefit."
+          ],
+          "reproducibility_score_1_to_10": 6,
+          "suggestions_for_improving_reproducibility": [
+            "Release LoRA sweep configurations, exact training step / epoch boundaries per dataset size, seed values, and trained checkpoints.",
+            "Provide the exact prompts used to generate each reasoning strategy with Gemma-3 27B and Gemini 2.5 Flash.",
+            "Report full per-strategy training accuracy vs parameter count curves (not just for selected strategies in Figures 2-3).",
+            "Report multiple seeds with means and standard deviations for both intrinsic dim values and ID/OOD accuracies.",
+            "Document validation split construction and checkpoint selection criteria.",
+            "Specify decoding settings (greedy/sampling/temperature) used for evaluation."
+          ]
+        }
+      },
+      "usage": {
+        "input_tokens": 9141,
+        "output_tokens": 4256,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_7": {
+      "parsed": {
+        "strengths": [
+          "Novel and conceptually appealing reframing of intrinsic dimensionality: instead of fixing data and varying the model (as in prior work), the authors fix the model and vary the reasoning supervision format, providing a fresh lens on CoT effectiveness.",
+          "Strong empirical correlation results: intrinsic dimensionality achieves Spearman 0.93 (Gemma-3 4B) and 0.75 (1B) with overall generalization accuracy across 14 reasoning strategies, substantially outperforming length (0.31/0.24), token perplexity (0.82/0.63), KL/sequence-NLL (~0), and LongPPL (0.60/0.62).",
+          "Solid robustness analysis: results hold across multiple threshold-selection variants (Table 3, correlations 0.72–0.94), and the authors explicitly justify using epoch-1 training accuracy to avoid overfitting contamination.",
+          "Thoughtful controls: training-set size differences are checked and shown not to drive the results (Spearman ~-0.11 with accuracy); a correctness ablation (Table 5) shows that corrupting 50% of training chains dramatically increases intrinsic dim and degrades accuracy, supporting the interpretation.",
+          "Broad strategy coverage: 14 strategies spanning length, format (code vs natural language), distractors, decomposition, and verification, with a clean second-domain check on Reasoning Gym.",
+          "Clear conceptual narrative connecting findings to the Minimum Description Length principle, providing an information-theoretic interpretation of why effective reasoning generalizes better.",
+          "Well-written exposition with helpful figures (Figures 1–3) illustrating the measurement procedure and Pareto frontier."
+        ],
+        "weaknesses": [
+          "Single model family: all experiments use Gemma-3 (1B and 4B), with an explicit conflict-of-interest disclosure noting authors' affiliation with Gemma development. Without at least one non-Gemma family (Llama, Qwen, Mistral), the generality of the central claim is unclear.",
+          "Reasoning Gym cross-domain evidence is weak: rank correlations of 1.00 are computed over only n=4 strategies per category, which is too few to be statistically informative — this undermines the 'generalizes beyond math' claim.",
+          "Confounded teacher comparison: Gemini CoT uses a different (stronger) teacher model than all other strategies, conflating reasoning-strategy effects with teacher-quality effects.",
+          "Executed PoT confound: this strategy obtains answers via external Python execution, sidestepping the model's arithmetic limitations. Its 'low intrinsic dim + high accuracy' result may reflect offloaded computation rather than greater compressibility.",
+          "Practical utility is overstated: computing intrinsic dimension requires 20–30 LoRA fine-tunes per strategy, which is far more expensive than the test-time evaluations it aims to replace. The marginal gain over token perplexity (0.93 vs 0.82) at this cost may not justify use as a practical 'predictor'.",
+          "MDL grounding is informal: the link between LoRA rank and description length is not formalized — LoRA provides only an upper bound that 'may be loose', as the authors themselves note in Section 6. The MDL framing is motivation rather than theory.",
+          "Mislabeling: what the paper calls 'sequence KL divergence' is actually average sequence negative log-likelihood (cross-entropy under a uniform empirical distribution); this should be more precisely named.",
+          "1B results are partly driven by floor effects: many strategies perform near 1–5% overall accuracy, which inflates rank correlation since the order is largely determined by which strategies clear the floor.",
+          "No statistical comparison of correlations: differences between intrinsic dim and the next-best baseline (token perplexity) are not tested for significance; no bootstrap CIs on Spearman values are reported.",
+          "No seed variance: intrinsic dimension estimates and accuracies are reported without error bars across multiple training seeds, leaving robustness to training stochasticity unquantified.",
+          "Cross-scale comparison claim is ill-defined: the conclusion that 4B 'compresses more efficiently' than 1B compares parameter counts measured at different thresholds (63% vs 24.3%), making the comparison apples-to-oranges.",
+          "Missing ablations on the LoRA sweep itself: no analysis of how the choice of module groups (attention-only vs MLP vs all) or grid coarseness affects the intrinsic-dim ordering; the greedy module selection creates qualitatively different adaptations at different sweep points."
+        ],
+        "fatal_flaws": [],
+        "minor_issues": [
+          "Define behavior of d_int when a strategy never reaches τ within the swept range (e.g., No CoT at full capacity).",
+          "Clarify how 'epoch 1' is normalized when training-set sizes differ across strategies (6.2K–7.5K examples).",
+          "Specify validation-set composition, checkpoint-selection criteria, decoding settings (temperature/greedy), and seeds for reproducibility.",
+          "Report Kendall's τ alongside Spearman, given that intrinsic dim values are heavily tied due to the discrete sweep.",
+          "Footnote 1's clarification that teacher token probability is assumed 1 should be promoted; the resulting metric is then not a true KL divergence.",
+          "Figures 2–3: showing only a subset of strategies obscures whether the Pareto frontiers cross or interleave for the omitted strategies; an appendix figure with all 14 would help.",
+          "Reasoning Gym cognitive result (No-CoT best) is interesting but underexplored — the framework predicts No CoT is most compressible there, which deserves more analysis."
+        ],
+        "questions_for_authors": [
+          "Have you tested the metric on a non-Gemma base model family (e.g., Llama-3 or Qwen-2.5)? If not, do you have any preliminary evidence that the relative ordering of strategies by intrinsic dim is preserved across model families?",
+          "How sensitive is the intrinsic-dim ordering to the choice of LoRA module groups? E.g., if you restrict to attention-only or MLP-only adaptations throughout, do the same strategy rankings emerge?",
+          "For the Gemini CoT vs Gemma 27B CoT comparison: can you isolate teacher-quality effects from strategy effects, e.g., by also generating 'long' CoTs with Gemma-3 27B or 'short' CoTs with Gemini 2.5?",
+          "Executed PoT performs computation externally. If you restrict evaluation to non-arithmetic-heavy problems or compare against Simulated PoT specifically on arithmetic-intensive subsets, does Executed PoT still show the lowest intrinsic dim?",
+          "Have you measured variance of intrinsic-dim estimates across multiple training seeds? How wide are the uncertainty bands?",
+          "Is the correlation between intrinsic dim and accuracy significantly stronger than that of token perplexity (e.g., via a Williams/Steiger test)?",
+          "For the 1B/4B compression comparison: could you re-run the analysis with the same threshold (e.g., 50% of each model's own max train accuracy) to make cross-scale claims apples-to-apples?",
+          "Could the intrinsic dim be approximated cheaply by, e.g., the training loss after one epoch at a fixed small LoRA rank? Have you explored such surrogate predictors that would make the metric practically deployable?",
+          "How does the metric behave for strategies where the max training accuracy is below τ (i.e., d_int undefined)? Is there a principled handling beyond reporting the sweep ceiling?"
+        ],
+        "recommendation": "weak_accept",
+        "recommendation_rationale": "This paper makes a genuinely novel conceptual contribution by reframing intrinsic dimensionality as a property of the reasoning supervision rather than the model, and backs it up with strong empirical correlations (0.93 on 4B) that meaningfully outperform standard baselines. The experimental design is well-controlled (threshold robustness, training-size and correctness ablations) and the MDL-grounded interpretation is appealing. However, the contribution is bounded by several non-fatal but substantive limitations: experiments are confined to a single model family (Gemma-3) with an explicit conflict-of-interest disclosure, the cross-domain Reasoning Gym evidence relies on n=4 correlations, the Executed PoT result is confounded by external computation, the metric is more expensive to compute than the evaluation it aims to predict (limiting practical utility), and the MDL connection is informal rather than rigorously established. These issues do not undermine the core finding but do scope its significance. The paper is more valuable as an analytical/interpretive contribution than as a deployable tool, and on balance the novelty and clarity of the empirical signal warrant acceptance.",
+        "confidence_1_to_5": 4
+      },
+      "usage": {
+        "input_tokens": 13108,
+        "output_tokens": 3071,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_8": {
+      "parsed": {
+        "summary_of_paper": "The paper proposes intrinsic dimensionality—operationalized as the minimum number of LoRA-trainable parameters needed to reach a fixed training-accuracy threshold—as a quantitative predictor of how well a chain-of-thought (CoT) reasoning strategy will generalize when used as fine-tuning supervision. Departing from prior intrinsic-dimension work that varies the model with fixed data, the authors fix the base model (Gemma-3 1B and 4B) and vary the reasoning-chain format across 14 strategies (No CoT, Short/Very Short CoT, distractor-injected CoT, Executed/Simulated PoT, Plan-and-Solve, Critical CoT, High-Review-Ratio CoT, Gemini/Gemma teacher CoT, etc.) applied to the same GSM8K questions.\n\nOn GSM8K and five OOD math stress tests, intrinsic dimensionality shows a strong inverse correlation with overall accuracy (Spearman 0.93 on 4B; 0.75 on 1B), substantially exceeding length (0.31/0.24), token perplexity (0.82/0.63), sequence KL/NLL (~0), and LongPPL (0.60–0.62). The result is robust across threshold choices (Table 3), holds qualitatively on Reasoning Gym algorithmic and cognitive tasks (Table 4), and degrades when training-data correctness is corrupted (Table 5). The authors frame the finding via the Minimum Description Length principle: effective reasoning chains, despite producing longer outputs, make the underlying input→answer mapping more compressible.",
+        "main_strengths": [
+          "Conceptually novel reframing of intrinsic dimensionality as a property of the reasoning supervision (with the model fixed), rather than of the model (with data fixed). This is a clean and useful inversion of prior work that yields a non-obvious empirical signal.",
+          "Strong and consistent empirical results: Spearman 0.93 on Gemma-3 4B and 0.75 on 1B across 14 diverse strategies, substantially outperforming all alternative quantitative metrics considered (length, token PPL, KL/NLL, LongPPL).",
+          "Thoughtful threshold-robustness study (Table 3): correlations remain 0.72–0.94 across multiple reasonable threshold definitions, including a practical epoch-1 variant that avoids overfitting contamination and removes dependence on validation evaluation.",
+          "Useful controls: training-set size differences across strategies are shown not to drive the ordering (Spearman ~−0.11 with accuracy), and a correctness-corruption ablation (Table 5) provides supportive evidence that the metric reflects coherence of the input→output mapping rather than surface statistics.",
+          "Broad strategy coverage (14 strategies spanning length, format, distractors, decomposition, verification, code), an extension to Reasoning Gym, and clear visualizations (Figures 1–3) that make the measurement procedure transparent.",
+          "Clean MDL-grounded conceptual narrative that contextualizes the empirical finding within an established information-theoretic framework."
+        ],
+        "main_weaknesses": [
+          "Single model family. All experiments use Gemma-3 (1B and 4B), and the authors note a conflict of interest with Gemma development. Without at least one non-Gemma family (Llama, Qwen, Mistral), the generality of the central claim—and the strength of the headline 0.93 correlation—remains unestablished.",
+          "Reasoning Gym cross-domain claim is empirically weak: rank correlations are computed over only n=4 strategies per category, where a correlation of 1.00 is largely uninformative. This evidence does not robustly support a 'generalizes beyond math' claim.",
+          "Confounded comparisons among strategies. (a) Gemini CoT uses a stronger teacher than the other CoTs (Gemma-3 27B), conflating teacher quality with strategy. (b) Executed PoT offloads arithmetic to a Python interpreter, so its 'low intrinsic dim + high accuracy' result may reflect circumvented computation rather than greater compressibility under the model.",
+          "Practical utility is overstated. Computing intrinsic dimension requires 20–30 LoRA fine-tunes per strategy, far more expensive than the test-time evaluation it nominally replaces. The gain over token perplexity (0.93 vs 0.82) is not clearly worth this cost in any concrete deployment scenario, and no cheap surrogate is proposed.",
+          "MDL grounding is informal. LoRA provides only an upper bound on description length—as the authors themselves note—so the MDL connection is motivational rather than rigorous. No formal claim links the LoRA-sweep estimator to a Kolmogorov/MDL quantity.",
+          "Metric mislabeling and clarity issues. What is called 'sequence KL divergence' is in fact average sequence-level negative log-likelihood (cross-entropy under a uniform empirical distribution); the footnote about assuming teacher-token probability = 1 should be more prominently noted, since this means the comparison is not a true KL.",
+          "No reported variance. Intrinsic-dim estimates and accuracies are not reported with seed variance or bootstrap CIs, leaving robustness to training stochasticity and confidence on the headline correlation difference unquantified.",
+          "Cross-scale 'larger models compress more efficiently' claim compares parameter counts measured at different thresholds (63.0% for 4B vs 24.3% for 1B), making the comparison apples-to-oranges as currently presented.",
+          "Limited ablation on the LoRA sweep design itself: the choice of module groups (attention-only vs MLP vs all) and the greedy selection of (rank, modules) at each parameter target qualitatively change which subspace is being explored. No analysis of how this affects the strategy ordering."
+        ],
+        "detailed_comments": [
+          "Section 2.3 / Section 4.3: The decision to use epoch-1 maximum training accuracy to set τ is well motivated (avoids overfitting contamination) and the robustness table (Table 3) is convincing within the considered range. However, please specify what happens when a strategy never reaches τ in the swept range (e.g., No CoT at the upper bound of the sweep)—the reported d_int values appear to saturate at the sweep ceiling for several strategies, which inflates the apparent spread.",
+          "Section 4.1 / Tables 1–2: The headline correlation difference between intrinsic dim (0.93) and token perplexity (0.82) is large in magnitude but not tested for statistical significance. With n=14 strategies, a Steiger/Williams test for correlated correlations or a bootstrap CI would strengthen the comparison considerably.",
+          "Section 4.2 (Gemma-3 1B): Several strategies score in the 1–5% range on overall accuracy, suggesting partial floor effects. It is worth checking whether the 0.75 correlation is dominated by which strategies clear the floor versus a graded ordering within the non-floor regime.",
+          "Section 4.4 (cross-scale claim): As written, the 4B vs 1B compression comparison uses different thresholds and therefore is not a clean apples-to-apples statement. A re-analysis at a normalized threshold (e.g., 50% of each model's own maximum train accuracy) would substantiate the claim.",
+          "Section 4.4 (Executed PoT): The interpretation 'code-based reasoning with execution provides a particularly compressible representation' should be tempered: Executed PoT replaces in-model arithmetic with deterministic external execution. Some evidence isolating compressibility from offloaded computation (e.g., contrasting Executed PoT and Simulated PoT on arithmetic-heavy vs arithmetic-light subsets) would clarify which mechanism is at play.",
+          "Section 4.5: The Reasoning Gym extension is conceptually nice, but n=4 strategies per category and rank correlations of 1.00 are not strong evidence. Either expand the strategy set or weaken the framing of the claim.",
+          "Sections 3 and Appendix: Please report decoding settings (temperature/greedy), validation-set composition, checkpoint-selection criteria, and seeds for the fine-tuning runs. The current description leaves some reproducibility ambiguity.",
+          "Footnote 1: The note that the teacher token probability is assumed to be 1 (yielding a divergence-like but not true-KL quantity) is important and would be better placed in the main text where 'KL divergence' is defined and interpreted.",
+          "Figures 2–3 show only a subset of strategies. An appendix figure with all 14 curves would make it possible to assess whether Pareto frontiers cross or interleave (which would matter for the ordering)."
+        ],
+        "questions_for_authors": [
+          "Have you tested the intrinsic-dim ordering on a non-Gemma base model family (e.g., Llama-3, Qwen-2.5)? If not, do you have any preliminary signal that the same ordering of strategies emerges, particularly given the conflict-of-interest disclosure?",
+          "How sensitive is the strategy ordering to the LoRA module-group choice? If you restrict the sweep to attention-only or MLP-only adaptations throughout, are the headline correlations preserved?",
+          "Can you isolate teacher-quality from strategy effects in the Gemini-CoT comparison, e.g., by generating long/unconstrained CoTs with Gemma-3 27B and short/equation-style CoTs with Gemini 2.5?",
+          "Does Executed PoT retain its low intrinsic-dimension advantage on subsets where the arithmetic is light or trivial (i.e., where external execution provides little benefit)? Or does its advantage primarily track arithmetic load?",
+          "Is the 0.93 vs 0.82 correlation gap between intrinsic dim and token perplexity statistically significant under a Steiger/Williams test (or bootstrap)?",
+          "What are the seed-to-seed variances of (a) the estimated d_int for a fixed strategy and (b) the downstream overall accuracy?",
+          "For strategies that never reach τ within the swept parameter range, how is d_int reported, and how does this choice affect the correlation?",
+          "For the cross-scale claim, can you re-run the analysis with a model-normalized threshold (e.g., 50% of each model's own max train accuracy) to enable a clean comparison?",
+          "Have you explored cheap surrogate predictors that would make the metric more practically usable—e.g., training loss after a few hundred steps at a small fixed LoRA rank—and how do these correlate with overall accuracy?"
+        ],
+        "suggestions_for_improvement": [
+          "Add at least one non-Gemma model family (e.g., Llama-3-8B or Qwen-2.5-7B) to verify that the intrinsic-dim ordering is not specific to Gemma. Even a partial replication on 5–6 strategies would substantially strengthen the generality claim.",
+          "Report bootstrap CIs on Spearman correlations and a Steiger/Williams test between intrinsic dim and the next-best baseline (token PPL).",
+          "Run multiple seeds for the LoRA sweep and report variance bands on d_int and accuracies; at minimum, run 3 seeds for a representative subset of strategies.",
+          "Rename 'sequence KL divergence' to something more accurate (e.g., 'sequence NLL' or 'cross-entropy'), and promote Footnote 1 into the main text.",
+          "Decouple teacher quality from strategy by generating matched short/long CoTs from a common teacher (e.g., Gemma-3 27B for all CoTs, with Gemini results as a stronger-teacher comparison rather than a separate strategy).",
+          "Provide an ablation isolating Executed PoT's external-execution effect from compressibility (e.g., compare against Simulated PoT on arithmetic-heavy vs arithmetic-light subsets).",
+          "Extend the Reasoning Gym evaluation to ≥8 strategies per category to make the cross-domain claim quantitatively meaningful.",
+          "Recompute the 1B vs 4B 'larger models compress better' claim using a per-model-normalized threshold, and explicitly state when the comparison is qualitative.",
+          "Discuss practical utility more carefully: position intrinsic dimensionality primarily as an analytical/interpretive tool, and either (a) propose a cheap surrogate or (b) clearly delineate the regimes (e.g., dataset curation, alignment of strategies to student models) where the up-front cost of the LoRA sweep is justified.",
+          "Add an appendix figure showing the Pareto frontiers for all 14 strategies, and provide a table of d_int values for the full sweep grid."
+        ],
+        "overall_recommendation": "Weak Accept. The paper makes a genuinely novel conceptual contribution (inverting the intrinsic-dimensionality framing to characterize reasoning strategies rather than models) backed by strong, well-designed empirical correlations and useful robustness/correctness ablations. The main limitations—single model family with a stated conflict of interest, n=4 cross-domain correlations, confounds in two key strategy comparisons (Executed PoT, Gemini CoT), high cost of the metric relative to the test-time evaluation it would predict, informal MDL grounding, and absence of variance estimates and significance tests—do not undermine the core finding but meaningfully scope its claimed generality and practical utility. With additional model families, variance reporting, and tighter handling of the confounds noted, this would be a clear accept.",
+        "reviewer_confidence_1_to_5": 4,
+        "score_card": {
+          "soundness_1_to_4": 3,
+          "presentation_1_to_4": 3,
+          "contribution_1_to_4": 3,
+          "overall_1_to_10": 6
+        }
+      },
+      "usage": {
+        "input_tokens": 5943,
+        "output_tokens": 4734,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_9": {
+      "parsed": {
+        "hallucinated_comments": [],
+        "misrepresentations": [
+          "The draft says Gemini CoT 'uses a stronger teacher than the other CoTs (Gemma-3 27B), conflating teacher quality with strategy.' The paper explicitly frames Gemini CoT as a separate teacher-model comparison rather than claiming it isolates strategy from teacher; calling this a confound somewhat misrepresents the paper's framing, though the concern about confounding is still legitimate."
+        ],
+        "missed_strengths": [
+          "The paper provides a practical advantage: epoch-1 training-accuracy-based threshold computation eliminates the need for validation/OOD evaluation, making the metric usable in settings where labeled OOD test data is unavailable.",
+          "The comparison against LongPPL (Appendix D) is a thoughtful additional baseline that strengthens the case for intrinsic dimensionality over perplexity-based metrics."
+        ],
+        "missed_weaknesses": [
+          "The paper does not discuss whether the strong correlation might partly reflect that higher-accuracy strategies trivially reach the threshold at lower parameter counts because they start from higher base accuracy—a potential circularity in the metric definition that warrants explicit discussion.",
+          "No comparison to simpler predictors such as zero-shot accuracy of the base model on the strategy's CoT format, or training loss at a fixed small LoRA rank, which would be obvious cheap baselines."
+        ],
+        "too_strong_claims": [
+          "The phrasing 'a correlation of 1.00 is largely uninformative' for Reasoning Gym n=4 is somewhat overstated—it is informative but has very wide confidence intervals; better to frame as 'has very wide CI / limited statistical power'.",
+          "Calling the practical utility 'overstated' is reasonable but the draft could acknowledge the authors themselves explicitly note this limitation in Section 6 (Discussion)."
+        ],
+        "non_actionable_criticisms": [],
+        "tone_issues": [],
+        "consistency_between_summary_weaknesses_and_recommendation": "consistent",
+        "external_novelty_claims_supported": "yes",
+        "corrections_needed": [
+          "Soften the Gemini CoT critique: acknowledge the authors frame it as a separate teacher comparison, while still noting it cannot cleanly isolate strategy from teacher quality.",
+          "Reframe the Reasoning Gym n=4 critique from 'correlation of 1.00 is largely uninformative' to 'n=4 yields very wide confidence intervals and limited statistical power; the cross-domain claim should be qualified accordingly.'",
+          "Acknowledge in the practical-utility weakness that the authors themselves note this limitation in Section 6, but argue it deserves more prominent positioning.",
+          "Add a missed strength about epoch-1 threshold enabling validation-free computation.",
+          "Add a missed strength about the LongPPL comparison in Appendix D.",
+          "Add a missed weakness about potential circularity: strategies with higher base accuracy may reach a fixed absolute threshold at lower parameter counts almost by construction; this should be discussed/ablated.",
+          "Add a missed weakness/question about cheap surrogate predictors not being benchmarked (e.g., training loss at fixed small LoRA rank, base-model zero-shot accuracy on the CoT format)."
+        ]
+      },
+      "usage": {
+        "input_tokens": 5064,
+        "output_tokens": 1165,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    },
+    "stage_10": {
+      "parsed": {
+        "final_review": {
+          "summary_of_paper": "The paper proposes intrinsic dimensionality—operationalized as the minimum number of LoRA-trainable parameters needed to reach a fixed training-accuracy threshold—as a quantitative predictor of how well a chain-of-thought (CoT) reasoning strategy will generalize when used as fine-tuning supervision. Departing from prior intrinsic-dimension work that varies the model with fixed data, the authors fix the base model (Gemma-3 1B and 4B) and vary the reasoning-chain format across 14 strategies (No CoT, Short/Very Short CoT, distractor-injected CoT, Executed/Simulated PoT, Plan-and-Solve, Critical CoT, High-Review-Ratio CoT, Gemini/Gemma teacher CoT, etc.) applied to the same GSM8K questions.\n\nOn GSM8K and five OOD math stress tests, intrinsic dimensionality shows a strong inverse correlation with overall accuracy (Spearman 0.93 on 4B; 0.75 on 1B), substantially exceeding length (0.31/0.24), token perplexity (0.82/0.63), sequence NLL/'KL' (~0), and LongPPL (0.60–0.62, Appendix D). The result is robust across threshold choices (Table 3), holds qualitatively on Reasoning Gym algorithmic and cognitive tasks (Table 4), and degrades when training-data correctness is corrupted (Table 5). The authors frame the finding via the Minimum Description Length principle: effective reasoning chains, despite producing longer outputs, make the underlying input→answer mapping more compressible.",
+          "main_strengths": [
+            "Conceptually novel reframing of intrinsic dimensionality as a property of the reasoning supervision (with the model fixed), rather than of the model (with data fixed). This is a clean and useful inversion of prior work that yields a non-obvious empirical signal.",
+            "Strong and consistent empirical results: Spearman 0.93 on Gemma-3 4B and 0.75 on 1B across 14 diverse strategies, substantially outperforming all alternative quantitative metrics considered (length, token PPL, sequence NLL, LongPPL).",
+            "Thoughtful threshold-robustness study (Table 3): correlations remain 0.72–0.94 across multiple reasonable threshold definitions. Notably, the epoch-1 training-accuracy threshold enables computing intrinsic dimensionality entirely from training curves—no validation/OOD evaluation needed—broadening applicability to settings without held-out labeled data.",
+            "Useful controls: training-set size differences across strategies are shown not to drive the ordering (Spearman ~−0.11 with accuracy), and a correctness-corruption ablation (Table 5) provides supportive evidence that the metric reflects coherence of the input→output mapping rather than surface statistics.",
+            "Broad strategy coverage (14 strategies spanning length, format, distractors, decomposition, verification, code), an extension to Reasoning Gym, and clear visualizations (Figures 1–3) that make the measurement procedure transparent.",
+            "Thorough baseline comparison set, including the LongPPL variant (Appendix D) targeted at the most plausible per-trajectory alternative metric—strengthening the case that intrinsic dimensionality captures something distinct from perplexity.",
+            "Clean MDL-grounded conceptual narrative that contextualizes the empirical finding within an established information-theoretic framework."
+          ],
+          "main_weaknesses": [
+            "Single model family. All experiments use Gemma-3 (1B and 4B), and the authors note a conflict of interest with Gemma development. Without at least one non-Gemma family (Llama, Qwen, Mistral), the generality of the central claim—and the strength of the headline 0.93 correlation—remains unestablished.",
+            "Reasoning Gym cross-domain claim is statistically underpowered: rank correlations are computed over only n=4 strategies per category, yielding very wide confidence intervals. The cross-domain claim should be qualified accordingly.",
+            "Potential circularity concern: strategies with higher base/zero-shot accuracy on the CoT format may reach a fixed absolute training-accuracy threshold at lower parameter counts almost by construction, since they need to move the model less from initialization. The paper does not explicitly disentangle 'compressibility of the input→output mapping' from 'proximity of the strategy to the base model's existing competence', and an ablation controlling for base-model zero-shot accuracy on each strategy's format would clarify this.",
+            "Confounded strategy comparisons. (a) Executed PoT offloads arithmetic to a Python interpreter, so its 'low intrinsic dim + high accuracy' result may reflect circumvented computation rather than greater compressibility under the model. (b) Gemini CoT, although framed as a separate teacher-model comparison rather than a strategy-isolated condition, still cannot cleanly attribute differences to strategy vs. teacher quality.",
+            "No cheap surrogate predictors are benchmarked. Obvious alternatives—training loss at a small fixed LoRA rank, base-model zero-shot accuracy on the CoT format, or early-step loss decay—would test whether the same ordering can be obtained at a small fraction of the LoRA sweep's cost. The authors note the computational cost in Section 6 but do not investigate such alternatives empirically.",
+            "MDL grounding is informal. LoRA provides only an upper bound on description length—as the authors themselves note—so the MDL connection is motivational rather than rigorous. No formal claim links the LoRA-sweep estimator to a Kolmogorov/MDL quantity.",
+            "Metric mislabeling and clarity issues. What is called 'sequence KL divergence' is in fact average sequence-level negative log-likelihood (cross-entropy under a uniform empirical distribution); the footnote about assuming teacher-token probability = 1 should be more prominently noted in the main text.",
+            "No reported variance. Intrinsic-dim estimates and accuracies are not reported with seed variance or bootstrap CIs, leaving robustness to training stochasticity and confidence on the headline correlation difference unquantified. With n=14 strategies, the 0.93 vs 0.82 correlation gap is not subjected to a significance test (e.g., Steiger/Williams).",
+            "Cross-scale 'larger models compress more efficiently' claim compares parameter counts measured at different absolute thresholds (63.0% for 4B vs 24.3% for 1B), so the comparison is not clean as currently presented.",
+            "Limited ablation on the LoRA sweep design itself: the choice of module groups (attention-only vs MLP vs all) and the greedy selection of (rank, modules) at each parameter target qualitatively change which subspace is being explored. No analysis of how this affects the strategy ordering."
+          ],
+          "detailed_comments": [
+            "Section 2.3 / Section 4.3: The decision to use epoch-1 maximum training accuracy to set τ is well motivated and the robustness table (Table 3) is convincing within the considered range. Please specify what happens when a strategy never reaches τ in the swept range (e.g., No CoT at the upper bound of the sweep)—the reported d_int values appear to saturate at the sweep ceiling for several strategies, which could inflate the apparent spread.",
+            "Section 4.1 / Tables 1–2: The headline correlation difference between intrinsic dim (0.93) and token perplexity (0.82) is large in magnitude but not tested for statistical significance. With n=14 strategies, a Steiger/Williams test for correlated correlations or a bootstrap CI would strengthen the comparison considerably.",
+            "Section 4.2 (Gemma-3 1B): Several strategies score in the 1–5% range on overall accuracy, suggesting partial floor effects. It is worth checking whether the 0.75 correlation is dominated by which strategies clear the floor versus a graded ordering within the non-floor regime.",
+            "Section 4.4 (cross-scale claim): As written, the 4B vs 1B compression comparison uses different absolute thresholds and is not a clean apples-to-apples statement. A re-analysis at a normalized threshold (e.g., 50% of each model's own maximum train accuracy) would substantiate the claim.",
+            "Section 4.4 (Executed PoT): The interpretation 'code-based reasoning with execution provides a particularly compressible representation' should be tempered: Executed PoT replaces in-model arithmetic with deterministic external execution. Contrasting Executed PoT and Simulated PoT on arithmetic-heavy vs arithmetic-light subsets would clarify which mechanism is at play.",
+            "Section 4.5: The Reasoning Gym extension is conceptually nice, but n=4 strategies per category yields wide CIs on rank correlations. Either expand the strategy set or weaken the framing.",
+            "Potential circularity: strategies closer to the base model's output distribution (high zero-shot accuracy on the format) may require fewer LoRA degrees of freedom to push training accuracy above τ. Consider adding base-model zero-shot accuracy on each strategy's CoT format as both a baseline predictor and a control variable.",
+            "Cheap surrogates: it would substantially increase the metric's practical relevance to report whether (i) training loss after K early steps at a small fixed LoRA rank, or (ii) base-model zero-shot accuracy on each format, can recover the strategy ordering at much lower cost.",
+            "Sections 3 and Appendix: Please report decoding settings (temperature/greedy), validation-set composition, checkpoint-selection criteria, and seeds for the fine-tuning runs.",
+            "Footnote 1: The note that the teacher token probability is assumed to be 1 (yielding a divergence-like but not true-KL quantity) is important and would be better placed in the main text where 'KL divergence' is defined.",
+            "Figures 2–3 show only a subset of strategies. An appendix figure with all 14 curves would make it possible to assess whether Pareto frontiers cross or interleave (which would matter for the ordering)."
+          ],
+          "questions_for_authors": [
+            "Have you tested the intrinsic-dim ordering on a non-Gemma base model family (e.g., Llama-3, Qwen-2.5)? Even partial replication on 5–6 strategies would substantially strengthen generality, particularly given the conflict-of-interest disclosure.",
+            "How sensitive is the strategy ordering to the LoRA module-group choice? If you restrict the sweep to attention-only or MLP-only adaptations throughout, are the headline correlations preserved?",
+            "Does the base model's zero-shot accuracy on each strategy's CoT format predict overall accuracy comparably well? If so, does intrinsic dimensionality retain explanatory power after controlling for it?",
+            "Can you isolate teacher-quality from strategy effects in the Gemini-CoT comparison, e.g., by generating long/unconstrained CoTs with Gemma-3 27B and short/equation-style CoTs with Gemini 2.5?",
+            "Does Executed PoT retain its low intrinsic-dimension advantage on subsets where the arithmetic is light or trivial?",
+            "Is the 0.93 vs 0.82 correlation gap between intrinsic dim and token perplexity statistically significant under a Steiger/Williams test (or bootstrap)?",
+            "What are the seed-to-seed variances of (a) the estimated d_int for a fixed strategy and (b) the downstream overall accuracy?",
+            "For strategies that never reach τ within the swept parameter range, how is d_int reported, and how does this choice affect the correlation?",
+            "For the cross-scale claim, can you re-run the analysis with a model-normalized threshold to enable a clean comparison?",
+            "Have you explored cheap surrogate predictors—e.g., training loss after a few hundred steps at a small fixed LoRA rank—and how do these correlate with overall accuracy?"
+          ],
+          "suggestions_for_improvement": [
+            "Add at least one non-Gemma model family (e.g., Llama-3-8B or Qwen-2.5-7B) to verify that the intrinsic-dim ordering is not specific to Gemma.",
+            "Report bootstrap CIs on Spearman correlations and a Steiger/Williams test between intrinsic dim and the next-best baseline (token PPL).",
+            "Run multiple seeds for the LoRA sweep and report variance bands on d_int and accuracies; at minimum, 3 seeds for a representative subset of strategies.",
+            "Add a base-model zero-shot accuracy baseline (per strategy's CoT format) and an ablation showing whether intrinsic dimensionality contributes additional predictive power beyond it. This directly addresses the circularity concern.",
+            "Benchmark at least one cheap surrogate predictor (e.g., early-step training loss at fixed small LoRA rank) and report its correlation with overall accuracy.",
+            "Rename 'sequence KL divergence' to 'sequence NLL' or 'cross-entropy', and promote Footnote 1 into the main text.",
+            "Decouple teacher quality from strategy by generating matched short/long CoTs from a common teacher.",
+            "Provide an ablation isolating Executed PoT's external-execution effect from compressibility (e.g., compare against Simulated PoT on arithmetic-heavy vs arithmetic-light subsets).",
+            "Extend the Reasoning Gym evaluation to ≥8 strategies per category, or explicitly qualify the cross-domain claim as exploratory.",
+            "Recompute the 1B vs 4B 'larger models compress better' claim using a per-model-normalized threshold, and explicitly state when the comparison is qualitative.",
+            "Position intrinsic dimensionality primarily as an analytical/interpretive tool given its computational cost, and either propose a cheap surrogate or clearly delineate use cases where the LoRA sweep is justified.",
+            "Add an appendix figure showing the Pareto frontiers for all 14 strategies."
+          ],
+          "overall_recommendation": "Weak Accept. The paper makes a genuinely novel conceptual contribution (inverting the intrinsic-dimensionality framing to characterize reasoning strategies rather than models) backed by strong, well-designed empirical correlations and useful robustness/correctness ablations. The main limitations—single model family with a stated conflict of interest, statistically underpowered cross-domain evidence, an unaddressed potential circularity with base-model proximity, confounds in two key strategy comparisons (Executed PoT, Gemini CoT), high cost of the metric with no cheap surrogate explored, informal MDL grounding, and absence of variance estimates and significance tests—do not undermine the core finding but meaningfully scope its claimed generality and practical utility. With additional model families, variance reporting, a base-model-proximity control, and tighter handling of confounds, this would be a clear accept.",
+          "reviewer_confidence_1_to_5": 4,
+          "score_card": {
+            "soundness_1_to_4": 3,
+            "presentation_1_to_4": 3,
+            "contribution_1_to_4": 3,
+            "overall_1_to_10": 6
+          }
+        },
+        "author_facing_improvement_checklist": [
+          "Replicate the intrinsic-dimension correlation on at least one non-Gemma model family (e.g., Llama-3, Qwen-2.5), even on a subset of strategies.",
+          "Add a base-model zero-shot accuracy baseline per CoT format and show whether intrinsic dimensionality adds predictive power beyond it (addresses a potential circularity concern).",
+          "Benchmark at least one cheap surrogate (e.g., early training loss at small fixed LoRA rank) against intrinsic dimensionality.",
+          "Report bootstrap CIs on Spearman correlations and a Steiger/Williams test between intrinsic dim and token perplexity.",
+          "Add multi-seed variance estimates for d_int and downstream accuracies on a representative subset of strategies.",
+          "Specify how d_int is handled when a strategy never reaches τ in the sweep, and analyze sensitivity to this choice.",
+          "Recompute the 4B-vs-1B cross-scale compression claim using a per-model-normalized threshold.",
+          "Provide an ablation on LoRA module-group choices (attention-only / MLP-only / all) and report whether the strategy ordering is preserved.",
+          "Disentangle teacher-quality from strategy effects (e.g., produce matched CoTs from a single teacher).",
+          "Provide evidence isolating Executed PoT's external-execution advantage from compressibility (e.g., arithmetic-heavy vs light subsets).",
+          "Rename 'sequence KL divergence' to 'sequence NLL' and promote Footnote 1 into the main text.",
+          "Expand Reasoning Gym to ≥8 strategies per category or explicitly qualify the cross-domain claim.",
+          "Add an appendix figure with Pareto frontiers for all 14 strategies and a full d_int table.",
+          "Document decoding settings, validation composition, checkpoint selection, and random seeds for reproducibility."
+        ],
+        "changes_from_draft": [
+          "Softened the Gemini CoT critique to acknowledge that the authors frame it as a separate teacher-model comparison rather than a strategy-isolation condition, while preserving the legitimate confounding concern.",
+          "Reframed the Reasoning Gym n=4 critique from 'correlation of 1.00 is largely uninformative' to 'statistically underpowered with very wide CIs', acknowledging it is informative but limited.",
+          "Acknowledged in the practical-utility weakness that the authors note this limitation in Section 6 (Discussion), and reframed the criticism around the absence of cheap surrogates rather than overclaiming.",
+          "Added a missed strength about epoch-1 threshold enabling validation-free computation.",
+          "Added a missed strength about the LongPPL comparison in Appendix D.",
+          "Added a missed weakness about potential circularity between strategy proximity to the base model and a fixed absolute threshold for d_int, with corresponding question and suggested ablation.",
+          "Added a missed weakness/question/suggestion about benchmarking cheap surrogate predictors (e.g., early-step training loss, base-model zero-shot accuracy on the CoT format)."
+        ]
+      },
+      "usage": {
+        "input_tokens": 6270,
+        "output_tokens": 6139,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 67764
+      },
+      "stop_reason": "end_turn"
+    }
+  },
+  "total_usage": {
+    "input_tokens": 76295,
+    "output_tokens": 44198,
+    "cache_creation_input_tokens": 86453,
+    "cache_read_input_tokens": 997336
+  }
+}
