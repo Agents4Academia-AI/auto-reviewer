@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h1>Review a paper</h1>
+  <p class="muted">Upload a PDF (max {{ max_pages }} pages, {{ max_mb }} MB). A full
+    review runs through a 10-stage pipeline and takes a few minutes.</p>
+  <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+    <input type="file" name="file" accept="application/pdf" required>
+    <label class="checkbox">
+      <input type="checkbox" name="web_search" checked>
+      Use web search for the novelty check (slower, more accurate)
+    </label>
+    <button type="submit">Upload &amp; review</button>
+  </form>
+</section>
+
+<section>
+  <h2>Recent reviews</h2>
+  {% if jobs %}
+  <table class="jobs">
+    <thead>
+      <tr><th>Paper</th><th>Status</th><th>Recommendation</th><th>Score</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for j in jobs %}
+      <tr>
+        <td class="filename">{{ j.filename }}</td>
+        <td><span class="badge badge-{{ j.status }}">{{ j.status }}</span></td>
+        <td>{{ j.recommendation or "—" }}</td>
+        <td>{{ j.overall_score if j.overall_score is not none else "—" }}</td>
+        <td><a href="/review/{{ j.id }}">open</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No reviews yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

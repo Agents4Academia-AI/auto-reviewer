@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in — Paper Reviewer</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="container narrow">
+    <h1>📄 Paper Reviewer</h1>
+    <p class="muted">Enter the shared password to continue:</p>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form action="/login" method="post" class="card">
+      <label>Password
+        <input type="password" name="password" autofocus required>
+      </label>
+      <div style="margin: 20px;"> </div>
+      <button type="submit">Log in</button>
+    </form>
+  </main>
+</body>
+</html>
