@@ -128,8 +128,8 @@ Novelty must be judged against work available on or before the cutoff date. Do n
 Put post-cutoff or clearly concurrent work in a separate context list and use it only to calibrate importance, adoption, or how the field evolved. 
 If a related work is concurrent or has uncertain timing, mark it explicitly as "concurrent_or_uncertain" and do not treat it as definitive prior art.
 
-You have a web search tool. You MUST actually run searches before judging novelty — do not answer from your own knowledge. Use it to look up the most relevant prior work on arXiv, OpenReview, Papers With Code, and venue proceedings. Prefer sources with dates and URLs. Compare against the closest matches. Set `source_of_judgment` to "web_search" only after you have executed at least one search.
-Only if every search attempt fails should you fall back to your own knowledge, and then mark conclusions as "from-model-knowledge" so reviewers can verify.
+If you have access to a web search tool, use it to look up the most relevant prior work on arXiv, OpenReview, Papers With Code, and venue proceedings. Prefer sources with dates and URLs. Compare against the closest matches.
+If no search tool is available, rely on your own knowledge but mark conclusions as "from-model-knowledge" so reviewers can verify.
 
 STEP 1 — Decompose into novelty axes.
 From the paper's contributions and claims, identify the distinct axes on which the paper might claim novelty. Use only the axes that actually apply. Candidate axes:
@@ -154,10 +154,10 @@ EXEMPLAR (for a paper proposing a self-attention-only sequence model):
   search_keywords: ["WMT 2014 English-German BLEU state of the art", "machine translation BLEU benchmark 2017"]
   search_question: "What was the best published BLEU on WMT14 EN-DE before this work, and by which model?"
 
-STEP 3 — Search (multi-round). You have a web search tool — use it; do not skip this step.
-Run the per-axis queries against arXiv, OpenReview, Papers With Code, Semantic Scholar / Google Scholar, and venue proceedings. Do at least one refinement round: after the first results, tighten queries toward the closest matches you found (chase the specific competing method by name, check its citations). Record the exact queries you actually ran in `novelty_axes_searched`.
+STEP 3 — Search (multi-round).
+If you have a web search tool, run the per-axis queries against arXiv, OpenReview, Papers With Code, Semantic Scholar / Google Scholar, and venue proceedings. Do at least one refinement round: after the first results, tighten queries toward the closest matches you found (chase the specific competing method by name, check its citations). Record the exact queries you actually ran in `novelty_axes_searched`.
 
-Only if every search attempt fails should you rely on your own knowledge and set `source_of_judgment` to "model_knowledge" so reviewers know conclusions are unverified.
+If no search tool is available, rely on your own knowledge and set `source_of_judgment` to "model_knowledge" so reviewers know conclusions are unverified.
 
 STEP 4 — Compare against closest prior work.
 For each axis, identify the closest prior work and state precisely what this paper does that the prior work does not (or why it is in fact subsumed). Record the FULL bibliographic entry + difference ONCE in `similar_prior_work` at the bottom of the JSON. In each `novelty_axes` entry, reference that prior work by a SHORT pointer (e.g., `"Parikh 2016 [similar_prior_work #1]"`) — do not repeat title/venue/diff text inside the axis. This keeps the output single-source for any downstream stage that consumes prior-work details.
