@@ -47,10 +47,15 @@ def login_form(request: Request):
 
 
 @app.post("/login", response_class=HTMLResponse)
-def login_submit(request: Request, password: str = Form(...)):
+def login_submit(request: Request, name: str = Form(...), password: str = Form(...)):
+    name = name.strip()
+    if not name:
+        return templates.TemplateResponse(
+            request, "login.html", {"error": "Please enter your name."}, status_code=400
+        )
     if auth.password_ok(password):
         resp = RedirectResponse(url="/", status_code=303)
-        auth.issue_cookie(resp)
+        auth.issue_cookie(resp, name)
         return resp
     return templates.TemplateResponse(
         request, "login.html", {"error": "Incorrect password."}, status_code=401
@@ -68,32 +73,50 @@ def logout():
 
 @app.get("/", response_class=HTMLResponse, dependencies=[Depends(auth.require_auth)])
 def index(request: Request):
-    recent = jobs.list_recent(limit=20)
+    me = auth.current_user(request)
+    recent = jobs.list_visible(owner=me, limit=20)
     return templates.TemplateResponse(
         request,
         "index.html",
         {
             "jobs": [j.as_dict() for j in recent],
+            "me": me,
             "max_pages": settings.MAX_PDF_PAGES,
             "max_mb": settings.MAX_UPLOAD_BYTES // (1024 * 1024),
         },
     )
 
 
+def _visible_or_404(job_id: str, request: Request) -> jobs.Job:
+    """Fetch a job the current user is allowed to see (their own or public),
+    else 404. Using 404 (not 403) avoids confirming a private review exists."""
+    job = jobs.get_job(job_id)
+    me = auth.current_user(request)
+    if job is None or not (job.is_public or job.owner == me):
+        raise HTTPException(status_code=404, detail="Review not found")
+    return job
+
+
 @app.get("/review/{job_id}", response_class=HTMLResponse, dependencies=[Depends(auth.require_auth)])
 def review_page(request: Request, job_id: str):
-    job = jobs.get_job(job_id)
-    if job is None:
-        raise HTTPException(status_code=404, detail="Review not found")
+    job = _visible_or_404(job_id, request)
+    is_owner = job.owner == auth.current_user(request)
     return templates.TemplateResponse(
-        request, "review.html", {"job": job.as_dict(), "total_stages": TOTAL_STAGES}
+        request,
+        "review.html",
+        {"job": job.as_dict(), "total_stages": TOTAL_STAGES, "is_owner": is_owner},
     )
 
 
 # --- upload ----------------------------------------------------------------
 
 @app.post("/upload", dependencies=[Depends(auth.require_auth)])
-async def upload(file: UploadFile, web_search: str | None = Form(default=None)):
+async def upload(
+    request: Request,
+    file: UploadFile,
+    web_search: str | None = Form(default=None),
+    make_public: str | None = Form(default=None),
+):
     if not (file.filename or "").lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Please upload a .pdf file.")
 
@@ -124,7 +147,12 @@ async def upload(file: UploadFile, web_search: str | None = Form(default=None)):
         )
 
     use_web_search = web_search is not None
-    job_id = jobs.create_job(filename=file.filename, use_web_search=use_web_search)
+    job_id = jobs.create_job(
+        filename=file.filename,
+        use_web_search=use_web_search,
+        owner=auth.current_user(request),
+        is_public=make_public is not None,
+    )
     storage.save_upload(job_id, data)
     return RedirectResponse(url=f"/review/{job_id}", status_code=303)
 
@@ -132,10 +160,8 @@ async def upload(file: UploadFile, web_search: str | None = Form(default=None)):
 # --- json api (polled by the frontend) -------------------------------------
 
 @app.get("/api/review/{job_id}", dependencies=[Depends(auth.require_auth)])
-def api_status(job_id: str):
-    job = jobs.get_job(job_id)
-    if job is None:
-        raise HTTPException(status_code=404, detail="Review not found")
+def api_status(request: Request, job_id: str):
+    job = _visible_or_404(job_id, request)
     d = job.as_dict()
     d["stage_index"] = stage_index(job.current_stage)
     d["total_stages"] = TOTAL_STAGES
@@ -143,18 +169,18 @@ def api_status(job_id: str):
 
 
 @app.post("/api/review/{job_id}/cancel", dependencies=[Depends(auth.require_auth)])
-def api_cancel(job_id: str):
-    if jobs.get_job(job_id) is None:
-        raise HTTPException(status_code=404, detail="Review not found")
+def api_cancel(request: Request, job_id: str):
+    job = _visible_or_404(job_id, request)
+    # Only the owner may cancel — a public review isn't a shared control surface.
+    if job.owner != auth.current_user(request):
+        raise HTTPException(status_code=403, detail="Only the owner can cancel this review.")
     outcome = jobs.request_cancel(job_id)  # cancelled | cancelling | noop
     return JSONResponse({"outcome": outcome})
 
 
 @app.get("/api/review/{job_id}/markdown", dependencies=[Depends(auth.require_auth)])
-def api_markdown(job_id: str):
-    job = jobs.get_job(job_id)
-    if job is None:
-        raise HTTPException(status_code=404, detail="Review not found")
+def api_markdown(request: Request, job_id: str):
+    _visible_or_404(job_id, request)
     if not storage.result_exists(job_id, "md"):
         raise HTTPException(status_code=409, detail="Review not ready yet.")
     return Response(storage.read_result(job_id, "md"), media_type="text/markdown")

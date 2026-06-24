@@ -1,8 +1,10 @@
-"""Shared-password auth via a signed cookie.
+"""Shared-password auth with a per-user display name, via a signed cookie.
 
-Deliberately minimal: one password for everyone, no user accounts. The cookie
-is signed (not encrypted) with itsdangerous so it can't be forged. If
-REVIEWER_SITE_PASSWORD is unset, auth is disabled entirely — convenient for
+Deliberately minimal: one shared password gates access, and each visitor picks
+a display name at login. The cookie stores that name, signed (not encrypted)
+with itsdangerous so it can't be forged — it's an identity *label* for a
+trusted group, not real authentication. If REVIEWER_SITE_PASSWORD is unset,
+auth is disabled entirely and everyone is the "guest" user — convenient for
 local dev. Swapping to real accounts later means replacing this one module.
 """
 
@@ -15,7 +17,8 @@ from itsdangerous import BadSignature, URLSafeSerializer
 from web import settings
 
 _serializer = URLSafeSerializer(settings.SECRET_KEY, salt="reviewer-auth")
-_AUTH_VALUE = "ok"
+# Identity used when auth is disabled (dev), so review ownership still works.
+GUEST = "guest"
 
 
 def auth_enabled() -> bool:
@@ -26,8 +29,8 @@ def password_ok(candidate: str) -> bool:
     return bool(settings.SITE_PASSWORD) and candidate == settings.SITE_PASSWORD
 
 
-def issue_cookie(response) -> None:
-    token = _serializer.dumps(_AUTH_VALUE)
+def issue_cookie(response, username: str) -> None:
+    token = _serializer.dumps(username)
     response.set_cookie(
         settings.SESSION_COOKIE,
         token,
@@ -41,16 +44,26 @@ def clear_cookie(response) -> None:
     response.delete_cookie(settings.SESSION_COOKIE)
 
 
-def is_authenticated(request: Request) -> bool:
+def current_user(request: Request) -> str | None:
+    """The logged-in display name, or None if not authenticated.
+
+    When auth is disabled, everyone is GUEST so ownership attribution still
+    works in dev.
+    """
     if not auth_enabled():
-        return True
+        return GUEST
     token = request.cookies.get(settings.SESSION_COOKIE)
     if not token:
-        return False
+        return None
     try:
-        return _serializer.loads(token) == _AUTH_VALUE
+        name = _serializer.loads(token)
     except BadSignature:
-        return False
+        return None
+    return name if isinstance(name, str) and name else None
+
+
+def is_authenticated(request: Request) -> bool:
+    return current_user(request) is not None
 
 
 def require_auth(request: Request):

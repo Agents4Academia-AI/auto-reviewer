@@ -10,21 +10,34 @@
       <input type="checkbox" name="web_search" checked>
       Use web search for the novelty check (slower, more accurate)
     </label>
+    <label class="checkbox">
+      <input type="checkbox" name="make_public">
+      Make this review public (visible to others in "Recent reviews")
+    </label>
     <button type="submit">Upload &amp; review</button>
   </form>
 </section>
 
 <section>
   <h2>Recent reviews</h2>
+  <p class="muted">Your reviews, plus public reviews shared by others.</p>
   {% if jobs %}
   <table class="jobs">
     <thead>
-      <tr><th>Paper</th><th>Status</th><th>Recommendation</th><th>Score</th><th></th></tr>
+      <tr><th>Visibility</th><th>Paper</th><th>By</th><th>Status</th><th>Recommendation</th><th>Score</th><th></th></tr>
     </thead>
     <tbody>
       {% for j in jobs %}
       <tr>
-        <td class="filename">{{ j.filename }}</td>
+        <td>
+          {% if j.is_public %}
+          <span class="badge badge-public">public</span>
+          {% else %}
+          <span class="badge badge-private">private</span>
+          {% endif %}
+        </td>
+        <td class="filename" title="{{ j.filename }}">{{ j.filename }}</td>
+        <td>{% if j.owner == me %}You{% else %}{{ j.owner or "—" }}{% endif %}</td>
         <td><span class="badge badge-{{ j.status }}">{{ j.status }}</span></td>
         <td>{{ j.recommendation or "—" }}</td>
         <td>{{ j.overall_score if j.overall_score is not none else "—" }}</td>

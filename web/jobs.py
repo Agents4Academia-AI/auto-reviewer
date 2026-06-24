@@ -52,6 +52,11 @@ class Job(Base):
     status: Mapped[JobStatus] = mapped_column(default=JobStatus.queued, index=True)
     current_stage: Mapped[str | None] = mapped_column(String(32), default=None)
     use_web_search: Mapped[bool] = mapped_column(default=True)
+    # Display name of whoever submitted the review (from the signed auth cookie).
+    owner: Mapped[str | None] = mapped_column(String(128), default=None, index=True)
+    # When True, the review shows up in everyone's recent list; otherwise only
+    # the owner sees it.
+    is_public: Mapped[bool] = mapped_column(default=False)
     # Cooperative cancellation flag: the web tier sets it, the worker checks it
     # at each stage boundary and stops.
     cancel_requested: Mapped[bool] = mapped_column(default=False)
@@ -68,6 +73,8 @@ class Job(Base):
             "status": self.status.value,
             "current_stage": self.current_stage,
             "use_web_search": self.use_web_search,
+            "owner": self.owner,
+            "is_public": self.is_public,
             "cancel_requested": self.cancel_requested,
             "error": self.error,
             "recommendation": self.recommendation,
@@ -92,7 +99,8 @@ def init_db() -> None:
 
 def _migrate() -> None:
     """Tiny additive migration: `create_all` won't add columns to a table that
-    already exists, so add `cancel_requested` to pre-existing SQLite databases.
+    already exists, so add columns introduced after the first deploy to
+    pre-existing SQLite databases.
     """
     if not settings.DB_URL.startswith("sqlite"):
         return
@@ -102,11 +110,27 @@ def _migrate() -> None:
             conn.exec_driver_sql(
                 "ALTER TABLE jobs ADD COLUMN cancel_requested BOOLEAN NOT NULL DEFAULT 0"
             )
+        if "owner" not in cols:
+            conn.exec_driver_sql("ALTER TABLE jobs ADD COLUMN owner VARCHAR(128)")
+        if "is_public" not in cols:
+            conn.exec_driver_sql(
+                "ALTER TABLE jobs ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT 0"
+            )
 
 
-def create_job(filename: str, use_web_search: bool = True) -> str:
+def create_job(
+    filename: str,
+    use_web_search: bool = True,
+    owner: str | None = None,
+    is_public: bool = False,
+) -> str:
     with Session(_engine) as s:
-        job = Job(filename=filename, use_web_search=use_web_search)
+        job = Job(
+            filename=filename,
+            use_web_search=use_web_search,
+            owner=owner,
+            is_public=is_public,
+        )
         s.add(job)
         s.commit()
         return job.id
@@ -117,10 +141,15 @@ def get_job(job_id: str) -> Job | None:
         return s.get(Job, job_id)
 
 
-def list_recent(limit: int = 20) -> list[Job]:
+def list_visible(owner: str | None, limit: int = 20) -> list[Job]:
+    """Recent reviews this user is allowed to see: their own, plus anyone's
+    public ones."""
     with Session(_engine) as s:
         rows = s.scalars(
-            select(Job).order_by(Job.created_at.desc()).limit(limit)
+            select(Job)
+            .where((Job.owner == owner) | (Job.is_public.is_(True)))
+            .order_by(Job.created_at.desc())
+            .limit(limit)
         ).all()
         # Detach so callers can read attributes after the session closes.
         for r in rows:

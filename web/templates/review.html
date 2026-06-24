@@ -2,12 +2,16 @@
 {% block content %}
 <a class="back" href="/">← All reviews</a>
 <h1 class="filename">{{ job.filename }}</h1>
+<p class="muted">
+  by {% if is_owner %}you{% else %}{{ job.owner or "—" }}{% endif %}
+  · {{ "public" if job.is_public else "private" }}
+</p>
 
 <section id="status-panel" class="card" data-job-id="{{ job.id }}" data-total="{{ total_stages }}">
   <div class="status-row">
     <span class="badge" id="status-badge">{{ job.status }}</span>
     <span id="status-text" class="muted"></span>
-    <button type="button" id="cancel-btn" class="cancel-btn" hidden>Cancel</button>
+    {% if is_owner %}<button type="button" id="cancel-btn" class="cancel-btn" hidden>Cancel</button>{% endif %}
   </div>
   <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
   <p id="error-text" class="error" hidden></p>

@@ -68,7 +68,7 @@ button[type="submit"]:hover { filter: brightness(0.95); }
 table.jobs { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 table.jobs th, table.jobs td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
 table.jobs th { background: #fafafa; color: var(--muted); font-weight: 600; }
-table.jobs td.filename { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+table.jobs td.filename { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 table.jobs a { color: var(--accent); text-decoration: none; }
 
 .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; text-transform: capitalize; }
@@ -77,6 +77,8 @@ table.jobs a { color: var(--accent); text-decoration: none; }
 .badge-done { background: #ecfdf5; color: var(--ok); }
 .badge-failed { background: #fef2f2; color: var(--err); }
 .badge-cancelled { background: #f3f4f6; color: var(--muted); }
+.badge-public { background: #ecfeff; color: #0e7490; }
+.badge-private { background: #f3f4f6; color: var(--muted); }
 
 .status-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem; }
 .cancel-btn {
@@ -97,3 +99,22 @@ table.jobs a { color: var(--accent); text-decoration: none; }
 .report h3 { font-size: 1.05rem; }
 .report code { background: #f3f4f6; padding: 0.1rem 0.3rem; border-radius: 4px; }
 .report ul { padding-left: 1.3rem; }
+
+/* Custom confirm dialog (replaces native confirm() so we control button labels) */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(17, 24, 39, 0.45);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.modal {
+  background: var(--card); border-radius: 10px; padding: 1.4rem 1.5rem;
+  max-width: 22rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.modal p { margin: 0 0 1.2rem; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+.modal-btn {
+  border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 1rem;
+  cursor: pointer; font-size: 0.9rem; background: var(--card);
+}
+.modal-btn-no:hover { background: #f3f4f6; }
+.modal-btn-yes { border-color: var(--err); color: var(--err); }
+.modal-btn-yes:hover { background: #fef2f2; }

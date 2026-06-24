@@ -9,11 +9,15 @@
 <body>
   <main class="container narrow">
     <h1>📄 Paper Reviewer</h1>
-    <p class="muted">Enter the shared password to continue:</p>
+    <p class="muted">Enter your name and the shared password to continue:</p>
     {% if error %}<p class="error">{{ error }}</p>{% endif %}
     <form action="/login" method="post" class="card">
+      <label>Name
+        <input type="text" name="name" autofocus required>
+      </label>
+      <div style="margin: 12px;"> </div>
       <label>Password
-        <input type="password" name="password" autofocus required>
+        <input type="password" name="password" required>
       </label>
       <div style="margin: 20px;"> </div>
       <button type="submit">Log in</button>

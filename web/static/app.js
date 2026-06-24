@@ -20,6 +20,42 @@
     badge.className = "badge badge-" + status;
   }
 
+  // Custom confirm dialog so the buttons read "No" / "Yes" rather than the
+  // browser's fixed "Cancel" / "OK". Resolves true only when "Yes" is chosen.
+  function confirmDialog(message) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.className = "modal-overlay";
+      overlay.innerHTML =
+        '<div class="modal" role="dialog" aria-modal="true">' +
+        "<p></p>" +
+        '<div class="modal-actions">' +
+        '<button type="button" class="modal-btn modal-btn-no">No</button>' +
+        '<button type="button" class="modal-btn modal-btn-yes">Yes</button>' +
+        "</div></div>";
+      overlay.querySelector("p").textContent = message;
+
+      function close(result) {
+        document.removeEventListener("keydown", onKey);
+        overlay.remove();
+        resolve(result);
+      }
+      function onKey(e) {
+        if (e.key === "Escape") close(false);
+      }
+
+      overlay.querySelector(".modal-btn-no").addEventListener("click", () => close(false));
+      overlay.querySelector(".modal-btn-yes").addEventListener("click", () => close(true));
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) close(false); // click outside the card = No
+      });
+      document.addEventListener("keydown", onKey);
+
+      document.body.appendChild(overlay);
+      overlay.querySelector(".modal-btn-yes").focus();
+    });
+  }
+
   async function loadReport() {
     const res = await fetch(`/api/review/${jobId}/markdown`);
     if (!res.ok) return;
@@ -28,17 +64,20 @@
     report.hidden = false;
   }
 
-  cancelBtn.addEventListener("click", async () => {
-    if (!confirm("Cancel this review?")) return;
-    cancelBtn.disabled = true;
-    cancelling = true;
-    statusText.textContent = "Cancelling…";
-    try {
-      await fetch(`/api/review/${jobId}/cancel`, { method: "POST" });
-    } catch (e) {
-      // The next poll will reflect the real state regardless.
-    }
-  });
+  // The cancel button is only rendered for the review's owner.
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", async () => {
+      if (!(await confirmDialog("Cancel this review?"))) return;
+      cancelBtn.disabled = true;
+      cancelling = true;
+      statusText.textContent = "Cancelling…";
+      try {
+        await fetch(`/api/review/${jobId}/cancel`, { method: "POST" });
+      } catch (e) {
+        // The next poll will reflect the real state regardless.
+      }
+    });
+  }
 
   async function tick() {
     let data;
@@ -54,7 +93,7 @@
 
     setBadge(data.status);
     const active = data.status === "queued" || data.status === "running";
-    cancelBtn.hidden = !active;
+    if (cancelBtn) cancelBtn.hidden = !active;
 
     if (data.status === "queued") {
       if (!cancelling) statusText.textContent = "Waiting in queue…";
