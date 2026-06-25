@@ -4,8 +4,14 @@
   <h1>Review a paper</h1>
   <p class="muted">Upload a PDF (max {{ max_pages }} pages, {{ max_mb }} MB). A full
     review runs through a 10-stage pipeline and takes a few minutes.</p>
+  <p class="muted">You've used <strong>{{ used }}</strong> of <strong>{{ per_user_limit }}</strong> uploads.</p>
+  {% if site_full %}
+  <p class="error">This site has reached its total review limit. New uploads are paused.</p>
+  {% elif at_user_limit %}
+  <p class="error">You've reached your upload limit of {{ per_user_limit }} papers.</p>
+  {% endif %}
   <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
-    <input type="file" name="file" accept="application/pdf" required>
+    <input type="file" name="file" accept="application/pdf" required {{ "disabled" if upload_disabled }}>
     <label class="checkbox">
       <input type="checkbox" name="web_search" checked>
       Use web search for the novelty check (slower, more accurate)
@@ -14,20 +20,19 @@
       <input type="checkbox" name="make_public">
       Make this review public (visible to others in "Recent reviews")
     </label>
-    <button type="submit">Upload &amp; review</button>
+    <button type="submit" {{ "disabled" if upload_disabled }}>Upload &amp; review</button>
   </form>
 </section>
 
 <section>
-  <h2>Recent reviews</h2>
-  <p class="muted">Your reviews, plus public reviews shared by others.</p>
-  {% if jobs %}
+  <h2>Your reviews</h2>
+  {% if my_jobs %}
   <table class="jobs">
     <thead>
-      <tr><th>Visibility</th><th>Paper</th><th>By</th><th>Status</th><th>Recommendation</th><th>Score</th><th></th></tr>
+      <tr><th>Visibility</th><th>Paper</th><th>Status</th><th>Recommendation</th><th>Score</th><th></th></tr>
     </thead>
     <tbody>
-      {% for j in jobs %}
+      {% for j in my_jobs %}
       <tr>
         <td>
           {% if j.is_public %}
@@ -37,7 +42,6 @@
           {% endif %}
         </td>
         <td class="filename" title="{{ j.filename }}">{{ j.filename }}</td>
-        <td>{% if j.owner == me %}You{% else %}{{ j.owner or "—" }}{% endif %}</td>
         <td><span class="badge badge-{{ j.status }}">{{ j.status }}</span></td>
         <td>{{ j.recommendation or "—" }}</td>
         <td>{{ j.overall_score if j.overall_score is not none else "—" }}</td>
@@ -47,7 +51,32 @@
     </tbody>
   </table>
   {% else %}
-  <p class="muted">No reviews yet.</p>
+  <p class="muted">You haven't run any reviews yet.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Public reviews</h2>
+  {% if public_jobs %}
+  <table class="jobs">
+    <thead>
+      <tr><th>By</th><th>Paper</th><th>Status</th><th>Recommendation</th><th>Score</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for j in public_jobs %}
+      <tr>
+        <td>{{ j.owner or "—" }}</td>
+        <td class="filename" title="{{ j.filename }}">{{ j.filename }}</td>
+        <td><span class="badge badge-{{ j.status }}">{{ j.status }}</span></td>
+        <td>{{ j.recommendation or "—" }}</td>
+        <td>{{ j.overall_score if j.overall_score is not none else "—" }}</td>
+        <td><a href="/review/{{ j.id }}">open</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No public reviews from others yet.</p>
   {% endif %}
 </section>
 {% endblock %}

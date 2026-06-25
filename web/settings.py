@@ -31,6 +31,10 @@ SESSION_COOKIE = "reviewer_session"
 MAX_UPLOAD_BYTES = int(os.getenv("REVIEWER_MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
 MAX_PDF_PAGES = int(os.getenv("REVIEWER_MAX_PDF_PAGES", "60"))
 MAX_QUEUE_DEPTH = int(os.getenv("REVIEWER_MAX_QUEUE_DEPTH", "20"))
+# Per-user upload cap. Counts a user's reviews that are queued/running/done
+MAX_REVIEWS_PER_USER = int(os.getenv("REVIEWER_MAX_REVIEWS_PER_USER", "10"))
+# Site-wide cap across all users
+MAX_TOTAL_REVIEWS = int(os.getenv("REVIEWER_MAX_TOTAL_REVIEWS", "50"))
 
 # Polling cadence used by the worker loop and surfaced to the frontend.
 WORKER_POLL_SECONDS = float(os.getenv("REVIEWER_WORKER_POLL_SECONDS", "2"))

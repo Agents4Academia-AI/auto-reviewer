@@ -141,26 +141,56 @@ def get_job(job_id: str) -> Job | None:
         return s.get(Job, job_id)
 
 
-def list_visible(owner: str | None, limit: int = 20) -> list[Job]:
-    """Recent reviews this user is allowed to see: their own, plus anyone's
-    public ones."""
+def _recent(stmt, limit: int) -> list[Job]:
     with Session(_engine) as s:
-        rows = s.scalars(
-            select(Job)
-            .where((Job.owner == owner) | (Job.is_public.is_(True)))
-            .order_by(Job.created_at.desc())
-            .limit(limit)
-        ).all()
+        rows = s.scalars(stmt.order_by(Job.created_at.desc()).limit(limit)).all()
         # Detach so callers can read attributes after the session closes.
         for r in rows:
             s.expunge(r)
         return list(rows)
 
 
+def list_owned(owner: str | None, limit: int = 20) -> list[Job]:
+    """This user's own recent reviews (public and private)."""
+    return _recent(select(Job).where(Job.owner == owner), limit)
+
+
+def list_public_by_others(owner: str | None, limit: int = 20) -> list[Job]:
+    """Recent public reviews submitted by other users."""
+    return _recent(
+        select(Job).where(Job.is_public.is_(True), Job.owner != owner), limit
+    )
+
+
 def queued_count() -> int:
     with Session(_engine) as s:
         return s.scalar(
             select(func.count()).select_from(Job).where(Job.status == JobStatus.queued)
+        ) or 0
+
+
+def count_by_owner(owner: str | None) -> int:
+    """How many reviews this user has against their quota. Failed and cancelled
+    runs don't count — only queued/running/done."""
+    with Session(_engine) as s:
+        return s.scalar(
+            select(func.count())
+            .select_from(Job)
+            .where(
+                Job.owner == owner,
+                Job.status.not_in([JobStatus.failed, JobStatus.cancelled]),
+            )
+        ) or 0
+
+
+def total_count() -> int:
+    """Site-wide review count against the global cap. Same rule as
+    count_by_owner: queued/running/done count; failed and cancelled don't."""
+    with Session(_engine) as s:
+        return s.scalar(
+            select(func.count())
+            .select_from(Job)
+            .where(Job.status.not_in([JobStatus.failed, JobStatus.cancelled]))
         ) or 0
 
 

@@ -74,13 +74,23 @@ def logout():
 @app.get("/", response_class=HTMLResponse, dependencies=[Depends(auth.require_auth)])
 def index(request: Request):
     me = auth.current_user(request)
-    recent = jobs.list_visible(owner=me, limit=20)
+    my_jobs = jobs.list_owned(owner=me, limit=20)
+    public_jobs = jobs.list_public_by_others(owner=me, limit=20)
+    used = jobs.count_by_owner(me)
+    at_user_limit = used >= settings.MAX_REVIEWS_PER_USER
+    site_full = jobs.total_count() >= settings.MAX_TOTAL_REVIEWS
     return templates.TemplateResponse(
         request,
         "index.html",
         {
-            "jobs": [j.as_dict() for j in recent],
+            "my_jobs": [j.as_dict() for j in my_jobs],
+            "public_jobs": [j.as_dict() for j in public_jobs],
             "me": me,
+            "used": used,
+            "per_user_limit": settings.MAX_REVIEWS_PER_USER,
+            "at_user_limit": at_user_limit,
+            "site_full": site_full,
+            "upload_disabled": at_user_limit or site_full,
             "max_pages": settings.MAX_PDF_PAGES,
             "max_mb": settings.MAX_UPLOAD_BYTES // (1024 * 1024),
         },
@@ -120,6 +130,23 @@ async def upload(
     if not (file.filename or "").lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Please upload a .pdf file.")
 
+    # Quotas — checked before reading the upload so we fail fast. The site-wide
+    # cap is the hard cost backstop; the per-user cap keeps any one person fair.
+    if jobs.total_count() >= settings.MAX_TOTAL_REVIEWS:
+        raise HTTPException(
+            status_code=429,
+            detail="This site has reached its total review limit. Please check back later.",
+        )
+    owner = auth.current_user(request)
+    if jobs.count_by_owner(owner) >= settings.MAX_REVIEWS_PER_USER:
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Upload limit reached — each user can submit up to "
+                f"{settings.MAX_REVIEWS_PER_USER} papers."
+            ),
+        )
+
     data = await file.read()
     if len(data) == 0:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
@@ -150,7 +177,7 @@ async def upload(
     job_id = jobs.create_job(
         filename=file.filename,
         use_web_search=use_web_search,
-        owner=auth.current_user(request),
+        owner=owner,
         is_public=make_public is not None,
     )
     storage.save_upload(job_id, data)
