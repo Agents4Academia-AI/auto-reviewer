@@ -39,6 +39,11 @@ MAX_TOTAL_REVIEWS = int(os.getenv("REVIEWER_MAX_TOTAL_REVIEWS", "50"))
 # Polling cadence used by the worker loop and surfaced to the frontend.
 WORKER_POLL_SECONDS = float(os.getenv("REVIEWER_WORKER_POLL_SECONDS", "2"))
 
+# A running job whose worker hasn't updated its heartbeat within this window is
+# treated as orphaned (its worker died) and reset to failed on the next sweep.
+# Must be comfortably longer than the slowest single pipeline stage.
+ORPHAN_TIMEOUT_SECONDS = int(os.getenv("REVIEWER_ORPHAN_TIMEOUT_SECONDS", "900"))
+
 
 def ensure_dirs() -> None:
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

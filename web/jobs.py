@@ -12,9 +12,9 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import String, create_engine, func, select, text, update
+from sqlalchemy import String, create_engine, event, func, select, text, update
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 from web import settings
@@ -60,6 +60,10 @@ class Job(Base):
     # Cooperative cancellation flag: the web tier sets it, the worker checks it
     # at each stage boundary and stops.
     cancel_requested: Mapped[bool] = mapped_column(default=False)
+    # Liveness signal: stamped when a worker claims the job and at each stage
+    # boundary. A `running` job whose heartbeat is stale is treated as orphaned
+    # (its worker died) so it can be reclaimed without killing live jobs.
+    heartbeat: Mapped[datetime | None] = mapped_column(default=None)
     error: Mapped[str | None] = mapped_column(String(2000), default=None)
     recommendation: Mapped[str | None] = mapped_column(String(64), default=None)
     overall_score: Mapped[int | None] = mapped_column(default=None)
@@ -85,9 +89,25 @@ class Job(Base):
 
 
 # SQLite needs check_same_thread=False because the web process and worker
-# process each open their own connection to the same file.
-_connect_args = {"check_same_thread": False} if settings.DB_URL.startswith("sqlite") else {}
+# processes each open their own connection to the same file. `timeout` is the
+# busy timeout (seconds): a writer waits for the lock instead of immediately
+# raising "database is locked" when another process holds it.
+_is_sqlite = settings.DB_URL.startswith("sqlite")
+_connect_args = {"check_same_thread": False, "timeout": 30} if _is_sqlite else {}
 _engine = create_engine(settings.DB_URL, connect_args=_connect_args, future=True)
+
+
+if _is_sqlite:
+    @event.listens_for(_engine, "connect")
+    def _set_sqlite_pragmas(dbapi_conn, _record):  # noqa: ANN001
+        """WAL lets readers and a single writer run concurrently (vs. the default
+        rollback journal, which locks the whole file on every write) — essential
+        once the web tier and multiple workers share one database file."""
+        cur = dbapi_conn.cursor()
+        cur.execute("PRAGMA journal_mode=WAL")
+        cur.execute("PRAGMA synchronous=NORMAL")
+        cur.execute("PRAGMA busy_timeout=30000")
+        cur.close()
 
 
 def init_db() -> None:
@@ -116,6 +136,8 @@ def _migrate() -> None:
             conn.exec_driver_sql(
                 "ALTER TABLE jobs ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT 0"
             )
+        if "heartbeat" not in cols:
+            conn.exec_driver_sql("ALTER TABLE jobs ADD COLUMN heartbeat DATETIME")
 
 
 def create_job(
@@ -218,7 +240,7 @@ def claim_next_job() -> Job | None:
         result = s.execute(
             update(Job)
             .where(Job.id == job_id, Job.status == JobStatus.queued)
-            .values(status=JobStatus.running, current_stage=None)
+            .values(status=JobStatus.running, current_stage=None, heartbeat=_now())
         )
         if result.rowcount != 1:
             s.rollback()
@@ -232,8 +254,14 @@ def claim_next_job() -> Job | None:
 
 
 def set_stage(job_id: str, stage: str) -> None:
+    # Doubles as the liveness heartbeat: each stage boundary proves the worker
+    # is still alive, so reset_orphans won't reclaim a slow-but-running job.
     with Session(_engine) as s:
-        s.execute(update(Job).where(Job.id == job_id).values(current_stage=stage))
+        s.execute(
+            update(Job)
+            .where(Job.id == job_id)
+            .values(current_stage=stage, heartbeat=_now())
+        )
         s.commit()
 
 
@@ -311,18 +339,25 @@ def fail_job(job_id: str, error: str) -> None:
 
 
 def reset_orphans() -> None:
-    """On worker startup, any job left `running` died with a previous process.
+    """Reclaim jobs whose worker died mid-run, leaving them stuck in `running`.
 
-    Mark them failed so they don't hang forever. (Queued jobs are fine — they
-    simply get picked up again.)
+    With multiple workers we can't assume every `running` job is dead — another
+    worker may be actively processing it. So we only fail jobs whose heartbeat
+    is stale (older than ORPHAN_TIMEOUT_SECONDS) or never set. A live worker
+    refreshes its heartbeat at every stage boundary, so its job is left alone.
+    (Queued jobs are fine — they simply get picked up again.)
     """
+    cutoff = _now() - timedelta(seconds=settings.ORPHAN_TIMEOUT_SECONDS)
     with Session(_engine) as s:
         s.execute(
             update(Job)
-            .where(Job.status == JobStatus.running)
+            .where(
+                Job.status == JobStatus.running,
+                (Job.heartbeat.is_(None)) | (Job.heartbeat < cutoff),
+            )
             .values(
                 status=JobStatus.failed,
-                error="Worker restarted while this job was running.",
+                error="Worker died while this job was running.",
                 finished_at=_now(),
             )
         )

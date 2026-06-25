@@ -118,6 +118,8 @@ Prior context (Stage 1):
 
 STAGE_4_NOVELTY = """Stage 4 — Novelty check.
 
+For this stage, you may use the web_search tool and take multiple turns, but your final message must be the JSON object.
+
 Judge whether the work is genuinely new compared with prior work in deep learning. Do not collapse the paper into a single "is it novel?" verdict — a paper can be novel on one axis (e.g., method) while derivative on another (e.g., problem framing). Decompose first, then search, then judge.
 Review date: {review_date}.
 

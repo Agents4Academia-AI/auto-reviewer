@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import json
 import os
+import random
+import time
 from typing import Any
 
 import anthropic
@@ -113,18 +115,48 @@ class ReviewerLLM:
             },
         }
 
+    _MAX_ATTEMPTS = 6
+
     def _create_with_retry(self, **kwargs) -> Any:
         """Stream the call (SDK requires streaming for large max_tokens) and
-        return the accumulated final Message. Single retry on 5xx.
+        return the accumulated final Message.
+
+        Retries transient failures with exponential backoff + jitter: 429 rate
+        limits (likely once several workers call the API at once), 5xx, and
+        connection errors. Honors the server's Retry-After when present. The
+        jitter keeps multiple workers from retrying in lockstep.
         """
-        try:
-            with self.client.messages.stream(**kwargs) as stream:
-                return stream.get_final_message()
-        except anthropic.APIStatusError as e:
-            if e.status_code >= 500:
+        for attempt in range(self._MAX_ATTEMPTS):
+            try:
                 with self.client.messages.stream(**kwargs) as stream:
                     return stream.get_final_message()
-            raise
+            except (
+                anthropic.RateLimitError,
+                anthropic.APIStatusError,
+                anthropic.APIConnectionError,
+            ) as e:
+                status = getattr(e, "status_code", None)
+                retryable = (
+                    isinstance(e, (anthropic.RateLimitError, anthropic.APIConnectionError))
+                    or (status is not None and status >= 500)
+                )
+                if not retryable or attempt == self._MAX_ATTEMPTS - 1:
+                    raise
+                time.sleep(self._retry_delay(e, attempt))
+
+    @staticmethod
+    def _retry_delay(exc: Exception, attempt: int) -> float:
+        """Seconds to wait before the next attempt. Prefer the server's
+        Retry-After header; otherwise exponential backoff (1,2,4,…,60) + jitter."""
+        resp = getattr(exc, "response", None)
+        if resp is not None:
+            retry_after = resp.headers.get("retry-after")
+            if retry_after:
+                try:
+                    return float(retry_after)
+                except ValueError:
+                    pass
+        return min(2 ** attempt, 60) + random.uniform(0, 1)
 
     @staticmethod
     def _extract_text(response: Any) -> str:
