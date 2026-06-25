@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import String, create_engine, func, select, text, update
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
@@ -37,7 +37,7 @@ class Base(DeclarativeBase):
 
 
 def _now() -> datetime:
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 
 def _new_id() -> str:
