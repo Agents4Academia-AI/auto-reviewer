@@ -27,6 +27,16 @@ app = FastAPI(title="Paper Reviewer")
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 
+def _static_v(name: str) -> int:
+    """Cache-busting token for a static asset: its file mtime. Appended as a
+    query string so browsers refetch the file whenever it changes (otherwise
+    they may serve a stale cached copy without revalidating)."""
+    try:
+        return int((BASE_DIR / "static" / name).stat().st_mtime)
+    except OSError:
+        return 0
+
+
 @app.on_event("startup")
 def _startup() -> None:
     jobs.init_db()
@@ -114,7 +124,12 @@ def review_page(request: Request, job_id: str):
     return templates.TemplateResponse(
         request,
         "review.html",
-        {"job": job.as_dict(), "total_stages": TOTAL_STAGES, "is_owner": is_owner},
+        {
+            "job": job.as_dict(),
+            "total_stages": TOTAL_STAGES,
+            "is_owner": is_owner,
+            "app_js_v": _static_v("app.js"),
+        },
     )
 
 

@@ -15,6 +15,30 @@
   const POLL_MS = 3000;
   let cancelling = false; // true once the user has clicked Cancel
 
+  // Human-readable names for each pipeline stage (see pipeline.py / prompts.py).
+  const STAGE_LABELS = {
+    stage_0: "Parsing Paper",
+    stage_1: "Building Overall Understanding",
+    stage_2: "Analyzing Sections",
+    stage_3: "Extracting Claims",
+    stage_4: "Checking Novelty",
+    stage_5: "Assessing Significance",
+    stage_6: "Checking Rigor",
+    stage_7: "Planning the Review",
+    stage_8: "Drafting the Review",
+    stage_9: "Self-Critiquing",
+    stage_10: "Finalizing Review",
+  };
+
+  // "stage_0" -> "Parsing Paper… (Stage 0)"
+  function stageLabel(stage) {
+    if (!stage) return "";
+    const name = STAGE_LABELS[stage] || stage;
+    const m = /stage_(\d+)/.exec(stage);
+    const num = m ? ` (Stage ${m[1]})` : "";
+    return `${name}…${num}`;
+  }
+
   function setBadge(status) {
     badge.textContent = status;
     badge.className = "badge badge-" + status;
@@ -102,8 +126,9 @@
     } else if (data.status === "running") {
       const idx = data.stage_index || 0;
       if (!cancelling) {
-        statusText.textContent = `Running — stage ${idx} of ${total}` +
-          (data.current_stage ? ` (${data.current_stage})` : "");
+        statusText.textContent = data.current_stage
+          ? `${stageLabel(data.current_stage)}`
+          : `Stage ${idx} of ${total}`;
       }
       bar.style.width = Math.round((idx / total) * 100) + "%";
       setTimeout(tick, POLL_MS);
