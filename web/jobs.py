@@ -178,9 +178,18 @@ def list_owned(owner: str | None, limit: int = 20) -> list[Job]:
 
 
 def list_public_by_others(owner: str | None, limit: int = 20) -> list[Job]:
-    """Recent public reviews submitted by other users."""
+    """Recent public reviews submitted by other users.
+
+    Only running or completed runs are shown — queued/failed/cancelled runs are
+    hidden so others see a clean list of in-progress and finished reviews.
+    """
     return _recent(
-        select(Job).where(Job.is_public.is_(True), Job.owner != owner), limit
+        select(Job).where(
+            Job.is_public.is_(True),
+            Job.owner != owner,
+            Job.status.in_([JobStatus.running, JobStatus.done]),
+        ),
+        limit,
     )
 
 
