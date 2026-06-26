@@ -107,6 +107,9 @@ Environment variables / `.env`:
 | `REVIEWER_MAX_PDF_PAGES`     | `60`                | Reject PDFs with more pages                        |
 | `REVIEWER_MAX_UPLOAD_BYTES`  | `26214400` (25 MB)  | Reject larger uploads                             |
 | `REVIEWER_MAX_QUEUE_DEPTH`   | `20`                | Reject uploads when this many jobs are queued     |
+| `REVIEWER_MAX_REVIEWS_PER_USER` | `10`             | Per-user upload cap (queued/running/done count)   |
+| `REVIEWER_MAX_TOTAL_REVIEWS` | `50`                | Site-wide cap across all users                    |
+| `REVIEWER_WORKER_COUNT`      | `1`                 | Deployed worker-pool size; shown as workers free in the UI |
 
 ## File Structure
 
