@@ -307,6 +307,30 @@ button[type="submit"]:active { transform: translateY(0); }
 button[type="submit"]:disabled,
 input:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
 
+.submit-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.submit-row button[type="submit"] { align-self: auto; }
+.workers {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  opacity: 0.7;
+}
+.workers::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #2f9e44;
+  box-shadow: 0 0 0 3px rgba(47, 158, 68, 0.18);
+}
+.workers strong { color: var(--ink-soft); font-weight: 600; }
+.workers.workers-busy { color: var(--muted); }
+.workers.workers-busy::before { background: #c2410c; box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.18); }
+
 /* ---------- Tables ---------- */
 table.jobs {
   width: 100%;
@@ -336,6 +360,18 @@ table.jobs tbody tr { transition: background 0.15s ease; }
 table.jobs tbody tr:hover { background: var(--card-2); }
 table.jobs tbody tr:last-child td { border-bottom: none; }
 table.jobs td.filename { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+/* Recommendation can be a long sentence — clamp to the first 2 lines.
+   The clamp lives on an inner span (a td can't be -webkit-box without
+   breaking table layout, which leaves a sliver of the next line visible). */
+table.jobs td.recommendation { max-width: 220px; }
+table.jobs .rec-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 220px;
+}
 /* Scores read as data */
 table.jobs td:nth-child(5) { font-family: var(--mono); font-size: 0.9rem; }
 table.jobs a {

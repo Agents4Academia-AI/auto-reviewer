@@ -21,7 +21,14 @@
       <input type="checkbox" name="make_public">
       Make this review public (visible to others in "Public reviews")
     </label>
-    <button type="submit" {{ "disabled" if upload_disabled }}>Upload &amp; review</button>
+    <div class="submit-row">
+      <button type="submit" {{ "disabled" if upload_disabled }}>Upload &amp; review</button>
+      <span class="workers {{ 'workers-busy' if workers_free == 0 }}"
+            title="Worker processes free to pick up a review now">
+        <strong>{{ workers_free }}</strong> of {{ worker_count }}
+        worker{{ "" if worker_count == 1 else "s" }} available
+      </span>
+    </div>
   </form>
 </section>
 
@@ -44,7 +51,7 @@
         </td>
         <td class="filename" title="{{ j.filename }}">{{ j.filename }}</td>
         <td><span class="badge badge-{{ j.status }}">{{ j.status }}</span></td>
-        <td>{{ j.recommendation or "—" }}</td>
+        <td class="recommendation"><span class="rec-clamp" title="{{ j.recommendation or '' }}">{{ j.recommendation or "—" }}</span></td>
         <td>{{ j.overall_score if j.overall_score is not none else "—" }}</td>
         <td><a href="/review/{{ j.id }}">open →</a></td>
       </tr>
@@ -69,7 +76,7 @@
         <td>{{ j.owner or "—" }}</td>
         <td class="filename" title="{{ j.filename }}">{{ j.filename }}</td>
         <td><span class="badge badge-{{ j.status }}">{{ j.status }}</span></td>
-        <td>{{ j.recommendation or "—" }}</td>
+        <td class="recommendation"><span class="rec-clamp" title="{{ j.recommendation or '' }}">{{ j.recommendation or "—" }}</span></td>
         <td>{{ j.overall_score if j.overall_score is not none else "—" }}</td>
         <td><a href="/review/{{ j.id }}">open →</a></td>
       </tr>

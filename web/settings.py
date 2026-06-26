@@ -39,6 +39,11 @@ MAX_TOTAL_REVIEWS = int(os.getenv("REVIEWER_MAX_TOTAL_REVIEWS", "50"))
 # Polling cadence used by the worker loop and surfaced to the frontend.
 WORKER_POLL_SECONDS = float(os.getenv("REVIEWER_WORKER_POLL_SECONDS", "2"))
 
+# Size of the deployed worker pool. Workers are independent processes with no
+# registry, so this is configured rather than discovered; the UI shows how many
+# of these are free (pool size minus jobs currently running).
+WORKER_COUNT = int(os.getenv("REVIEWER_WORKER_COUNT", "1"))
+
 # A running job whose worker hasn't updated its heartbeat within this window is
 # treated as orphaned (its worker died) and reset to failed on the next sweep.
 # Must be comfortably longer than the slowest single pipeline stage.

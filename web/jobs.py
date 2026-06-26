@@ -200,6 +200,15 @@ def queued_count() -> int:
         ) or 0
 
 
+def running_count() -> int:
+    """How many jobs are currently being processed — i.e. how many workers in
+    the pool are busy. Used to show how many workers are free."""
+    with Session(_engine) as s:
+        return s.scalar(
+            select(func.count()).select_from(Job).where(Job.status == JobStatus.running)
+        ) or 0
+
+
 def count_by_owner(owner: str | None) -> int:
     """How many reviews this user has against their quota. Failed and cancelled
     runs don't count — only queued/running/done."""

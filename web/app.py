@@ -89,6 +89,7 @@ def index(request: Request):
     used = jobs.count_by_owner(me)
     at_user_limit = used >= settings.MAX_REVIEWS_PER_USER
     site_full = jobs.total_count() >= settings.MAX_TOTAL_REVIEWS
+    workers_free = max(0, settings.WORKER_COUNT - jobs.running_count())
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -103,6 +104,8 @@ def index(request: Request):
             "upload_disabled": at_user_limit or site_full,
             "max_pages": settings.MAX_PDF_PAGES,
             "max_mb": settings.MAX_UPLOAD_BYTES // (1024 * 1024),
+            "workers_free": workers_free,
+            "worker_count": settings.WORKER_COUNT,
         },
     )
 
