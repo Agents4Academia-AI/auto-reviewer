@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="card hero">
-  <p class="eyebrow">Automated peer review</p>
+  <p class="eyebrow">Automated paper review</p>
   <h1>Review a paper</h1>
   <p class="muted">Upload a PDF (max {{ max_pages }} pages, {{ max_mb }} MB).</p>
-  <p class="muted">A full review runs through a 10-stage pipeline and takes a few minutes.</p>
+  <p class="muted">Reviews are generated using LLMs. A full review runs through a 10-stage pipeline and takes a few minutes.</p>
   <p class="muted">You've used <strong>{{ used }}</strong> of <strong>{{ per_user_limit }}</strong> uploads.</p>
   {% if site_full %}
   <p class="error">This site has reached its total review limit. New uploads are paused.</p>

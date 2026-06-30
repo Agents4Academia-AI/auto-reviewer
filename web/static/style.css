@@ -1,11 +1,4 @@
-/* ============================================================
-   Paper Reviewer — "Manuscript & Terminal"
-   A warm paper-and-ink editorial theme: characterful serifs,
-   a single sharp claret accent, and a monospace voice for data.
-   ============================================================ */
-
 :root {
-  /* Warm paper-and-ink palette */
   --ink: #211c16;          /* near-black, warm */
   --ink-soft: #4a4338;     /* secondary text */
   --muted: #8a8071;        /* tertiary / labels */
@@ -15,13 +8,11 @@
   --line: #e2d8c4;         /* hairline borders */
   --line-soft: #ece4d4;
 
-  /* Sharp accent — claret, with a glint of gold */
   --accent: #8c2230;
   --accent-deep: #6f1722;
   --accent-tint: #f6e7e2;
   --gold: #b07d2d;
 
-  /* Semantics, warmed to match */
   --ok: #3f7a4f;
   --warn: #b07d2d;
   --err: #b3261e;
@@ -49,7 +40,6 @@ body {
   font-size: 1.06rem;
   color: var(--ink);
   background-color: var(--paper);
-  /* layered texture: faint vignette + a hair of warmth at the top */
   background-image:
     radial-gradient(120% 80% at 50% -10%, rgba(140, 34, 48, 0.05), transparent 60%),
     radial-gradient(60% 50% at 100% 0%, rgba(176, 125, 45, 0.06), transparent 55%);
