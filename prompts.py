@@ -130,7 +130,7 @@ Novelty must be judged against work available on or before the cutoff date. Do n
 Put post-cutoff or clearly concurrent work in a separate context list and use it only to calibrate importance, adoption, or how the field evolved. 
 If a related work is concurrent or has uncertain timing, mark it explicitly as "concurrent_or_uncertain" and do not treat it as definitive prior art.
 
-If you have access to a web search tool, use it to look up the most relevant prior work on arXiv, OpenReview, Papers With Code, and venue proceedings. Prefer sources with dates and URLs. Compare against the closest matches.
+If you have access to a web search tool, you MUST use it to look up the most relevant prior work on arXiv, OpenReview, Papers With Code, and venue proceedings. Prefer sources with dates and URLs. Compare against the closest matches.
 If no search tool is available, rely on your own knowledge but mark conclusions as "from-model-knowledge" so reviewers can verify.
 
 STEP 1 — Decompose into novelty axes.
