@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Callable
 
 from llm_client import ReviewerLLM
@@ -42,7 +42,7 @@ def _fill(template: str, **subs: str) -> str:
 
 
 def _review_date() -> str:
-    return datetime.now(UTC).date().isoformat()
+    return datetime.now(timezone.utc).date().isoformat()
 
 
 class ReviewerPipeline:
