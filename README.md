@@ -22,8 +22,23 @@ Each stage passes the original PDF to the model as a **cached document block**. 
 
 ## Installation
 
+Clone the repo and move into it:
+
 ```bash
-cd /home/weiliu1/mypaper/2026/ai-scientist/githubcode
+git clone https://github.com/Agents4Academia-AI/auto-reviewer.git
+cd auto-reviewer
+```
+
+Create and activate a virtual environment (recommended):
+
+```bash
+python -m venv .venv
+source .venv/bin/activate      # On Windows: .venv\Scripts\activate
+```
+
+Install dependencies and set up the environment file:
+
+```bash
 pip install -r requirements.txt
 cp .env.example .env
 # Edit .env and fill in ANTHROPIC_API_KEY
@@ -70,14 +85,12 @@ This split is deliberate: it keeps the web tier holding no state, so scaling up
 later means running more processes (and swapping SQLite → Postgres, local disk →
 S3) without touching application code.
 
+How to run:
 ```bash
-# 1. ensure all packages are installed (including fastapi, uvicorn, sqlalchemy, etc.)
-pip install -r requirements.txt
-
-# 2. terminal A — the web server
+# 1. terminal A — the web server
 uvicorn web.app:app --reload
 
-# 3. terminal B — the worker
+# 2. terminal B — the worker
 python -m web.worker
 ```
 
