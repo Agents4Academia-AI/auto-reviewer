@@ -4,19 +4,7 @@ An automated reviewing agent for deep learning papers based on the Claude API. I
 
 ## Pipeline
 
-| Stage | Goal                                                                                                        |
-| ----- | ----------------------------------------------------------------------------------------------------------- |
-| 0     | Directly read the PDF → structured paper representation: title, claims, contributions, figures/tables, etc. |
-| 1     | Overall understanding: one-paragraph summary + claim-evidence map                                           |
-| 2     | Section-by-section analysis: issues / missing information / ambiguous claims                                |
-| 3     | Claim extraction and evidence mapping: categorized by novelty / correctness / empirical evidence, etc.      |
-| 4     | Novelty check: use Claude’s built-in `web_search` tool to find similar prior work                           |
-| 5     | Significance / impact analysis from multiple perspectives: 5 personas                                       |
-| 6     | Rigor check: internal correctness, claim support, experimental rigor                                        |
-| 7     | Review planning: strengths / weaknesses / recommendation                                                    |
-| 8     | Draft review: author-facing review text                                                                     |
-| 9     | Self-critique: identify hallucinations / overly strong claims / inconsistencies                             |
-| 10    | Finalize: apply the critique and output the final review + improvement checklist                            |
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/be7b9336-8b68-4992-97ba-16f40ea32744" />
 
 Each stage passes the original PDF to the model as a **cached document block**. The model can use both the text content and page-level visual information from the PDF, including figures, tables, equations, and layout. The following stages reuse the same PDF input through prompt caching.
 
