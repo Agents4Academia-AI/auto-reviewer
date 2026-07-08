@@ -18,7 +18,7 @@ DATA_DIR = Path(os.getenv("REVIEWER_DATA_DIR", "data")).resolve()
 UPLOAD_DIR = DATA_DIR / "uploads"
 REVIEW_DIR = DATA_DIR / "reviews"
 DB_PATH = DATA_DIR / "jobs.db"
-DB_URL = os.getenv("REVIEWER_DB_URL", f"sqlite:///{DB_PATH}")
+DB_URL = os.getenv("REVIEWER_DB_URL") or f"sqlite:///{DB_PATH}"
 
 # Shared-password gate (Phase 6). If unset, auth is disabled (handy in dev).
 SITE_PASSWORD = os.getenv("REVIEWER_SITE_PASSWORD", "")
