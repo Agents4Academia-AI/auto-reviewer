@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Where runtime data lives. Everything here is gitignored.
-DATA_DIR = Path(os.getenv("REVIEWER_DATA_DIR", "data")).resolve()
+DATA_DIR = Path(os.getenv("REVIEWER_DATA_DIR") or "data").resolve()
 UPLOAD_DIR = DATA_DIR / "uploads"
 REVIEW_DIR = DATA_DIR / "reviews"
 DB_PATH = DATA_DIR / "jobs.db"
@@ -24,7 +24,7 @@ DB_URL = os.getenv("REVIEWER_DB_URL") or f"sqlite:///{DB_PATH}"
 SITE_PASSWORD = os.getenv("REVIEWER_SITE_PASSWORD", "")
 # Secret used to sign the session cookie. Falls back to the password so a
 # single env var is enough to get started; set explicitly in production.
-SECRET_KEY = os.getenv("REVIEWER_SECRET_KEY", SITE_PASSWORD or "dev-insecure-key")
+SECRET_KEY = os.getenv("REVIEWER_SECRET_KEY") or SITE_PASSWORD or "dev-insecure-key"
 SESSION_COOKIE = "reviewer_session"
 
 # Upload guardrails — these bound per-review cost and abuse.
