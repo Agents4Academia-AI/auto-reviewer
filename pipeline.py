@@ -97,6 +97,7 @@ class ReviewerPipeline:
             f"[{key}] done in {dt:.1f}s — "
             f"in={u['input_tokens']} out={u['output_tokens']} "
             f"cache_read={u['cache_read_input_tokens']} cache_write={u['cache_creation_input_tokens']}"
+            + (" [retried]" if result.get("retried") else "")
         )
         self.results[key] = result
         return result
@@ -178,12 +179,14 @@ class ReviewerPipeline:
                 stage_7=_dump(self._parsed("stage_7")),
                 stage_1=_dump(self._parsed("stage_1")),
             ),
+            max_tokens=self.llm.cfg.max_tokens_long,
         )
 
         # Stage 9
         self._run(
             "stage_9",
             _fill(STAGE_9_CRITIQUE, stage_8=_dump(self._parsed("stage_8"))),
+            max_tokens=self.llm.cfg.max_tokens_long,
         )
 
         # Stage 10
@@ -194,6 +197,7 @@ class ReviewerPipeline:
                 stage_8=_dump(self._parsed("stage_8")),
                 stage_9=_dump(self._parsed("stage_9")),
             ),
+            max_tokens=self.llm.cfg.max_tokens_long,
         )
 
         return self.results

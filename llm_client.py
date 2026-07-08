@@ -3,7 +3,10 @@
 Key design choices:
 - The paper PDF is sent as a cached document block so it stays warm across all 10 stages.
 - We use adaptive thinking + `effort` to balance quality and cost.
-- JSON-typed stages go through `messages.create` with `output_config.format`.
+- Each stage returns JSON, tolerantly parsed: fenced/prose wrapping is stripped and
+  trailing commas are repaired losslessly; a still-unparseable response triggers a
+  single bounded retry (resample at the ceiling if truncated, else a stricter-JSON
+  reminder) before the caller hard-fails.
 - Stage 4 (novelty) may use the server-side `web_search_20260209` tool.
 """
 
@@ -11,6 +14,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import random
 import time
 from typing import Any
@@ -37,6 +41,16 @@ def _resolve_ca_bundle() -> str | bool:
         if os.path.isfile(path):
             return path
     return True
+
+
+STRICT_JSON_SUFFIX = (
+    "\n\nIMPORTANT: your previous reply could not be parsed as JSON. Reply with "
+    "ONLY a single valid JSON object and nothing else — no markdown fences, no "
+    "commentary before or after. Inside every string value escape all double "
+    'quotes as \\", newlines as \\n, tabs as \\t, and backslashes as \\\\ '
+    "(this includes any LaTeX such as \\alpha or \\frac). Do not use trailing "
+    "commas or smart/curly quotes."
+)
 
 
 def build_user_content(paper_document: dict[str, Any], user_prompt: str) -> list[dict[str, Any]]:
@@ -97,11 +111,31 @@ class ReviewerLLM:
         response = self._create_with_retry(**kwargs)
         text = self._extract_text(response)
         parsed = self._parse_json(text)
+        retried = False
+
+        if self._is_parse_failure(parsed):
+            if response.stop_reason == "max_tokens":
+                # Truncated: Resample once at ceiling if not already at ceiling
+                ceiling = self.cfg.max_tokens_long
+                if kwargs["max_tokens"] < ceiling:
+                    retry_kwargs = dict(kwargs, max_tokens=ceiling)
+                    response = self._create_with_retry(**retry_kwargs)
+                    text = self._extract_text(response)
+                    parsed = self._parse_json(text)
+                    retried = True
+            else:
+                # Malformed but complete: one bounded retry, stricter instruction.
+                retry_kwargs = self._with_strict_json_instruction(kwargs)
+                response = self._create_with_retry(**retry_kwargs)
+                text = self._extract_text(response)
+                parsed = self._parse_json(text)
+                retried = True
 
         return {
             "stage": stage_name,
             "raw_text": text,
             "parsed": parsed,
+            "retried": retried,
             "stop_reason": response.stop_reason,
             "usage": {
                 "input_tokens": response.usage.input_tokens,
@@ -114,6 +148,30 @@ class ReviewerLLM:
                 ),
             },
         }
+
+    @staticmethod
+    def _is_parse_failure(parsed: Any) -> bool:
+        return parsed is None or (
+            isinstance(parsed, dict) and bool(parsed.get("_parse_error"))
+        )
+
+    def _with_strict_json_instruction(self, kwargs: dict[str, Any]) -> dict[str, Any]:
+        """Copy of kwargs with a strict-JSON reminder appended to the user prompt.
+
+        Same context, stronger instruction, fresh sample — this is the safe form of
+        the one-shot retry (we do NOT feed the broken output back)."""
+        rk = dict(kwargs)
+        msgs = [dict(m) for m in kwargs["messages"]]
+        last = dict(msgs[-1])
+        content = [dict(b) if isinstance(b, dict) else b for b in last["content"]]
+        for b in reversed(content):
+            if isinstance(b, dict) and b.get("type") == "text":
+                b["text"] = b["text"] + STRICT_JSON_SUFFIX
+                break
+        last["content"] = content
+        msgs[-1] = last
+        rk["messages"] = msgs
+        return rk
 
     _MAX_ATTEMPTS = 6
 
@@ -191,9 +249,19 @@ class ReviewerLLM:
         start = text.find("{")
         end = text.rfind("}")
         if start != -1 and end != -1 and end > start:
+            candidate = text[start : end + 1]
             try:
-                return json.loads(text[start : end + 1])
+                return json.loads(candidate)
             except json.JSONDecodeError:
                 pass
+            # Conservative, lossless repair: drop trailing commas before } or ].
+            # (Deliberately NOT touching quotes/backslashes/newlines — those are
+            # ambiguous and a bad "fix" silently corrupts content. Let retry handle them.)
+            repaired = re.sub(r",(\s*[}\]])", r"\1", candidate)
+            if repaired != candidate:
+                try:
+                    return json.loads(repaired)
+                except json.JSONDecodeError:
+                    pass
 
         return {"_parse_error": True, "_raw": text}
