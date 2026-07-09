@@ -51,6 +51,23 @@ python reviewer_agent.py paper.pdf --no-web-search
 python reviewer_agent.py paper.pdf --effort medium
 ```
 
+### Running on a Claude subscription (no API key)
+
+If you don't have an `ANTHROPIC_API_KEY`, the pipeline can run through the
+[Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk-python)
+instead, using the same login as Claude Code:
+
+```bash
+pip install claude-agent-sdk   # requires the Claude Code CLI to be installed and signed in
+python reviewer_agent.py paper.pdf --backend sdk
+```
+
+Differences vs. the API backend: the PDF is read from disk by the agent's Read
+tool each stage (page images included, but no cross-stage prompt cache), and
+Stage 4 uses the agent's WebSearch tool instead of the server-side one. Output
+format and report structure are identical. `REVIEWER_BACKEND=sdk` in `.env`
+makes it the default.
+
 ## Output
 
 The following files will be generated in the `--out` directory, which defaults to `./reviews`:
