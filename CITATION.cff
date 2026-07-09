@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: "Auto-Reviewer: an automated paper reviewing pipeline"
+message: "If you use Auto-Reviewer, please cite it."
+type: software
+authors:
+  - given-names: Wei
+    family-names: Liu
+  - given-names: keari
+  - given-names: Quan
+    family-names: Pham
+  - given-names: Satyam
+    family-names: Mohla
+repository-code: "https://github.com/Agents4Academia-AI/auto-reviewer"
+url: "https://github.com/Agents4Academia-AI/auto-reviewer"
+abstract: "A 10-stage pipeline turning a paper PDF into a claim/evidence map, novelty and rigor checks, and a self-critique pass. Built to help authors improve."
+keywords:
+  - peer review
+  - academic
+  - pdf analysis
+  - research agents
+  - feedback
