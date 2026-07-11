@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -92,9 +93,16 @@ def main():
         default=None,
         help="Override effort level",
     )
+    parser.add_argument(
+        "--backend",
+        choices=["api", "sdk"],
+        default=None,
+        help="LLM backend: 'api' (ANTHROPIC_API_KEY, default) or 'sdk' "
+        "(Claude Agent SDK — uses a Claude subscription, no API key needed)",
+    )
     args = parser.parse_args()
 
-    cfg = Config()
+    cfg = Config(backend=args.backend or os.getenv("REVIEWER_BACKEND", "api"))
     if args.no_web_search:
         cfg.enable_web_search = False
     if args.effort:
@@ -107,10 +115,18 @@ def main():
     paper = load_paper(args.pdf)
     print(f"  loaded {paper['num_bytes']} bytes", flush=True)
 
-    llm = ReviewerLLM(cfg)
+    if cfg.backend == "sdk":
+        from llm_client_sdk import ReviewerSDKLLM
+
+        llm = ReviewerSDKLLM(cfg, pdf_path=args.pdf)
+    else:
+        llm = ReviewerLLM(cfg)
     pipeline = ReviewerPipeline(llm=llm, paper_document=paper["document"])
 
-    print(f"Running 10-stage pipeline with model={cfg.model}, effort={cfg.effort}", flush=True)
+    print(
+        f"Running 10-stage pipeline with backend={cfg.backend}, model={cfg.model}, effort={cfg.effort}",
+        flush=True,
+    )
     results = pipeline.run_all()
 
     stem = Path(paper["filename"]).stem
